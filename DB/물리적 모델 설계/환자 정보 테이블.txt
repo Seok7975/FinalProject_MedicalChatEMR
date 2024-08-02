@@ -1,0 +1,15 @@
+-- 환자 테이블 생성
+CREATE TABLE Patient (
+    patient_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    date_of_birth DATE,
+    gender CHAR(1),
+    address VARCHAR(255),
+    phone VARCHAR(20),
+    email VARCHAR(320),
+    blood_type CHAR(2),
+    height INT,
+    weight INT,
+    allergies TEXT,
+    smoking_status CHAR(1)
+);

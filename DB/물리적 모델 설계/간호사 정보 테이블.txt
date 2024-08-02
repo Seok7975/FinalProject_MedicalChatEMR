@@ -1,0 +1,11 @@
+-- 간호사 테이블 생성
+CREATE TABLE Nurse (
+    nurse_id INT AUTO_INCREMENT PRIMARY KEY,
+    nurse_pwd VARCHAR(255) NOT NULL,
+    nurse_role CHAR(1) NOT NULL,
+    nurse_email VARCHAR(320) UNIQUE,
+    nurse_name VARCHAR(255),
+    nurse_shift VARCHAR(100),
+    department_id VARCHAR(10) NOT NULL,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
