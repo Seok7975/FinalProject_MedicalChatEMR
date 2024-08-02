@@ -1,5 +1,5 @@
 # FinalProject_MedicalChatEMR
-#[매디컬 챗 EMR]
+[매디컬 챗 EMR]
 
 2. 데이터 수집
 API, 그림 데이터, 텍스트 데이터
