@@ -1,4 +1,5 @@
-[매디컬 챗 EMR]
+# FinalProject_MedicalChatEMR
+#[매디컬 챗 EMR]
 
 2. 데이터 수집
 API, 그림 데이터, 텍스트 데이터
@@ -90,5 +91,5 @@ Spring MVC구조 사용, MyBatis 사용하여 데이터베이스 연동
 
 
 
-# FinalProject_MedicalChatEMR
+
 Cornerstone_api를 이용한 Viewer 구현중
