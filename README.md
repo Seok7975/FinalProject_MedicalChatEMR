@@ -78,7 +78,7 @@ Spring MVC구조 사용, MyBatis 사용하여 데이터베이스 연동
 
 
 
-        
+<!--    
 //알림 서비스
 //: 
 //Spring AOP를 통해 기능 분리, 유지보수성, 확정성을 위해 Spring Annotation을 활용
@@ -88,6 +88,7 @@ Spring MVC구조 사용, MyBatis 사용하여 데이터베이스 연동
 //3주차 : 
 
 의료영상을 보고 추후 변동 가능성 있음
+-->
 
 
 
