@@ -1,0 +1,321 @@
+-- 관리자 테이블 
+CREATE TABLE Admin (
+    id CHAR(36) PRIMARY KEY, -- 관리자의 고유 식별자입니다.
+    password VARCHAR(20) NOT NULL, -- 관리자의 비밀번호입니다.
+    admin_email VARCHAR(320) UNIQUE -- 관리자의 이메일 주소입니다.
+); 
+
+-- 환자 테이블
+CREATE TABLE Patient (
+    id INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
+    name VARCHAR(100), -- 환자의 이름입니다.
+    security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
+    date_of_birth DATE, -- 생년월일입니다.
+    gender CHAR(1), -- 성별 ('M' 또는 'F').
+    address VARCHAR(255), -- 주소입니다.
+    phone VARCHAR(20), -- 전화번호입니다.
+    email VARCHAR(320), -- 이메일 주소입니다.
+    blood_type CHAR(2), -- 혈액형입니다.
+    height INT, -- 키(센티미터)입니다.
+    weight INT, -- 체중(킬로그램)입니다.
+    allergies TEXT, -- 알레르기 정보입니다.
+    smoking_status CHAR(1) -- 흡연 여부 ('Y' 또는 'N').
+);
+
+-- 의사 테이블
+CREATE TABLE Doctor (
+    id INT AUTO_INCREMENT PRIMARY KEY, -- 의사의 고유 식별자입니다.
+    name VARCHAR(100), -- 의사의 이름입니다.
+    security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
+    email VARCHAR(100) UNIQUE, -- 이메일 주소입니다.
+    phone VARCHAR(20), -- 전화번호입니다.
+    license_id CHAR(36) UNIQUE DEFAULT (UUID()), -- 고유 식별자로 사용할 UUID
+     password VARCHAR(15), --(초기에는 NULL)
+    department_id VARCHAR(10), -- 소속 진료과입니다.
+    specialty VARCHAR(100), -- 전문 분야입니다.
+    profile_image VARCHAR(255), -- 증명사진 경로입니다.
+    active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움', -- 현재 활동 상태
+);
+
+
+
+-- 간호사 테이블
+CREATE TABLE Nurse (
+    id INT AUTO_INCREMENT PRIMARY KEY, -- 간호사의 고유 식별자입니다.
+    name VARCHAR(100), -- 간호사의 이름입니다.
+    security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
+    email VARCHAR(320) UNIQUE, -- 이메일 주소입니다.
+    phone VARCHAR(20), -- 전화번호입니다.
+    license_id CHAR(36) UNIQUE DEFAULT (UUID()), -- 고유 식별자로 사용할 UUID
+   password VARCHAR(15), --(초기에는 NULL)
+    role CHAR(1) NOT NULL, -- 역할 ('N' - 일반 간호사, 'S' - 수간호사)
+    profile_image VARCHAR(255), -- 증명사진 경로입니다.
+    active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
+);
+
+-- 비밀번호 초기 설정 후 데이터베이스 not null 로직 추가
+  ALTER TABLE Doctor MODIFY password_hash VARCHAR(255) NOT NULL;
+ALTER TABLE Nurse MODIFY password_hash VARCHAR(255) NOT NULL;
+
+
+
+-- 환자 의사 간호사 테이블 (수간호사가 담당 의사, 간호사 배정)
+CREATE TABLE Patient_Assignment (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT, -- 담당 의사의 식별자입니다.
+    nurse_id INT, -- 담당 간호사의 식별자입니다.
+    assignment_date DATE NOT NULL, -- 담당 지정 날짜입니다.
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE SET NULL,
+    FOREIGN KEY (nurse_id) REFERENCES Nurse(id) ON DELETE SET NULL
+);
+
+
+-- 진료 테이블
+CREATE TABLE Diagnosis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL, -- 진료를 받은 환자의 식별자입니다.
+    doctor_id INT NOT NULL, -- 진료를 담당한 의사의 식별자입니다.
+    diagnosis_date DATE NOT NULL, -- 진료 날짜입니다.
+    diagnosis TEXT NOT NULL, -- 진단 내용입니다.
+    treatment_plan TEXT, -- 치료 계획입니다.
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE CASCADE
+);
+
+-- 의사 환자 관계 테이블
+CREATE TABLE Patient_Doctor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL, -- 관리받는 환자의 식별자입니다.
+    doctor_id INT NOT NULL, -- 담당 의사의 내부 ID입니다.
+    relationship_start_date DATE, -- 관리 시작 날짜입니다.
+    relationship_end_date DATE, -- 관리 종료 날짜입니다.
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE CASCADE
+);
+
+
+-- 간호사 환자 관계 테이블
+CREATE TABLE Patient_Nurse (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL, -- 관리받는 환자의 식별자입니다.
+    nurse_id INT NOT NULL, -- 담당 간호사의 내부 ID입니다.
+    relationship_start_date DATE, -- 관리 시작 날짜입니다.
+    relationship_end_date DATE, -- 관리 종료 날짜입니다.
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
+    FOREIGN KEY (nurse_id) REFERENCES Nurse(id) ON DELETE CASCADE
+);
+
+-- 다이콤 데이터베이스
+CREATE TABLE dicom_files (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_data LONGBLOB,
+    STUDYKEY BIGINT ,
+    STUDYINSUID VARCHAR(64) NOT NULL,
+    PATKEY VARCHAR(64),
+    ACCESSNUM VARCHAR(64),
+    STUDYDATE VARCHAR(16),
+    STUDYTIME VARCHAR(14),
+    STUDYID VARCHAR(64),
+    EXAMCODE VARCHAR(64),
+    STUDYDESC TEXT,
+    MODALITY VARCHAR(16),
+    BODYPART TEXT,
+    PATIENTKEY BIGINT,
+    PID VARCHAR(64),
+    PNAME VARCHAR(64),
+    PLASTNAME VARCHAR(64),
+    PFIRSTNAME VARCHAR(64),
+    PKNAME VARCHAR(64),
+    PENAME VARCHAR(64),
+    PSEX VARCHAR(16),
+    PBIRTHDATETIME VARCHAR(16),
+    PATAGE VARCHAR(16),
+    EXAMSTATUS BIGINT,
+    REPORTSTATUS BIGINT,
+    SERIESCNT BIGINT,
+    SERIESMOVIECNT BIGINT,
+    IMAGECNT BIGINT,
+    MOVIECNT BIGINT,
+    NONSERIESCOUNT BIGINT,
+    NONIMAGECOUNT BIGINT,
+    VERIFYFLAG BIGINT,
+    VERIFYDATETIME VARCHAR(14),
+    DEPT VARCHAR(64),
+    REFPHYSICIANNAME VARCHAR(64),
+    REQPHYSICIANNAME VARCHAR(64),
+    PERFPHYSICIANNAME VARCHAR(64),
+    OPERATORSNAME VARCHAR(64),
+    REFERTODRID VARCHAR(64),
+    REFERTODRNAME VARCHAR(64),
+    PATKIND CHAR(1),
+    WARD VARCHAR(64),
+    SICKNAME TEXT,
+    ADDEDINFO TEXT,
+    HISCOMMENTS TEXT,
+    HISADDEDINFO1 TEXT,
+    HISADDEDINFO2 TEXT,
+    HISADDEDINFO3 TEXT,
+    INSNAME VARCHAR(64),
+    STATIONNAME VARCHAR(64),
+    CONFIRMDATETIME VARCHAR(16),
+    READINGDATETIME VARCHAR(16),
+    TRANSCRIBEDDATETIME VARCHAR(16),
+    READTYPE BIGINT,
+    READCODE VARCHAR(64),
+    READCODEDESC TEXT,
+    READINGDR VARCHAR(64),
+    CONFIRMDR VARCHAR(64),
+    TRANSCRIPTIONIST VARCHAR(64),
+    READINGKEYWORD TEXT,
+    TEACHINGCASED BIGINT,
+    STEREOCOUNT BIGINT,
+    PROTOCOLNAME TEXT,
+    VIEWPOSITION TEXT,
+    LATERALITY TEXT,
+    REASON4STUDY TEXT,
+    COMMENTS TEXT,
+    STUDYTYPE VARCHAR(64),
+    ARCHSTATUS BIGINT,
+    COMPSTATUS BIGINT,
+    DELFLAG BIGINT,
+    BACKUPSTATUS BIGINT,
+    BACKUPLABEL VARCHAR(64),
+    BACKUPDATETIME VARCHAR(16),
+    MISMATCHFLAG BIGINT,
+    READINGPRIORITY BIGINT,
+    ABNORMALPATIENT BIGINT,
+    INSERTDATE VARCHAR(8),
+    INSERTTIME VARCHAR(8),
+    HOSPITALID BIGINT,
+    BURNCNT BIGINT,
+    BURNDATETIME VARCHAR(16),
+    VALIDATEFLAG BIGINT,
+    REQREADSTATUS BIGINT,
+    TBFLAG BIGINT,
+    MOVIEFLAG BIGINT,
+    OTHERSCPSENDSTATUS BIGINT,
+    STATIONFILMROOM VARCHAR(64),
+    RESERVED1 TEXT,
+    RESERVED2 TEXT,
+    RESERVED3 TEXT,
+    RESERVED4 TEXT,
+    RESERVED5 TEXT,
+    RESERVED6 TEXT,
+    RESERVED7 TEXT,
+    RESERVED8 TEXT,
+    RESERVED9 TEXT,
+    RESERVED10 TEXT,
+    AETITLE VARCHAR(64),
+    OPENSTATUS BIGINT,
+    DAP FLOAT,
+    FILESIZE BIGINT,
+    INSERTED VARCHAR(14),
+    UPDATED VARCHAR(14),
+    REMOTE_FLAG BIGINT,
+    AI_COMPANY VARCHAR(64),
+    AI_MODEL_NAME VARCHAR(64),
+    AI_UPDATED VARCHAR(14),
+    AI_SCORE FLOAT,
+    AI_PRIORITY BIGINT,
+    AI_NUMBER_OF_FINDINGS BIGINT,
+    AI_ABNORMAL_YN VARCHAR(1),
+    AI_FINDING VARCHAR(64),
+    AI_REPORT TEXT,
+    AI_VERSION VARCHAR(16),
+    AI_RESULT_CODE BIGINT,
+    ACCESS_NUM TEXT,
+    ADDED_INFO TEXT,
+    AE_TITLE TEXT,
+    BACKUP_DATE_TIME TEXT,
+    BODY_PART TEXT,
+    BURN_DATE_TIME TEXT,
+    CONFIRM_DATE_TIME TEXT,
+    CONFIRM_DR TEXT,
+    EXAM_CODE TEXT,
+    HIS_ADDED_INFO1 TEXT,
+    HIS_ADDED_INFO2 TEXT,
+    HIS_ADDED_INFO3 TEXT,
+    HIS_COMMENTS TEXT,
+    INS_NAME TEXT,
+    INSERT_DATE TEXT,
+    INSERT_TIME TEXT,
+    OPERATORS_NAME TEXT,
+    PAT_AGE TEXT,
+    PAT_KEY TEXT,
+    PBIRTH_DATE_TIME TEXT,
+    PERF_PHYSICIAN_NAME TEXT,
+    PFIRST_NAME TEXT,
+    PK_NAME TEXT,
+    PLAST_NAME TEXT,
+    PROTOCOL_NAME TEXT,
+    READ_CODE TEXT,
+    READ_CODE_DESC TEXT,
+    READING_DATE_TIME TEXT,
+    READING_DR TEXT,
+    READING_KEYWORD TEXT,
+    REASON_FOR_STUDY TEXT,
+    REF_PHYSICIAN_NAME TEXT,
+    REFER_TO_DR_NAME TEXT,
+    REFER_TO_DRID TEXT,
+    REQ_PHYSICIAN_NAME TEXT,
+    SICK_NAME TEXT,
+    STATION_FILM_ROOM TEXT,
+    STATION_NAME TEXT,
+    STUDY_DATE TEXT,
+    STUDY_DESC TEXT,
+    STUDY_ID TEXT,
+    STUDY_INS_UID TEXT,
+    STUDY_TIME TEXT,
+    STUDY_TYPE TEXT,
+    TRANSCRIBED_DATE_TIME TEXT,
+    VERIFY_DATE_TIME TEXT,
+    VIEW_POSITION TEXT,
+    ABNORMAL_PATIENT BIGINT,
+    ARCH_STATUS BIGINT,
+    BACKUP_STATUS BIGINT,
+    BURN_CNT BIGINT,
+    COMP_STATUS BIGINT,
+    DEL_FLAG BIGINT,
+    EXAM_STATUS BIGINT,
+    FILE_SIZE BIGINT,
+    HOSPITAL_ID BIGINT,
+    IMAGE_CNT BIGINT,
+    MISMATCH_FLAG BIGINT,
+    MOVIE_CNT BIGINT,
+    MOVIE_FLAG BIGINT,
+    NON_IMAGE_COUNT BIGINT,
+    NON_SERIES_COUNT BIGINT,
+    OPEN_STATUS BIGINT,
+    OTHER_SCP_SEND_STATUS BIGINT,
+    PAT_KIND CHAR(1),
+    PATIENT_KEY BIGINT,
+    READ_TYPE BIGINT,
+    READING_PRIORITY BIGINT,
+    REPORT_STATUS BIGINT,
+    REQ_READ_STATUS BIGINT,
+    SERIES_CNT BIGINT,
+    SERIES_MOVIE_CNT BIGINT,
+    STEREO_COUNT BIGINT,
+    TB_FLAG BIGINT,
+    TEACHING_CASED BIGINT,
+    VALIDATE_FLAG BIGINT,
+    VERIFY_FLAG BIGINT,
+    AIABNORMALYN TEXT,
+    AICOMPANY TEXT,
+    AIFINDING TEXT,
+    AIMODELNAME TEXT,
+    AINUMBEROFFINDINGS BIGINT,
+    AIPRIORITY BIGINT,
+    AIREPORT TEXT,
+    AIRESULTCODE BIGINT,
+    AISCORE FLOAT,
+    AIUPDATED TEXT,
+    AIVERSION TEXT,
+    REASONFORSTUDY TEXT,
+    REMOTEFLAG BIGINT,
+    TRANSCRIBEDDATE_TIME TEXT,
+    STORAGECOMPLETION VARCHAR(1)
+);
