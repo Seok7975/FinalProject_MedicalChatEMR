@@ -52,6 +52,29 @@ CREATE TABLE Nurse (
     active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
 );
 
+-- 진료 테이블
+CREATE TABLE MedicalRecord (
+ chart_num INT AUTO_INCREMENT PRIMARY KEY, -- 차트 번호, 프라이머리 키
+    patient_id INT NOT NULL, -- 환자 ID, 환자 테이블의 ID를 참조
+    doc_id INT NOT NULL, -- 진료 의사 ID, 의사 테이블의 ID를 참조
+    symptoms TEXT, -- 증상
+    blood_pressure VARCHAR(10), -- 혈압
+    temperature DECIMAL(4, 1), -- 체온
+    disease_code VARCHAR(10), -- 질병 코드
+    disease_name VARCHAR(255), -- 질병 명칭
+    surgery_status CHAR(1), -- 수술 여부 ('Y' 또는 'N')
+    progress TEXT, -- 경과
+    prescription_name VARCHAR(255), -- 처방의약품 명칭
+    dosage_per_time DECIMAL(5, 2), -- 1회 투여량
+    times_per_day INT, -- 1일 투여횟수
+    total_days INT, -- 총 투여 일수
+    usage_instructions TEXT, -- 용법
+    visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 진료 일자, 타임 스탬프
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE CASCADE
+);
+
+
 
 -- 환자 의사 간호사 테이블 (수간호사가 담당 의사, 간호사 배정)
 CREATE TABLE Patient_Assignment (
@@ -63,19 +86,6 @@ CREATE TABLE Patient_Assignment (
     FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
     FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE SET NULL,
     FOREIGN KEY (nurse_id) REFERENCES Nurse(id) ON DELETE SET NULL
-);
-
-
--- 진료 테이블
-CREATE TABLE Diagnosis (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    patient_id INT NOT NULL, -- 진료를 받은 환자의 식별자입니다.
-    doctor_id INT NOT NULL, -- 진료를 담당한 의사의 식별자입니다.
-    diagnosis_date DATE NOT NULL, -- 진료 날짜입니다.
-    diagnosis TEXT NOT NULL, -- 진단 내용입니다.
-    treatment_plan TEXT, -- 치료 계획입니다.
-    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE CASCADE
 );
 
 -- 의사 환자 관계 테이블
