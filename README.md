@@ -1,7 +1,7 @@
 # FinalProject_MedicalChatEMR [매디컬 챗 EMR]
 
 ## 1. 프로젝트 개요
-의료 정보 관리를 위한 EMR(Electronic Medical Record) 시스템 개발
+의료 정보 관리 및 진단을 위한 Chat EMR(Electronic Medical Record) 시스템 개발
 
 ## 2. 데이터 수집
 - API
@@ -52,7 +52,7 @@
 #### 진행 상황
 - **박홍석**: Spring Boot 학습, 수간호사 UI v1 완성, DB 구성
 - **임준혁**: Spring Boot 학습
-- **정민석**: 로그인/회원가입 페이지 구현 (주소 API 포함)
+- **정민석**: Spring Boot 학습, 로그인/회원가입 페이지 구현 (주소 API 포함)
 - **정현지**: Spring Boot 설정 및 학습, DB v4 업데이트, 병원장 기능 수정, UUID 로직 구현
 - **현지수**: Spring Boot 학습, 의사 UI 구현, 의사/관리자 기능 구축
 
@@ -63,9 +63,19 @@
 - **정현지**: 병원장 UUID 기능 및 SMTP API 기능 구축
 - **현지수**: 웹소켓 학습(메신저 기능), 관리자 UI 구현
 
+<!--
+### 4주차 ()예정 작업
+- **박홍석**: API 연동, REST 학습, 수간호사 UI 완성
+- **임준혁**: Spring Boot로 이미지 로딩 해결, 뷰어 기능 구현
+- **정민석**: 처방전(의약품 API) 연동 (REST 방식, 공공데이터 포털 사용)
+- **정현지**: 병원장 UUID 기능 및 SMTP API 기능 구축
+- **현지수**: 웹소켓 학습(메신저 기능), 관리자 UI 구현
+-->
+
+<!--
 ## 6. 진행 중인 작업
 - Cornerstone API를 이용한 의료 영상 Viewer 구현
-
+-->
 ---
 
 이 README는 프로젝트의 진행 상황에 따라 지속적으로 업데이트될 예정입니다.
