@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -7,6 +8,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medical Dashboard</title>
+<link
+	href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css'
+	rel='stylesheet' />
+<script
+	src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
 <style>
 html, body {
 	margin: 0;
@@ -14,11 +20,6 @@ html, body {
 	height: 100%;
 	overflow-x: hidden;
 	font-family: Arial, sans-serif;
-}
-
-body {
-	display: flex;
-	flex-direction: column;
 }
 
 body {
@@ -185,7 +186,7 @@ nav {
 	border-radius: 8px;
 	background-color: #fafafa;
 	overflow-y: auto;
-	max-height: 300px;
+	max-height: 430px;
 }
 
 .section h2 {
@@ -284,6 +285,31 @@ footer {
 	background-color: #ffffff;
 	border-bottom: none;
 }
+/* 달력 스타일링 */
+#calendar {
+	max-width: 220px;
+	height: 362px; /* 원하는 높이로 설정 */
+	font-size: 0.6em; /* 글자 크기 줄이기 */
+}
+
+.fc-header-toolbar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.fc-toolbar-chunk {
+	margin: 2px 0;
+}
+
+.fc-daygrid-day {
+	height: 1em;
+}
+
+.fc-scroller-harness {
+	overflow: auto;
+}
 </style>
 </head>
 
@@ -343,6 +369,7 @@ footer {
 					<li>환자 B</li>
 				</ul>
 			</div>
+			<div id='calendar'></div>
 		</section>
 		<section class="content">
 			<div class="section patient-info">
@@ -524,13 +551,39 @@ footer {
 				info.classList.remove('active');
 			});
 			document.getElementById(infoId).classList.add('active');
+			ㅣ
 
 			document.querySelectorAll('.tab').forEach(function(tab) {
 				tab.classList.remove('active');
 			});
 			document.getElementById(tabId).classList.add('active');
 		}
+		document.addEventListener('DOMContentLoaded', function() {
+			var calendarEl = document.getElementById('calendar');
+
+			var calendar = new FullCalendar.Calendar(calendarEl, {
+				initialView : 'dayGridMonth',
+				locale : 'ko',
+				headerToolbar : {
+					left : 'prev,next today',
+					center : 'title',
+					right : 'dayGridMonth,timeGridWeek,timeGridDay'
+				},
+				dateClick : function(info) {
+					alert('Date: ' + info.dateStr);
+				},
+				events : [ {
+					title : 'All Day Event',
+					start : '2023-08-01'
+				}, {
+					title : 'Long Event',
+					start : '2023-08-07',
+					end : '2023-08-10'
+				}, ]
+			});
+
+			calendar.render();
+		});
 	</script>
 </body>
-
 </html>
