@@ -8,13 +8,12 @@ CREATE TABLE Admin (
 -- 환자 테이블
 CREATE TABLE Patient (
     id INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
-    name VARCHAR(100), -- 환자의 이름입니다.
+    name VARCHAR(50), -- 환자의 이름입니다.
     security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
-    date_of_birth DATE, -- 생년월일입니다.
     gender CHAR(1), -- 성별 ('M' 또는 'F').
     address VARCHAR(255), -- 주소입니다.
     phone VARCHAR(20), -- 전화번호입니다.
-    email VARCHAR(320), -- 이메일 주소입니다.
+    email VARCHAR(50), -- 이메일 주소입니다.
     blood_type CHAR(2), -- 혈액형입니다.
     height INT, -- 키(센티미터)입니다.
     weight INT, -- 체중(킬로그램)입니다.
@@ -31,6 +30,7 @@ CREATE TABLE Doctor (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), --(초기에는 NULL)
+    address VARCHAR(255), -- 주소입니다.
     department_id VARCHAR(10), -- 소속 진료과입니다.
     specialty VARCHAR(100), -- 전문 분야입니다.
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
@@ -47,6 +47,7 @@ CREATE TABLE Nurse (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), --(초기에는 NULL)
+    address VARCHAR(255), -- 주소입니다.
     role CHAR(1) NOT NULL, -- 역할 ('N' - 일반 간호사, 'S' - 수간호사)
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
     active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
