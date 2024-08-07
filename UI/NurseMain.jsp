@@ -1,4 +1,5 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,403 +8,422 @@
 <title>전자 의료 기록 시스템</title>
 <style>
 html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow-x: hidden;
-    font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	overflow-x: hidden;
+	font-family: Arial, sans-serif;
 }
 
 body {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 header {
-    width: 100%;
-    background-color: #b8edb5;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	width: 100%;
+	background-color: #b8edb5;
+	padding: 10px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header {
-    background-color: #f0f0f0;
-    padding: 10px;
-    margin-bottom: 20px;
+	background-color: #f0f0f0;
+	padding: 10px;
+	margin-bottom: 20px;
 }
 
 .logo img {
-    left: 10px;
-    position: absolute;
-    width: 250px;
-    /* Adjust width as needed */
-    height: auto;
-    /* Maintain aspect ratio */
+	left: 10px;
+	position: absolute;
+	width: 250px;
+	/* Adjust width as needed */
+	height: auto;
+	/* Maintain aspect ratio */
 }
 
 nav {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 1;
 }
 
 .nav-btn {
-    margin: 0 5px;
-    padding: 5px 10px;
-    background-color: white;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s, border 0.3s;
+	margin: 0 5px;
+	padding: 5px 10px;
+	background-color: white;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.3s, border 0.3s;
 }
 
 .nav-btn:hover {
-    border: 1px solid #ccc;
+	border: 1px solid #ccc;
 }
 
 .logout-btn {
-    margin-bottom: -50px;
-    font-size: 12px;
-    cursor: pointer;
-    background-color: white;
-    border: 1px solid transparent;
-    border-radius: 3px;
+	margin-bottom: -50px;
+	font-size: 12px;
+	cursor: pointer;
+	background-color: white;
+	border: 1px solid transparent;
+	border-radius: 3px;
 }
 
 .logout-btn:hover {
-    background-color: #e2deded8;
+	background-color: #e2deded8;
 }
 
 .profile-info {
-    position: relative;
-    /* Make this the positioning context */
-    display: flex;
-    align-items: center;
-    margin-right: 30px;
+	position: relative;
+	/* Make this the positioning context */
+	display: flex;
+	align-items: center;
+	margin-right: 30px;
 }
 
 .status-indicator {
-    position: absolute;
-    bottom: 0;
-    right: 75px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background-color: #808080;
+	position: absolute;
+	bottom: 0;
+	right: 75px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background-color: #808080;
 }
 
 .profile-info img {
-    width: 60px;
-    height: 60px;
-    margin: 0 15px;
-    margin-left: 15px;
-    margin-right: 10px;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
+	width: 60px;
+	height: 60px;
+	margin: 0 15px;
+	margin-left: 15px;
+	margin-right: 10px;
+	border-radius: 50%;
+	object-fit: cover;
+	cursor: pointer;
 }
 
 .patient-search {
-    margin: 10px 0;
-    width: 90%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+	margin: 10px 0;
+	width: 90%;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
 }
 
 .dropdown-menu {
-    display: none;
-    width: 130px;
-    position: absolute;
-    background-color: white;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 100;
-    top: 65px;
-    right: 35px;
+	display: none;
+	width: 130px;
+	position: absolute;
+	background-color: white;
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+	z-index: 100;
+	top: 65px;
+	right: 35px;
 }
 
 .dropdown-menu a {
-    display: block;
-    padding: 8px 16px;
-    text-decoration: none;
-    color: black;
-    border-bottom: 1px solid #ddd;
+	display: block;
+	padding: 8px 16px;
+	text-decoration: none;
+	color: black;
+	border-bottom: 1px solid #ddd;
 }
 
 .dropdown-menu a:last-child {
-    border-bottom: none;
+	border-bottom: none;
 }
 
 .dropdown-menu a:hover {
-    background-color: #f4f4f4;
+	background-color: #f4f4f4;
 }
 
 .color-indicator {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 8px;
-    /* Space between color indicator and text */
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-right: 8px;
+	/* Space between color indicator and text */
 }
 
 .container {
-    display: flex;
-    flex: 1;
-    transition: all 0.4s ease;
+	display: flex;
+	flex: 1;
+	transition: all 0.4s ease;
 }
 
 .leftSidebar, .rightSidebar {
-    background-color: #e9e9e9;
-    width: 230px;
-    padding: 10px;
-    box-sizing: border-box;
-    overflow-y: auto;
+	background-color: #e9e9e9;
+	width: 230px;
+	padding: 10px;
+	box-sizing: border-box;
+	overflow-y: auto;
 }
 
 .rightSidebar {
-    transition: all 0.4s ease;
+	transition: all 0.4s ease;
 }
 
 .main {
-    flex: 2;
-    padding: 20px;
-    margin: 0 10px;
-    background-color: #f4f4f4;
-    overflow-y: auto;
-    box-sizing: border-box;
-    transition: all 0.4s ease;
+	flex: 2;
+	padding: 20px;
+	margin: 0 10px;
+	background-color: #f4f4f4;
+	overflow-y: auto;
+	box-sizing: border-box;
+	transition: all 0.4s ease;
 }
 
 .card {
-    background-color: #ffffff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    border-radius: 8px;
-    height: 100%;
+	background-color: #ffffff;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	padding: 10px;
+	border-radius: 8px;
+	height: 100%;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
+	width: 100%;
+	border-collapse: collapse;
 }
 
 .table-cell {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+	border: 1px solid #ddd;
+	padding: 8px;
+	text-align: left;
 }
 
 th {
-    background-color: #f4f4f4;
+	background-color: #f4f4f4;
 }
 
 .header h1 {
-    margin: 0;
-    font-size: 24px;
+	margin: 0;
+	font-size: 24px;
 }
 
 .section {
-    margin-bottom: 20px;
+	margin-bottom: 20px;
 }
 
 .section h2 {
-    margin-bottom: 10px;
-    font-size: 18px;
+	margin-bottom: 10px;
+	font-size: 18px;
 }
 
 .tabs {
-    display: flex;
+	display: flex;
 }
 
 .tab {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-    cursor: pointer;
-    background-color: #f0f0f0;
-    border-bottom: 2px solid transparent;
-    transition: background-color 0.4s, border-bottom 0.3s;
+	flex: 1;
+	text-align: center;
+	padding: 10px;
+	cursor: pointer;
+	background-color: #f0f0f0;
+	border-bottom: 2px solid transparent;
+	transition: background-color 0.4s, border-bottom 0.3s;
 }
 
 .tab.active {
-    background-color: #ffffff;
-    border-bottom: 2px solid #38a169;
+	background-color: #ffffff;
+	border-bottom: 2px solid #38a169;
 }
 
 .info {
-    display: none;
+	display: none;
 }
 
 .info.active {
-    display: block;
+	display: block;
 }
 
 .editable {
-    padding: 4px;
-    margin-top: 5px;
+	padding: 4px;
+	margin-top: 5px;
 }
 
 .editable input {
-    border: none;
-    outline: none;
-    /* Remove default focus outline */
-    width: 100%;
-    background: transparent;
-    font-size: 14px;
-    pointer-events: none;
-    /* Disable interaction */
-    cursor: default;
+	border: none;
+	outline: none;
+	/* Remove default focus outline */
+	width: 100%;
+	background: transparent;
+	font-size: 14px;
+	pointer-events: none;
+	/* Disable interaction */
+	cursor: default;
 }
 
 td.editing {
-    background-color: #fbf6c390;
+	background-color: #fbf6c390;
 }
 
 td.editing input {
-    background-color: transparent;
-    /* Keep input background transparent */
-    pointer-events: auto;
-    /* Enable interaction */
-    cursor: text;
-    transition: all 0.4s ease;
+	background-color: transparent;
+	/* Keep input background transparent */
+	pointer-events: auto;
+	/* Enable interaction */
+	cursor: text;
+	transition: all 0.4s ease;
 }
 
 .record:hover {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 .hidden {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    display: none;
+	width: 0;
+	padding: 0;
+	overflow: hidden;
+	display: none;
 }
 </style>
 </head>
 
 <body>
-    <header>
-        <div class="logo">
-            <img src="Img/Logo.png">
-        </div>
-        <nav>
-            <button id="messages-btn" class="nav-btn">Message</button>
-            <button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
-            <div class="profile-info">
-                <img id="profile-image" src="doctorProfile.png" alt="Profile Image">
-                <div class="status-indicator"></div>
-                <button id="logout-btn" class="logout-btn">Log Out</button>
-                <div class="dropdown-menu">
-                    <a href="#" class="status-link" onclick="setStatus('away', '#808080')"> 
-                        <span class="color-indicator" style="background-color: #808080;"></span>자리 비움
-                    </a> 
-                    <a href="#" class="status-link" onclick="setStatus('available', '#008000')"> 
-                        <span class="color-indicator" style="background-color: #008000;"></span>진료중
-                    </a> 
-                    <a href="#" class="status-link" onclick="setStatus('lunch', '#FFA500')"> 
-                        <span class="color-indicator" style="background-color: #FFA500;"></span>점심시간
-                    </a>
-                </div>
-            </div>
-        </nav>
-    </header>
+	<header>
+		<div class="logo">
+			<img src="Img/Logo.png">
+		</div>
+		<nav>
+			<button id="messages-btn" class="nav-btn">Message</button>
+			<button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
+			<div class="profile-info">
+				<img id="profile-image" src="doctorProfile.png" alt="Profile Image">
+				<div class="status-indicator"></div>
+				<button id="logout-btn" class="logout-btn">Log Out</button>
+				<div class="dropdown-menu">
+					<a href="#" class="status-link"
+						onclick="setStatus('away', '#808080')"> <span
+						class="color-indicator" style="background-color: #808080;"></span>자리
+						비움
+					</a> <a href="#" class="status-link"
+						onclick="setStatus('available', '#008000')"> <span
+						class="color-indicator" style="background-color: #008000;"></span>진료중
+					</a> <a href="#" class="status-link"
+						onclick="setStatus('lunch', '#FFA500')"> <span
+						class="color-indicator" style="background-color: #FFA500;"></span>점심시간
+					</a>
+				</div>
+			</div>
+		</nav>
+	</header>
 
-    <div class="container">
-        <div class="leftSidebar">
-            <div class="card">
-                <div class="tabs">
-                    <div id="tab-all-patients" class="tab active">전체 환자</div>
-                    <div id="tab-managed-patients" class="tab">관리 환자</div>
-                </div>
-                <input class="patient-search" type="text" placeholder="환자 검색" id="patientSearch">
-                <button id="refresh-list" style="width: 100%; padding: 10px; background-color: #38a169; color: white; border: none; border-radius: 4px;">새로고침</button>
-                <div id="all-patients-info" class="info active">
-                    <h2>전체 환자 목록</h2>
-                    <ul id="patientList"></ul>
-                </div>
-                <div id="managed-patients-info" class="info">
-                    <h2>관리 환자 목록</h2>
-                    <!-- 관리 환자 정보 -->
-                </div>
-            </div>
-        </div>
+	<div class="container">
+		<div class="leftSidebar">
+			<div class="card">
+				<div class="tabs">
+					<div id="tab-all-patients" class="tab active">전체 환자</div>
+					<div id="tab-managed-patients" class="tab">관리 환자</div>
+				</div>
+				<input class="patient-search" type="text" placeholder="환자 검색"
+					id="patientSearch">
+				<button id="refresh-list"
+					style="width: 100%; padding: 10px; background-color: #38a169; color: white; border: none; border-radius: 4px;">새로고침</button>
+				<div id="all-patients-info" class="info active">
+					<h2>전체 환자 목록</h2>
+					<ul id="patientList"></ul>
+				</div>
+				<div id="managed-patients-info" class="info">
+					<h2>관리 환자 목록</h2>
+					<!-- 관리 환자 정보 -->
+				</div>
+			</div>
+		</div>
 
-        <main class="main">
-            <section class="patient-details card">
-                <div class="header">
-                    <h1>환자 EHR</h1>
-                    <button id="edit-btn" class="nav-btn" style="margin-top: 10px;">수정</button>
-                    <button id="save-btn" class="nav-btn" style="margin-top: 10px; display: none;">저장</button>
-                </div>
-                <div class="section">
-                    <h2>기본 정보</h2>
-                    <table id="basic-info-table">
-                        <tr>
-                            <th class="table-cell">환자 ID</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.id" readonly></td>
-                            <th class="table-cell">이름</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.name" readonly></td>
-                            <th class="table-cell">주민번호</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.securityNum" readonly></td>
-                        </tr>
-                        <tr>
-                            <th class="table-cell">성별</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.gender" readonly></td>
-                            <th class="table-cell">키</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.height" readonly></td>
-                            <th class="table-cell">체중</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.weight" readonly></td>
-                        </tr>
-                        <tr>
-                            <th class="table-cell">혈액형</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.bloodType" readonly></td>
-                            <th class="table-cell">알레르기</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.allergies" readonly></td>
-                            <th class="table-cell">흡연 여부</th>
-                            <td class="editable table-cell"><input type="text" value="" name="patient.smokingStatus" readonly></td>
-                        </tr>
-                    </table>
-                </div>
+		<main class="main">
+			<section class="patient-details card">
+				<div class="header">
+					<h1>환자 EHR</h1>
+					<button id="edit-btn" class="nav-btn" style="margin-top: 10px;">수정</button>
+					<button id="save-btn" class="nav-btn"
+						style="margin-top: 10px; display: none;">저장</button>
+				</div>
+				<div class="section">
+					<h2>기본 정보</h2>
+					<table id="basic-info-table">
+						<tr>
+							<th class="table-cell">환자 ID</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.id" readonly></td>
+							<th class="table-cell">이름</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.name" readonly></td>
+							<th class="table-cell">주민번호</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.securityNum" readonly></td>
+						</tr>
+						<tr>
+							<th class="table-cell">성별</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.gender" readonly></td>
+							<th class="table-cell">키</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.height" readonly></td>
+							<th class="table-cell">체중</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.weight" readonly></td>
+						</tr>
+						<tr>
+							<th class="table-cell">혈액형</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.bloodType" readonly></td>
+							<th class="table-cell">알레르기</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.allergies" readonly></td>
+							<th class="table-cell">흡연 여부</th>
+							<td class="editable table-cell"><input type="text" value=""
+								name="patient.smokingStatus" readonly></td>
+						</tr>
+						<tr>
+							<th class="table-cell">주소</th>
+							<td class="editable table-cell" colspan="5"><input
+								type="text" value="" name="patient.address" readonly></td>
+						</tr>
+					</table>
+				</div>
 
-                <div class="section">
-                    <h2>진료 기록</h2>
-                    <table id="recordTable">
-                        <tr>
-                            <th class="table-cell">날짜</th>
-                            <th class="table-cell">진단</th>
-                            <th class="table-cell">처방</th>
-                            <th class="table-cell">담당의</th>
-                        </tr>
-                        <!-- 진료 기록 데이터가 여기에 추가됩니다 -->
-                    </table>
-                    <div id="record-details" class="section" style="display: none;">
-                        <h3>진료 정보</h3>
-                        <table id="details-table">
-                            <tr>
-                                <th class="table-cell">항목</th>
-                                <th class="table-cell">내용</th>
-                            </tr>
-                            <tr>
-                                <td class="table-cell">진료 내용</td>
-                                <td id="details-content" class="table-cell"></td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </main>
+				<div class="section">
+					<h2>진료 기록</h2>
+					<table id="recordTable">
+						<tr>
+							<th class="table-cell">날짜</th>
+							<th class="table-cell">진단</th>
+							<th class="table-cell">처방</th>
+							<th class="table-cell">담당의</th>
+						</tr>
+						<!-- 진료 기록 데이터가 여기에 추가됩니다 -->
+					</table>
+					<div id="record-details" class="section" style="display: none;">
+						<h3>진료 정보</h3>
+						<table id="details-table">
+							<tr>
+								<th class="table-cell">항목</th>
+								<th class="table-cell">내용</th>
+							</tr>
+							<tr>
+								<td class="table-cell">진료 내용</td>
+								<td id="details-content" class="table-cell"></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</section>
+		</main>
 
-        <div class="rightSidebar hidden">
-            <div class="card">
-                <p>메신저 기능</p>
-            </div>
-        </div>
-    </div>
+		<div class="rightSidebar hidden">
+			<div class="card">
+				<p>메신저 기능</p>
+			</div>
+		</div>
+	</div>
 
-    <script>
+	<script>
         // 프로필 이미지 클릭 시 드롭다운 토글
         document.getElementById('profile-image').addEventListener('click', function (event) {
             const dropdown = document.querySelector('.dropdown-menu');
@@ -521,7 +541,10 @@ td.editing input {
                     <th class="table-cell">흡연 여부</th>
                     <td class="editable table-cell"><input type="text" value="${patient.smokingStatus}" name="patient.smokingStatus" readonly></td>
                 </tr>
-            `;
+                <tr>
+                	<th class="table-cell">주소</th>
+                	<td class="editable table-cell" colspan="5"><input type="text" value="${patient.address}" name="patient.address" readonly></td>
+           		 </tr>`;
 
             document.getElementById('basic-info-table').innerHTML = basicInfoHtml;
 
@@ -566,7 +589,7 @@ td.editing input {
         // 편집 모드 활성화
         document.getElementById('edit-btn').addEventListener('click', function () {
             document.querySelectorAll('.editable').forEach(function (cell) {
-                if (cell.querySelector('input').name !== 'patient.id' && cell.querySelector('input').name !== 'patient.securityNum') {
+                if (cell.querySelector('input').name !== 'patient.id' && cell.querySelector('input').name !== 'patient.securityNum'  && cell.querySelector('input').name !== 'patient.address') {
                     cell.classList.add('editing');
                     cell.querySelector('input').removeAttribute('readonly');
                 }
