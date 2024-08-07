@@ -1,6 +1,3 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
-
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -40,13 +37,15 @@ header {
 	margin-bottom: 20px;
 }
 
+.logo {
+    display: flex;
+    justify-content: flex-start;
+    flex: 1;
+}
+
 .logo img {
-	left: 10px;
-	position: absolute;
-	width: 250px;
-	/* Adjust width as needed */
-	height: auto;
-	/* Maintain aspect ratio */
+    width: 15vw;
+    height: auto;
 }
 
 nav {
@@ -86,7 +85,6 @@ nav {
 
 .profile-info {
 	position: relative;
-	/* Make this the positioning context */
 	display: flex;
 	align-items: center;
 	margin-right: 30px;
@@ -146,7 +144,6 @@ nav {
 	height: 10px;
 	border-radius: 50%;
 	margin-right: 8px;
-	/* Space between color indicator and text */
 }
 
 .container {
@@ -249,18 +246,6 @@ nav {
 	text-align: left;
 }
 
-footer {
-	display: flex;
-	justify-content: space-between;
-	padding: 20px;
-	border-top: 1px solid #ddd;
-	background-color: #f8f8f8;
-}
-
-.footer-left, .footer-right {
-	width: 50%;
-}
-
 .appointment-list ul, .patient-list ul, .patient-management ul {
 	list-style: none;
 	padding: 0;
@@ -285,11 +270,23 @@ footer {
 	background-color: #ffffff;
 	border-bottom: none;
 }
-/* 달력 스타일링 */
+footer {
+	display: flex;
+	padding: 20px;
+	border-top: 1px solid #ddd;
+	background-color: #f8f8f8;
+}
+footer p{
+	text-align: center;
+}
+
 #calendar {
-	max-width: 220px;
-	height: 362px; /* 원하는 높이로 설정 */
-	font-size: 0.6em; /* 글자 크기 줄이기 */
+	max-width: 3000px;
+	height: 400px;
+	text-align: center;
+	font-size: 0.6em;
+	padding-left: 5px;
+	padding-right: 5px;
 }
 
 .fc-header-toolbar {
@@ -304,7 +301,7 @@ footer {
 }
 
 .fc-daygrid-day {
-	height: 1em;
+	height: 0.6em;
 }
 
 .fc-scroller-harness {
@@ -315,10 +312,10 @@ footer {
 
 <body>
 	<header>
-		<div class="logo">
-			<img src="Img/Logo.png" alt="Logo">
-		</div>
 		<nav>
+            <div class="logo">
+                <img src="Logo.png" alt="Logo">
+            </div>
 			<button id="messages-btn" class="nav-btn">Message</button>
 			<button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
 			<div class="profile-info">
@@ -326,16 +323,14 @@ footer {
 				<div class="status-indicator"></div>
 				<button id="logout-btn" class="logout-btn">Log Out</button>
 				<div class="dropdown-menu">
-					<a href="#" class="status-link"
-						onclick="setStatus('away', '#808080')"> <span
-						class="color-indicator" style="background-color: #808080;"></span>자리
-						비움
-					</a> <a href="#" class="status-link"
-						onclick="setStatus('available', '#008000')"> <span
-						class="color-indicator" style="background-color: #008000;"></span>진료중
-					</a> <a href="#" class="status-link"
-						onclick="setStatus('lunch', '#FFA500')"> <span
-						class="color-indicator" style="background-color: #FFA500;"></span>점심시간
+					<a href="#" class="status-link" onclick="setStatus('away', '#808080')">
+						<span class="color-indicator" style="background-color: #808080;"></span>자리 비움
+					</a>
+					<a href="#" class="status-link" onclick="setStatus('available', '#008000')">
+						<span class="color-indicator" style="background-color: #008000;"></span>진료중
+					</a>
+					<a href="#" class="status-link" onclick="setStatus('lunch', '#FFA500')">
+						<span class="color-indicator" style="background-color: #FFA500;"></span>점심시간
 					</a>
 				</div>
 			</div>
@@ -474,21 +469,7 @@ footer {
 		</section>
 	</main>
 	<footer>
-		<div class="footer-left">
-			<div class="upcoming-events">
-				<h2>일정</h2>
-				<p>3개월 일정</p>
-			</div>
-		</div>
-		<div class="footer-right">
-			<div class="appointment-list">
-				<h2>예약 대기자</h2>
-				<ul>
-					<li>환자 C</li>
-					<li>환자 D</li>
-				</ul>
-			</div>
-		</div>
+		<p>@2조</p>
 	</footer>
 	<script>
 		function showAllPatients() {
@@ -551,7 +532,6 @@ footer {
 				info.classList.remove('active');
 			});
 			document.getElementById(infoId).classList.add('active');
-			ㅣ
 
 			document.querySelectorAll('.tab').forEach(function(tab) {
 				tab.classList.remove('active');
@@ -569,9 +549,9 @@ footer {
 					center : 'title',
 					right : 'dayGridMonth,timeGridWeek,timeGridDay'
 				},
-				dateClick : function(info) {
-					alert('Date: ' + info.dateStr);
-				},
+				dayCellContent: function(e) {
+                    e.dayNumberText = e.dayNumberText.replace('일', ''); // '일' 문자 제거
+                },
 				events : [ {
 					title : 'All Day Event',
 					start : '2023-08-01'
