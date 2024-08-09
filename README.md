@@ -9,9 +9,9 @@
 - 텍스트 데이터
 
 ## 3. 기술 스택
-- REST API를 통한 HTTP 요청으로 CRUD 수행
+- REST API를 통한 HTTP 요청으로 CRUD 수행 및 Ai진단
 - Spring MVC 구조
-- MyBatis를 사용한 데이터베이스 연동
+- JPA를 사용한 데이터베이스 연동
 - Spring Boot (STS4, IDEA)
 - Cornerstone API (의료 영상 뷰어 구현)
 
