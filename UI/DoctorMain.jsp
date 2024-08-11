@@ -1,3 +1,6 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -38,14 +41,14 @@ header {
 }
 
 .logo {
-    display: flex;
-    justify-content: flex-start;
-    flex: 1;
+	display: flex;
+	justify-content: flex-start;
+	flex: 1;
 }
 
 .logo img {
-    width: 15vw;
-    height: auto;
+	width: 15vw;
+	height: auto;
 }
 
 nav {
@@ -270,13 +273,15 @@ nav {
 	background-color: #ffffff;
 	border-bottom: none;
 }
+
 footer {
 	display: flex;
 	padding: 20px;
 	border-top: 1px solid #ddd;
 	background-color: #f8f8f8;
 }
-footer p{
+
+footer p {
 	text-align: center;
 }
 
@@ -307,15 +312,18 @@ footer p{
 .fc-scroller-harness {
 	overflow: auto;
 }
+.medicine-result{
+	margin-bottom: 10px;
+}
 </style>
 </head>
 
 <body>
 	<header>
 		<nav>
-            <div class="logo">
-                <img src="Logo.png" alt="Logo">
-            </div>
+			<div class="logo">
+				<img src="/Img/Logo.png" alt="Logo">
+			</div>
 			<button id="messages-btn" class="nav-btn">Message</button>
 			<button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
 			<div class="profile-info">
@@ -323,14 +331,16 @@ footer p{
 				<div class="status-indicator"></div>
 				<button id="logout-btn" class="logout-btn">Log Out</button>
 				<div class="dropdown-menu">
-					<a href="#" class="status-link" onclick="setStatus('away', '#808080')">
-						<span class="color-indicator" style="background-color: #808080;"></span>자리 비움
-					</a>
-					<a href="#" class="status-link" onclick="setStatus('available', '#008000')">
-						<span class="color-indicator" style="background-color: #008000;"></span>진료중
-					</a>
-					<a href="#" class="status-link" onclick="setStatus('lunch', '#FFA500')">
-						<span class="color-indicator" style="background-color: #FFA500;"></span>점심시간
+					<a href="#" class="status-link"
+						onclick="setStatus('away', '#808080')"> <span
+						class="color-indicator" style="background-color: #808080;"></span>자리
+						비움
+					</a> <a href="#" class="status-link"
+						onclick="setStatus('available', '#008000')"> <span
+						class="color-indicator" style="background-color: #008000;"></span>진료중
+					</a> <a href="#" class="status-link"
+						onclick="setStatus('lunch', '#FFA500')"> <span
+						class="color-indicator" style="background-color: #FFA500;"></span>점심시간
 					</a>
 				</div>
 			</div>
@@ -425,41 +435,62 @@ footer p{
 				<h2>상병</h2>
 				<p>상병 정보가 여기에 표시됩니다.</p>
 			</div>
-			<div class="section search">
+			
+			<!--약품 검색 api-->
+		<!-- 	<div class="section search">
 				<h2>약품 검색</h2>
-				<input type="text" placeholder="약품명">
-				<button>검색</button>
+				<input type="text" id="medicine-name" placeholder="약품명"
+					oninput="">
+				<div id="search-results"
+					style="max-height: 350px; overflow-y: scroll;">
+					검색 결과가 여기에 추가됩니다
+				</div>
 			</div>
 			<div class="section prescriptions" style="grid-column: span 2;">
-				<h2>처방</h2>
-				<table class="table">
+				<h2>약품 목록</h2>
+				<table class="table" id="prescriptions">
 					<thead>
 						<tr>
-							<th>처방의약품 명칭</th>
-							<th>1회 투여량</th>
-							<th>1회 투여횟수</th>
-							<th>총 투여 일수</th>
-							<th>용법</th>
+							<th>약품코드</th>
+							<th>약품명(한글)</th>
+							<th>사용법th>
 						</tr>
 					</thead>
 					<tbody>
+						처방 리스트가 여기에 추가
+					</tbody>
+				</table>
+			</div> -->
+			
+			<!--약물 검색 api-->
+			<div class="section search">
+				<h2>약물 검색</h2>
+				<input type="text" id="medicine-name" placeholder="약물명"
+					oninput="searchDrug()">
+				<div id="search-results"
+					style="max-height: 350px; overflow-y: scroll;">
+					<!-- 검색 결과가 여기에 추가됩니다 -->
+				</div>
+			</div>
+			<div class="section prescriptions" style="grid-column: span 2;">
+				<h2>약물 목록</h2>
+				<table class="table" id="prescriptions">
+					<thead>
 						<tr>
-							<td>약물 A</td>
-							<td>100mg</td>
-							<td>1회</td>
-							<td>7일</td>
-							<td>하루 3번 식후 30분</td>
+							<th>성분코드</th>
+							<th>성분명(한글)</th>
+							<th>제형명</th>
+							<th>투여경로</th>
+							<th>투여 단위</th>
+							<th>1일 최대 투여량</th>
 						</tr>
-						<tr>
-							<td>약물 B</td>
-							<td>5mg</td>
-							<td>2회</td>
-							<td>7일</td>
-							<td>하루 2번 아침, 저녁</td>
-						</tr>
+					</thead>
+					<tbody>
+						<!-- 처방 리스트가 여기에 추가 -->
 					</tbody>
 				</table>
 			</div>
+
 			<div class="section view" style="grid-row: span 2;">
 				<div>이미지뷰</div>
 				<div>이미지뷰</div>
@@ -468,10 +499,89 @@ footer p{
 			</div>
 		</section>
 	</main>
-	<footer>
-		<p>@2조</p>
-	</footer>
 	<script>
+	
+	/*처방 - open api 사용*/
+function searchDrug() {
+    const medicineName = document.getElementById('medicine-name').value.trim();
+    const resultsDiv = document.getElementById('search-results');
+
+    if (medicineName.length === 0) { 
+        resultsDiv.innerHTML = '<p>검색어를 입력해주세요.</p>';
+        return;
+    }
+
+    const encodedName = encodeURIComponent(medicineName);
+    fetch('/api/prescriptions/search?query=' + encodedName, {
+        headers: {
+            'Accept': 'application/xml',
+        }
+    })
+    .then(response => response.text())
+    .then(str => {
+        // XML 데이터를 문자열로 출력
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(str, "application/xml");
+
+        // 올바른 태그 이름으로 데이터 파싱
+        const items = xmlDoc.getElementsByTagName('item');
+
+        if (items.length === 0) {
+            resultsDiv.innerHTML = '<p>검색된 약품이 없습니다.</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = '';  // 기존 내용을 지우고 새로 추가
+
+        for (let i = 0; i < items.length; i++) {
+            const medicineDiv = document.createElement('div');
+            medicineDiv.classList.add('medicine-result');
+
+            // XML 태그 이름을 정확하게 사용하여 데이터를 읽어옴
+            const cpntCd = items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음';
+            const ingdNameKor = items[i].getElementsByTagName('drugCpntKorNm')[0]?.textContent || '정보 없음';
+
+            // 텍스트가 올바르게 설정되도록 수정
+            medicineDiv.textContent = ingdNameKor;
+
+            const medicineData = {
+                cpntCd: cpntCd,
+                ingdNameKor: ingdNameKor,
+                fomlNm: items[i].getElementsByTagName('fomlNm')[0]?.textContent || '정보 없음',
+                dosageRouteCode: items[i].getElementsByTagName('dosageRouteCode')[0]?.textContent || '정보 없음',
+                dayMaxDosgQyUnit: items[i].getElementsByTagName('dayMaxDosgQyUnit')[0]?.textContent || '정보 없음',
+                dayMaxDosgQy: items[i].getElementsByTagName('dayMaxDosgQy')[0]?.textContent || '정보 없음'
+            };
+
+            // 클릭하면 처방에 추가
+            medicineDiv.onclick = () => addPrescription(medicineData);
+
+            resultsDiv.appendChild(medicineDiv);
+        }
+    })
+    .catch(error => {
+        resultsDiv.innerHTML = '<p>약품 데이터를 가져오는 중 오류가 발생했습니다.</p>';
+    });
+}
+
+function addPrescription(medicineData) {
+    const prescriptionsTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
+
+    const newRow = prescriptionsTable.insertRow();
+
+    newRow.insertCell(0).textContent = medicineData.cpntCd || '정보 없음';
+    newRow.insertCell(1).textContent = medicineData.ingdNameKor || '정보 없음';
+    newRow.insertCell(2).textContent = medicineData.fomlNm || '정보 없음';
+    newRow.insertCell(3).textContent = medicineData.dosageRouteCode || '정보 없음';
+    newRow.insertCell(4).textContent = medicineData.dayMaxDosgQyUnit || '정보 없음';
+    newRow.insertCell(5).textContent = medicineData.dayMaxDosgQy || '정보 없음';
+}
+
+
+
+	
+
+/*전체 환자 관리 환자 */
 		function showAllPatients() {
 			document.getElementById('tab-all-patients').classList.add('active');
 			document.getElementById('tab-managed-patients').classList
@@ -549,9 +659,9 @@ footer p{
 					center : 'title',
 					right : 'dayGridMonth,timeGridWeek,timeGridDay'
 				},
-				dayCellContent: function(e) {
-                    e.dayNumberText = e.dayNumberText.replace('일', ''); // '일' 문자 제거
-                },
+				dayCellContent : function(e) {
+					e.dayNumberText = e.dayNumberText.replace('일', ''); // '일' 문자 제거
+				},
 				events : [ {
 					title : 'All Day Event',
 					start : '2023-08-01'
@@ -561,7 +671,6 @@ footer p{
 					end : '2023-08-10'
 				}, ]
 			});
-
 			calendar.render();
 		});
 	</script>
