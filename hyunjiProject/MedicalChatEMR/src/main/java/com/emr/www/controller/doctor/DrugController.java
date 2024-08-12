@@ -18,7 +18,7 @@ import com.emr.www.service.doctor.DrugService;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 @RestController //open api 서버에서 데이터를 가져오기
-@RequestMapping("/api/prescriptions")
+@RequestMapping("/api/drugs")
 public class DrugController {
 
 	 @Autowired
