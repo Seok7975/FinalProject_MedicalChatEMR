@@ -170,7 +170,8 @@ nav {
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	display: grid;
 	grid-template-areas: "patient-info symptoms view" "history status view"
-		"diagnosis diagnosis diagnosis" "search prescriptions prescriptions";
+		"diagnosis diagnosis diagnosis" "search prescriptions medicine"
+		"search prescriptions drug" ;
 	grid-gap: 20px;
 	grid-template-columns: 1fr 1fr 2fr;
 	grid-template-rows: auto auto auto 1fr;
@@ -181,12 +182,11 @@ nav {
 }
 
 .section {
-	padding: 10px;
+	padding: 15px;
 	border: 1px solid #ddd;
 	border-radius: 8px;
 	background-color: #fafafa;
 	overflow-y: auto;
-	max-height: 430px;
 }
 
 .section h2 {
@@ -227,15 +227,6 @@ nav {
 .diagnosis {
 	grid-area: diagnosis;
 	grid-column: span 3;
-}
-
-.search {
-	grid-area: search;
-}
-
-.prescriptions {
-	grid-area: prescriptions;
-	grid-column: span 2;
 }
 
 .table {
@@ -312,8 +303,9 @@ footer p {
 .fc-scroller-harness {
 	overflow: auto;
 }
-.medicine-result{
+.medicine-result, .drug-result{
 	margin-bottom: 10px;
+	cursor: pointer;
 }
 </style>
 </head>
@@ -431,50 +423,55 @@ footer p {
 				<p>c/c ankle pain</p>
 				<p>9/30 부터 발목통이 시작</p>
 			</div>
+			<div class="section view" style="grid-row: span 2;">
+				<div>이미지뷰</div>
+				<div>이미지뷰</div>
+				<div>이미지뷰</div>
+				<div>이미지뷰</div>
+			</div>
 			<div class="section diagnosis" style="grid-column: span 3;">
 				<h2>상병</h2>
 				<p>상병 정보가 여기에 표시됩니다.</p>
 			</div>
 			
-			<!--약품 검색 api-->
-		<!-- 	<div class="section search">
+			<!-- 약품 검색 api -->
+			<div class="section search medicine">
 				<h2>약품 검색</h2>
-				<input type="text" id="medicine-name" placeholder="약품명"
-					oninput="">
-				<div id="search-results"
-					style="max-height: 350px; overflow-y: scroll;">
-					검색 결과가 여기에 추가됩니다
+				<input type="text" id="medicine-name" placeholder="약품명">
+				<div id="medicine-results"
+					style="max-height: 350px;">
+					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
 			</div>
-			<div class="section prescriptions" style="grid-column: span 2;">
-				<h2>약품 목록</h2>
+			<div class="section prescriptions medicine" style="grid-column: span 2;">
+				<h2>처방 목록</h2>
 				<table class="table" id="prescriptions">
 					<thead>
 						<tr>
 							<th>약품코드</th>
 							<th>약품명(한글)</th>
-							<th>사용법th>
+							<th>사용법<th>
 						</tr>
 					</thead>
 					<tbody>
-						처방 리스트가 여기에 추가
+						<!-- 처방 리스트가 여기에 추가 -->
 					</tbody>
 				</table>
-			</div> -->
+			</div> 
 			
 			<!--약물 검색 api-->
-			<div class="section search">
+			<div class="section search drug">
 				<h2>약물 검색</h2>
-				<input type="text" id="medicine-name" placeholder="약물명"
+				<input type="text" id="drug-name" placeholder="약물명"
 					oninput="searchDrug()">
-				<div id="search-results"
-					style="max-height: 350px; overflow-y: scroll;">
+				<div id="drug-results"
+					style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
 			</div>
-			<div class="section prescriptions" style="grid-column: span 2;">
+			<div class="section prescriptions drug" style="grid-column: span 2;">
 				<h2>약물 목록</h2>
-				<table class="table" id="prescriptions">
+				<table class="table" id="drugPrescriptions">
 					<thead>
 						<tr>
 							<th>성분코드</th>
@@ -490,28 +487,16 @@ footer p {
 					</tbody>
 				</table>
 			</div>
-
-			<div class="section view" style="grid-row: span 2;">
-				<div>이미지뷰</div>
-				<div>이미지뷰</div>
-				<div>이미지뷰</div>
-				<div>이미지뷰</div>
-			</div>
 		</section>
 	</main>
 	<script>
 	
-	/*처방 - open api 사용*/
+	/*처방 - open api 사용 >> 약물*/
 function searchDrug() {
-    const medicineName = document.getElementById('medicine-name').value.trim();
-    const resultsDiv = document.getElementById('search-results');
+    const drugName = document.getElementById('drug-name').value.trim();
+    const resultsDiv = document.getElementById('drug-results');
 
-    if (medicineName.length === 0) { 
-        resultsDiv.innerHTML = '<p>검색어를 입력해주세요.</p>';
-        return;
-    }
-
-    const encodedName = encodeURIComponent(medicineName);
+    const encodedName = encodeURIComponent(drugName);
     fetch('/api/prescriptions/search?query=' + encodedName, {
         headers: {
             'Accept': 'application/xml',
@@ -534,17 +519,17 @@ function searchDrug() {
         resultsDiv.innerHTML = '';  // 기존 내용을 지우고 새로 추가
 
         for (let i = 0; i < items.length; i++) {
-            const medicineDiv = document.createElement('div');
-            medicineDiv.classList.add('medicine-result');
+            const drugDiv = document.createElement('div');
+            drugDiv.classList.add('drug-result');
 
             // XML 태그 이름을 정확하게 사용하여 데이터를 읽어옴
             const cpntCd = items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음';
             const ingdNameKor = items[i].getElementsByTagName('drugCpntKorNm')[0]?.textContent || '정보 없음';
 
             // 텍스트가 올바르게 설정되도록 수정
-            medicineDiv.textContent = ingdNameKor;
+            drugDiv.textContent = ingdNameKor;
 
-            const medicineData = {
+            const drugData = {
                 cpntCd: cpntCd,
                 ingdNameKor: ingdNameKor,
                 fomlNm: items[i].getElementsByTagName('fomlNm')[0]?.textContent || '정보 없음',
@@ -554,9 +539,9 @@ function searchDrug() {
             };
 
             // 클릭하면 처방에 추가
-            medicineDiv.onclick = () => addPrescription(medicineData);
+            drugDiv.onclick = () => addPrescription(drugData);
 
-            resultsDiv.appendChild(medicineDiv);
+            resultsDiv.appendChild(drugDiv);
         }
     })
     .catch(error => {
@@ -565,9 +550,9 @@ function searchDrug() {
 }
 
 function addPrescription(medicineData) {
-    const prescriptionsTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
+    const drugPrescriptionTable = document.getElementById('drugPrescriptions').getElementsByTagName('tbody')[0];
 
-    const newRow = prescriptionsTable.insertRow();
+    const newRow = drugPrescriptionTable.insertRow();
 
     newRow.insertCell(0).textContent = medicineData.cpntCd || '정보 없음';
     newRow.insertCell(1).textContent = medicineData.ingdNameKor || '정보 없음';
