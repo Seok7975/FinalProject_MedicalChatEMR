@@ -18,7 +18,7 @@ html, body {
 	margin: 0;
 	padding: 0;
 	height: 100%;
-	overflow-x: hidden;
+	overflow-x: auto;
 	font-family: Arial, sans-serif;
 }
 
@@ -171,7 +171,7 @@ nav {
 	display: grid;
 	grid-template-areas: "patient-info symptoms view" "history status view"
 		"diagnosis diagnosis diagnosis" "search prescriptions medicine"
-		"search prescriptions drug" ;
+		"search prescriptions drug";
 	grid-gap: 20px;
 	grid-template-columns: 1fr 1fr 2fr;
 	grid-template-rows: auto auto auto 1fr;
@@ -209,7 +209,7 @@ nav {
 	grid-area: view;
 	display: flex;
 	flex-wrap: wrap;
-	height: 100%;
+	height: auto;
 	gap: 10px;
 }
 
@@ -303,9 +303,21 @@ footer p {
 .fc-scroller-harness {
 	overflow: auto;
 }
-.medicine-result, .drug-result{
+
+.medicine-result, .drug-result {
 	margin-bottom: 10px;
 	cursor: pointer;
+}
+
+.search, .search2 {
+	max-height: 200px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.prescriptions, .prescriptions2 {
+	overflow-y: auto;
+	overflow-x: auto;
 }
 </style>
 </head>
@@ -433,39 +445,39 @@ footer p {
 				<h2>상병</h2>
 				<p>상병 정보가 여기에 표시됩니다.</p>
 			</div>
-			
+
 			<!-- 약품 검색 api -->
 			<div class="section search medicine">
 				<h2>약품 검색</h2>
 				<input type="text" id="medicine-name" placeholder="약품명">
-				<div id="medicine-results"
-					style="max-height: 350px;">
+				<div id="medicine-results" style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
 			</div>
-			<div class="section prescriptions medicine" style="grid-column: span 2;">
+			<div class="section prescriptions medicine"
+				style="grid-column: span 2;">
 				<h2>처방</h2>
 				<table class="table" id="prescriptions">
 					<thead>
 						<tr>
 							<th>약품코드</th>
 							<th>약품명(한글)</th>
-							<th>사용법<th>
+							<th>사용법
+							<th>
 						</tr>
 					</thead>
 					<tbody>
 						<!-- 처방 리스트가 여기에 추가 -->
 					</tbody>
 				</table>
-			</div> 
-			
+			</div>
+
 			<!--약물 검색 api-->
 			<div class="section search drug">
 				<h2>약물 검색</h2>
 				<input type="text" id="drug-name" placeholder="약물명"
 					oninput="searchDrug()">
-				<div id="drug-results"
-					style="max-height: 350px;">
+				<div id="drug-results" style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
 			</div>
