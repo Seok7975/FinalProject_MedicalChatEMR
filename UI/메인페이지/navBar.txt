@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전자 의료 기록 시스템</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+            /* 가로 스크롤 방지 */
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            width: 100%;
+            background-color: #b8edb5;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+
+        .logo img {
+            left: 10px;
+            position: absolute;
+            width: 250px;
+            /* Adjust width as needed */
+            height: auto;
+            /* Maintain aspect ratio */
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex: 1;
+        }
+
+        .nav-btn {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: white;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s, border 0.3s;
+        }
+        
+        .nav-btn:hover {
+            border: 1px solid #ccc;
+        }
+        
+        .logout-btn{
+            margin-bottom: -50px;
+            font-size:  12px;
+            cursor: pointer;
+            background-color: white;
+            border: 1px solid transparent;
+            border-radius: 3px;
+        }
+
+        .logout-btn:hover{
+            background-color: #e2deded8;
+        }
+
+
+        .profile-info {
+            position: relative;
+            /* Make this the positioning context */
+            display: flex;
+            align-items: center;
+            margin-right: 30px;
+        }
+
+        .status-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 75px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #808080;
+        }
+
+        .profile-info img {
+            width: 60px;
+            height: 60px;
+            margin: 0 15px;
+            margin-left: 15px;
+            margin-right: 10px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+
+        .patient-search {
+            margin: 10px 0;
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            width: 130px;
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            top: 65px;
+            right: 35px;
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 16px;
+            text-decoration: none;
+            color: black;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f4f4f4;
+        }
+ </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <img src="Logo.png">
+        </div>
+        <nav>
+            <button id="messages-btn" class="nav-btn">Message</button>
+            <button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
+            <div class="profile-info">
+                <img id="profile-image" src="doctorProfile.png" alt="Profile Image">
+                <div class="status-indicator"></div>
+                <button id="logout-btn" class="logout-btn">Log Out</button>
+                <div class="dropdown-menu">
+                    <a href="#" class="status-link" onclick="setStatus('away', '#808080')"> <span
+                            class="color-indicator" style="background-color: #808080;"></span>자리
+                        비움
+                    </a> <a href="#" class="status-link" onclick="setStatus('available', '#008000')"> <span
+                            class="color-indicator" style="background-color: #008000;"></span>진료중
+                    </a> <a href="#" class="status-link" onclick="setStatus('lunch', '#FFA500')"> <span
+                            class="color-indicator" style="background-color: #FFA500;"></span>점심시간
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+  <script>
+        document.getElementById('profile-image').addEventListener('click', function (event) {
+            var dropdown = document.querySelector('.dropdown-menu');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            event.stopPropagation(); // 이벤트 버블링 방지
+        });
+
+        // 클릭 이외의 부분을 클릭했을 때 메뉴가 사라지도록 처리
+        document.addEventListener('click', function (event) {
+            var dropdown = document.querySelector('.dropdown-menu');
+            if (!event.target.matches('#profile-image') && !dropdown.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        function setStatus(status, color) {
+            document.querySelector('.status-indicator').style.backgroundColor = color;
+        }
+          </script>
+</body>
+
+</html>
