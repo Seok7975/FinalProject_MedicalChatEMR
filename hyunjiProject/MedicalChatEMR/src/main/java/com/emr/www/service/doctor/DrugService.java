@@ -24,124 +24,163 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import com.emr.www.entity.doctor.DrugEntity;
 import com.emr.www.entity.doctor.dto.DrugDTO;
 import com.emr.www.repository.doctor.DrugRepository;
 
 @Service
 public class DrugService {
 
-    private final DrugRepository prescriptionRepository;
+	private final DrugRepository drugRepository;
 
-    @Value("${api.key}")
-    private String apiKey;
-    
-    @Value("${api.drug.url}")
-    private String apiBaseUrl;
+	@Value("${api.key}")
+	private String apiKey;
 
-    @Autowired
-    public DrugService(DrugRepository prescriptionRepository) {
-        this.prescriptionRepository = prescriptionRepository;
-    }
+	@Value("${api.drug.url}")
+	private String apiBaseUrl;
 
-    public String callApiDirectly(String query, int numOfRows, int pageNo) {
-        StringBuilder result = new StringBuilder();
-        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
-        String apiUrl = String.format("%s?serviceKey=%s&numOfRows=%d&pageNo=%d&type=%s&DRUG_CPNT_KOR_NM=%s",
-                apiBaseUrl,
-                apiKey,
-                numOfRows, // numOfRows
-                pageNo, // pageNo
-                "xml", // type
-                encodedQuery);
-        try {
-            URL url = new URL(apiUrl);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    result.append(line).append("\n");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error during API call: " + e.getMessage());
-        }
-        return result.toString();
-    }
+	@Autowired
+	public DrugService(DrugRepository drugRepository) {
+		this.drugRepository = drugRepository;
+	}
 
-    public List<DrugDTO> searchPrescriptions(String query) {
-        Set<String> seenDrugNames = new HashSet<>();  // 중복을 확인하기 위한 Set
-        List<DrugDTO> uniquePrescriptions = new ArrayList<>();
-        int pageNo = 1;
-        int numOfRows = 100; // 최대 크기로 설정
-        boolean morePages = true;
+	//약물 api 호출 메서드
+	private String callDrugDirectly(String query, int numOfRows, int pageNo) {
+		StringBuilder result = new StringBuilder();
+		String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
+		String apiUrl = String.format("%s?serviceKey=%s&numOfRows=%d&pageNo=%d&type=%s&DRUG_CPNT_KOR_NM=%s", apiBaseUrl, apiKey, numOfRows, // numOfRows
+				pageNo, // pageNo
+				"xml", // type
+				encodedQuery);
+		try {
+			URL url = new URL(apiUrl);
+			HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
+			urlConnection.setRequestMethod("GET");
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"))) {
+				String line;
+				while ((line = br.readLine()) != null) {
+					result.append(line).append("\n");
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.err.println("Error during API call: " + e.getMessage());
+		}
+		return result.toString();
+	}
 
-        while (morePages) {
-            String rawXmlResponse = callApiDirectly(query, numOfRows, pageNo);
-            List<DrugDTO> prescriptions = parseXmlToPrescriptionList(rawXmlResponse);
-            if (prescriptions.isEmpty()) {
-                morePages = false;
-            } else {
-                for (DrugDTO prescription : prescriptions) {
-                    if (seenDrugNames.add(prescription.getDrugCpntKorNm())) {  // 새로운 약품명일 경우에만 추가
-                        uniquePrescriptions.add(prescription);
-                    }
-                }
-                pageNo++;
-            }
-        }
-        
-        return uniquePrescriptions;
-    }
+	//검색된 약물명을 기준으로 데이터 가져오기
+	public List<DrugDTO> searchDrugs(String query) {
+		Set<String> seenDrugNames = new HashSet<>(); // 중복을 확인하기 위한 Set
+		List<DrugDTO> uniqueDrugs = new ArrayList<>();
+		int pageNo = 1;
+		int numOfRows = 100; // 최대 크기로 설정
+		boolean morePages = true;
 
-    private List<DrugDTO> parseXmlToPrescriptionList(String rawXmlResponse) {
-        List<DrugDTO> prescriptionList = new ArrayList<>();
+		while (morePages) {
+			String rawXmlResponse = callDrugDirectly(query, numOfRows, pageNo);
+			List<DrugDTO> drugs = parseXmlToDrugList(rawXmlResponse);
+			if (drugs.isEmpty()) {
+				morePages = false;
+			} else {
+				for (DrugDTO drug : drugs) {
+					if (seenDrugNames.add(drug.getDrugCpntKorNm())) { // 새로운 약품명일 경우에만 추가
+						uniqueDrugs.add(drug);
+					}
+				}
+				pageNo++;
+			}
+		}
 
-        if (rawXmlResponse == null || rawXmlResponse.trim().isEmpty()) {
-            return prescriptionList;
-        }
+		return uniqueDrugs;
+	}
 
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new InputSource(new StringReader(rawXmlResponse)));
+	// XML 응답을 DTO 목록으로 변환
+	private List<DrugDTO> parseXmlToDrugList(String rawXmlResponse) {
+		List<DrugDTO> prescriptionList = new ArrayList<>();
 
-            NodeList itemListNodes = document.getElementsByTagName("item");
+		if (rawXmlResponse == null || rawXmlResponse.trim().isEmpty()) {
+			return prescriptionList;
+		}
 
-            for (int i = 0; i < itemListNodes.getLength(); i++) {
-                Node itemListNode = itemListNodes.item(i);
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document document = builder.parse(new InputSource(new StringReader(rawXmlResponse)));
 
-                if (itemListNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element itemElement = (Element) itemListNode;
+			NodeList itemListNodes = document.getElementsByTagName("item");
 
-                    DrugDTO prescription = new DrugDTO();
-                    prescription.setCpntCd(getElementValue(itemElement, "CPNT_CD"));
-                    prescription.setDrugCpntKorNm(getElementValue(itemElement, "DRUG_CPNT_KOR_NM"));
-                    prescription.setFomlNm(getElementValue(itemElement, "FOML_NM"));
-                    prescription.setDosageRouteCode(getElementValue(itemElement, "DOSAGE_ROUTE_CODE"));
-                    prescription.setDayMaxDosgQyUnit(getElementValue(itemElement, "DAY_MAX_DOSG_QY_UNIT"));
-                    prescription.setDayMaxDosgQy(getElementValue(itemElement, "DAY_MAX_DOSG_QY"));
+			for (int i = 0; i < itemListNodes.getLength(); i++) {
+				Node itemListNode = itemListNodes.item(i);
 
-                    prescriptionList.add(prescription);
-                }
-            }
+				if (itemListNode.getNodeType() == Node.ELEMENT_NODE) {
+					Element itemElement = (Element) itemListNode;
 
-        } catch (Exception e) {
-            System.err.println("Error parsing XML 파싱 실패: " + e.getMessage());
-            e.printStackTrace();
-            return List.of(); 
-        }
+					DrugDTO drug = new DrugDTO();
+					drug.setCpntCd(getElementValue(itemElement, "CPNT_CD"));
+					drug.setDrugCpntKorNm(getElementValue(itemElement, "DRUG_CPNT_KOR_NM"));
+					drug.setFomlNm(getElementValue(itemElement, "FOML_NM"));
+					drug.setDosageRouteCode(getElementValue(itemElement, "DOSAGE_ROUTE_CODE"));
+					drug.setDayMaxDosgQyUnit(getElementValue(itemElement, "DAY_MAX_DOSG_QY_UNIT"));
+					drug.setDayMaxDosgQy(getElementValue(itemElement, "DAY_MAX_DOSG_QY"));
 
-        return prescriptionList;
-    }
+					prescriptionList.add(drug);
+				}
+			}
 
-    private String getElementValue(Element element, String tagName) {
-        NodeList nodeList = element.getElementsByTagName(tagName);
-        if (nodeList.getLength() > 0) {
-            Node node = nodeList.item(0);
-            return node.getTextContent();
-        }
-        return null;
-    }
+		} catch (Exception e) {
+			System.err.println("Error parsing XML 파싱 실패: " + e.getMessage());
+			e.printStackTrace();
+			return List.of();
+		}
+
+		return prescriptionList;
+	}
+
+	// XML 요소의 값 가져오기
+	private String getElementValue(Element element, String tagName) {
+		NodeList nodeList = element.getElementsByTagName(tagName);
+		if (nodeList.getLength() > 0) {
+			Node node = nodeList.item(0);
+			return node.getTextContent();
+		}
+		return null;
+	}
+
+	//약물 처방 저장 메소드
+	public void saveDrugs(DrugDTO drugDTO) {
+		//DTO를 Entity로 변환한 후 데이터베이스에 저장
+		DrugEntity drugEntity = new DrugEntity();
+		drugEntity.setCpntCd(drugDTO.getCpntCd());
+		drugEntity.setDrugCpntKorNm(drugDTO.getDrugCpntKorNm());
+		drugEntity.setDayMaxDosgQy(drugDTO.getDayMaxDosgQy());
+		drugEntity.setDayMaxDosgQyUnit(drugDTO.getDayMaxDosgQyUnit());
+		drugEntity.setDosageRouteCode(drugDTO.getDosageRouteCode());
+		drugEntity.setFomlNm(drugDTO.getFomlNm());
+
+	}
+	//--------------------------외래키 테이블 생성하면 활성화 ----------------------------------------------
+	// DTO를 엔티티로 변환하는 메서드 
+	/*
+	 * public DrugEntity convertDtoToEntity(DrugDTO drugDTO, MedicalRecord
+	 * medicalRecord) { DrugEntity drugEntity = new DrugEntity();
+	 * 
+	 * drugEntity.setCpntCd(drugDTO.getCpntCd());
+	 * drugEntity.setDrugCpntKorNm(drugDTO.getDrugCpntKorNm());
+	 * drugEntity.setFomlNm(drugDTO.getFomlNm());
+	 * drugEntity.setDosageRouteCode(drugDTO.getDosageRouteCode());
+	 * drugEntity.setDayMaxDosgQyUnit(drugDTO.getDayMaxDosgQyUnit());
+	 * drugEntity.setDayMaxDosgQy(new BigDecimal(drugDTO.getDayMaxDosgQy()));
+	 * 
+	 * drugEntity.setMedicalRecord(medicalRecord);
+	 * 
+	 * return drugEntity; }
+	 */
+
+	// 약물 처방 저장 메서드
+	/*
+	 * public void saveDrug(DrugDTO drugDTO, MedicalRecord medicalRecord) {
+	 * DrugEntity drugEntity = convertDtoToEntity(drugDTO, medicalRecord);
+	 * drugRepository.save(drugEntity); }
+	 */
 }

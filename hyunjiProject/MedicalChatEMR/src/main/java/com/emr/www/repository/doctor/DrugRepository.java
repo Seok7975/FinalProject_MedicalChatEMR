@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.emr.www.entity.doctor.DrugEntity;
 
 @Repository
-public interface DrugRepository extends JpaRepository<DrugEntity, String> {
+public interface DrugRepository extends JpaRepository<DrugEntity, Integer> {
  //dao역할 
 }

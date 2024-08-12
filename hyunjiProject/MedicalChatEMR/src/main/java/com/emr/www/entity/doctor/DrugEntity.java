@@ -1,21 +1,46 @@
 package com.emr.www.entity.doctor;
 
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "prescriptions")
+@Table(name = "Drugs")
 public class DrugEntity {
 
-    @Id
-    private String cpntCd;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY) //no가 주키로, 자동 증가
+	private Integer no;
 
-    private String ingdNameKor;
-    private String fomlNm;
-    private String dosageRouteCode;
-    private String dayMaxDosgQyUnit;
-    private String dayMaxDosgQy;
+//	@ManyToOne
+//	@JoinColumn(name = "chart_num", nullable = false) //외래키로 엔티티와 연관
+//	private MedicalRecord medicalRecord;
+
+	private String cpntCd;
+	private String drugCpntKorNm;
+	private String fomlNm;
+	private String dosageRouteCode;
+	private String dayMaxDosgQyUnit;
+	private String dayMaxDosgQy;
+
+	public Integer getNo() {
+		return no;
+	}
+
+	public void setNo(Integer no) {
+		this.no = no;
+	}
+
+//	public MedicalRecord getMedicalRecord() {
+//		return medicalRecord;
+//	}
+//
+//	public void setMedicalRecord(MedicalRecord medicalRecord) {
+//		this.medicalRecord = medicalRecord;
+//	}
 
 	public String getCpntCd() {
 		return cpntCd;
@@ -25,12 +50,12 @@ public class DrugEntity {
 		this.cpntCd = cpntCd;
 	}
 
-	public String getIngdNameKor() {
-		return ingdNameKor;
+	public String getDrugCpntKorNm() {
+		return drugCpntKorNm;
 	}
 
-	public void setIngdNameKor(String ingdNameKor) {
-		this.ingdNameKor = ingdNameKor;
+	public void setDrugCpntKorNm(String drugCpntKorNm) {
+		this.drugCpntKorNm = drugCpntKorNm;
 	}
 
 	public String getFomlNm() {

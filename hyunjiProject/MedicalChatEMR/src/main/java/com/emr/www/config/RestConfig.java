@@ -15,6 +15,7 @@ public class RestConfig {
 
     @Bean
     public RestTemplate restTemplate() {
+    	System.out.println("rest API config 호출");
         RestTemplate restTemplate = new RestTemplate();
         
         // 기존의 HttpMessageConverter를 가져옵니다.

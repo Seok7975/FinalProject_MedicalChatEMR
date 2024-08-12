@@ -437,7 +437,7 @@ footer p {
 			<!-- 약품 검색 api -->
 			<div class="section search medicine">
 				<h2>약품 검색</h2>
-				<input type="text" id="medicine-name" placeholder="약품명">
+				<input type="text" id="medicine-name" placeholder="약품명" oninput="searchMedicine()">
 				<div id="medicine-results"
 					style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
@@ -448,9 +448,10 @@ footer p {
 				<table class="table" id="prescriptions">
 					<thead>
 						<tr>
-							<th>약품코드</th>
+							<th>약품 코드</th>
 							<th>약품명(한글)</th>
-							<th>사용법<th>
+							<th>복용법</th>
+							<th>업체명</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -497,7 +498,7 @@ function searchDrug() {
     const resultsDiv = document.getElementById('drug-results');
 
     const encodedName = encodeURIComponent(drugName);
-    fetch('/api/drugs/search?query=' + encodedName, {
+    fetch('/api/doctor/drugSearch?query=' + encodedName, {
         headers: {
             'Accept': 'application/xml',
         }
@@ -523,14 +524,13 @@ function searchDrug() {
             drugDiv.classList.add('drug-result');
 
             // XML 태그 이름을 정확하게 사용하여 데이터를 읽어옴
-            const cpntCd = items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음';
             const ingdNameKor = items[i].getElementsByTagName('drugCpntKorNm')[0]?.textContent || '정보 없음';
 
             // 텍스트가 올바르게 설정되도록 수정
             drugDiv.textContent = ingdNameKor;
 
             const drugData = {
-                cpntCd: cpntCd,
+                cpntCd: items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음',
                 ingdNameKor: ingdNameKor,
                 fomlNm: items[i].getElementsByTagName('fomlNm')[0]?.textContent || '정보 없음',
                 dosageRouteCode: items[i].getElementsByTagName('dosageRouteCode')[0]?.textContent || '정보 없음',
@@ -549,21 +549,86 @@ function searchDrug() {
     });
 }
 
-function addPrescription(medicineData) {
+/*약물 클릭하면 목록으로 이동하게끔 + 삭제 기능 추가 예정 */
+function addPrescription(drugData) {
     const drugPrescriptionTable = document.getElementById('drugPrescriptions').getElementsByTagName('tbody')[0];
 
     const newRow = drugPrescriptionTable.insertRow();
 
-    newRow.insertCell(0).textContent = medicineData.cpntCd || '정보 없음';
-    newRow.insertCell(1).textContent = medicineData.ingdNameKor || '정보 없음';
-    newRow.insertCell(2).textContent = medicineData.fomlNm || '정보 없음';
-    newRow.insertCell(3).textContent = medicineData.dosageRouteCode || '정보 없음';
-    newRow.insertCell(4).textContent = medicineData.dayMaxDosgQyUnit || '정보 없음';
-    newRow.insertCell(5).textContent = medicineData.dayMaxDosgQy || '정보 없음';
+    newRow.insertCell(0).textContent = drugData.cpntCd || '정보 없음';
+    newRow.insertCell(1).textContent = drugData.ingdNameKor || '정보 없음';
+    newRow.insertCell(2).textContent = drugData.fomlNm || '정보 없음';
+    newRow.insertCell(3).textContent = drugData.dosageRouteCode || '정보 없음';
+    newRow.insertCell(4).textContent = drugData.dayMaxDosgQyUnit || '정보 없음';
+    newRow.insertCell(5).textContent = drugData.dayMaxDosgQy || '정보 없음';
 }
 
+/* 처방 - open api 사용 >> 약품 */
+function searchMedicine() {
+    const medicineName = document.getElementById('medicine-name').value.trim();
+    const resultsDiv = document.getElementById('medicine-results');
+
+    const encodedName = encodeURIComponent(medicineName);
+    fetch('/api/doctor/prescriptionsSearch?query=' + encodedName, {
+        headers: {
+            'Accept': 'application/xml',
+        }
+    })
+    .then(response => response.text())
+    .then(str => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(str, "application/xml");
+
+        const items = xmlDoc.getElementsByTagName('item');
+
+        if (items.length === 0) {
+            resultsDiv.innerHTML = '<p>검색된 약품이 없습니다.</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = '';  // 기존 내용을 지우고 새로 추가
+
+        for (let i = 0; i < items.length; i++) {
+            const medicineDiv = document.createElement('div');
+            medicineDiv.classList.add('medicine-result');
+
+         // 각 필드를 올바른 태그 이름으로 가져옴
+            const itemSeq = items[i].getElementsByTagName('itemSeq')[0]?.textContent || '정보 없음'; //약품 코드
+            const entpName = items[i].getElementsByTagName('entpName')[0]?.textContent || '정보 없음'; //약품 회사
+            const itemName = items[i].getElementsByTagName('itemName')[0]?.textContent || '정보 없음'; //약품 명
+            const useMethodQesitm = items[i].getElementsByTagName('USE_METHOD_QESITM')[0]?.textContent || '정보 없음'; //복용 방법
 
 
+            medicineDiv.textContent = itemName;  // 화면에 약품명을 표시
+
+            const medicineData = {
+                    entpName: entpName,
+                    itemSeq: itemSeq,
+                    itemName: itemName,
+                    useMethodQesitm: useMethodQesitm
+                };
+
+            // 클릭하면 처방에 추가
+            medicineDiv.onclick = () => addMedicinePrescription(medicineData);
+
+            resultsDiv.appendChild(medicineDiv);
+        }
+    })
+    .catch(error => {
+        resultsDiv.innerHTML = '<p>약품 데이터를 가져오는 중 오류가 발생했습니다.</p>';
+    });
+}
+
+function addMedicinePrescription(medicineData) {
+    const prescriptionTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
+
+    const newRow = prescriptionTable.insertRow();
+
+    newRow.insertCell(0).textContent = medicineData.itemSeq || '정보 없음';  // 약품 코드
+    newRow.insertCell(1).textContent = medicineData.entpName || '정보 없음';  // 약품회사
+    newRow.insertCell(1).textContent = medicineData.itemName || '정보 없음';  // 약품명
+    newRow.insertCell(2).textContent = medicineData.useMethodQesitm || '정보 없음';  // 복용방법
+}
 	
 
 /*전체 환자 관리 환자 */
