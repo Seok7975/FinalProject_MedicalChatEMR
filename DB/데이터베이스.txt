@@ -76,18 +76,30 @@ CREATE TABLE Diagnosis (
     FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
 );
 
--- 처방 테이블(처방 정보 저장)
-CREATE TABLE Prescription (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+-- 약품 테이블(처방)
+CREATE TABLE Prescriptions (
+    no INT AUTO_INCREMENT PRIMARY KEY,        -- 고유 번호 (프라이머리 키)
+    chart_num INT NOT NULL,                   -- MedicalRecord의 차트 번호 참조 (외래 키)
+    entpName VARCHAR(255) NOT NULL,           -- 약품 회사
+    itemSeq VARCHAR(100) NOT NULL,            -- 코드
+    itemName VARCHAR(100) NOT NULL,           -- 약품명
+    useMethodQesitm TEXT,                     -- 복용방법
+    FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
+);
+
+-- 약물 테이블(약물 정보 저장)
+CREATE TABLE Drugs (
+    no INT AUTO_INCREMENT PRIMARY KEY,
     chart_num INT NOT NULL, -- MedicalRecord의 차트 번호 참조
     cpntCd VARCHAR(100), -- 성분코드 (CPNT_CD)
-    ingdNameKor VARCHAR(255), -- 성분명(한글) (DRUG_CPNT_KOR_NM)
-    fomlNm VARCHAR(255), -- 제형명 (FOML_NM)
-    dosageRouteCode VARCHAR(100), -- 투여경로 (DOSAGE_ROUTE_CODE)
+    ingdNameKor VARCHAR(200), -- 성분명(한글) (DRUG_CPNT_KOR_NM)
+    fomlNm VARCHAR(30), -- 제형명 (FOML_NM)
+    dosageRouteCode VARCHAR(50), -- 투여경로 (DOSAGE_ROUTE_CODE)
     dayMaxDosgQyUnit VARCHAR(50), -- 투여 단위 (DAY_MAX_DOSG_QY_UNIT)
     dayMaxDosgQy DECIMAL(10, 5), -- 1일 최대 투여량 (DAY_MAX_DOSG_QY)
     FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
 );
+
 
 -- 환자 의사 간호사 테이블 (수간호사가 담당 의사, 간호사 배정)
 CREATE TABLE Patient_Assignment (
