@@ -99,7 +99,7 @@ CREATE TABLE Drugs (
     dayMaxDosgQy DECIMAL(10, 5), -- 1일 최대 투여량 (DAY_MAX_DOSG_QY)
     FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
 );
-drop table prescriptions;
+
 
 -- 환자 의사 간호사 테이블 (수간호사가 담당 의사, 간호사 배정)
 CREATE TABLE Patient_Assignment (
