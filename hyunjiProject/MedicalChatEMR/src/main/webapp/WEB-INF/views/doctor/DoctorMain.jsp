@@ -172,7 +172,7 @@ nav {
 	grid-template-areas: "patient-info symptoms view" "history status view"
 		"diagnosis diagnosis diagnosis" "search prescriptions medicine"
 		"search prescriptions drug";
-	grid-gap: 20px;
+	grid-gap: 10px;
 	grid-template-columns: 1fr 1fr 2fr;
 	grid-template-rows: auto auto auto 1fr;
 }
