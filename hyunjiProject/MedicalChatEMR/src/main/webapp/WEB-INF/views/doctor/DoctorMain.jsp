@@ -497,7 +497,7 @@ function searchDrug() {
     const resultsDiv = document.getElementById('drug-results');
 
     const encodedName = encodeURIComponent(drugName);
-    fetch('/api/prescriptions/search?query=' + encodedName, {
+    fetch('/api/drugs/search?query=' + encodedName, {
         headers: {
             'Accept': 'application/xml',
         }
