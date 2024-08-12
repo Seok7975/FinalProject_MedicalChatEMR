@@ -596,7 +596,7 @@ function searchMedicine() {
             const itemSeq = items[i].getElementsByTagName('itemSeq')[0]?.textContent || '정보 없음'; //약품 코드
             const entpName = items[i].getElementsByTagName('entpName')[0]?.textContent || '정보 없음'; //약품 회사
             const itemName = items[i].getElementsByTagName('itemName')[0]?.textContent || '정보 없음'; //약품 명
-            const useMethodQesitm = items[i].getElementsByTagName('USE_METHOD_QESITM')[0]?.textContent || '정보 없음'; //복용 방법
+            const useMethodQesitm = items[i].getElementsByTagName('useMethodQesitm')[0]?.textContent || '정보 없음'; //복용 방법
 
 
             medicineDiv.textContent = itemName;  // 화면에 약품명을 표시
