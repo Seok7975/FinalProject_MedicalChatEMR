@@ -84,7 +84,7 @@ emplAdd:hover {
            		 <label><input type="radio" name="job" value="nurse" class="position" onclick="updateJobTitleOptions()" required> 간호사</label>
        		 </div>
 
- <div class="form-group">
+ 		<div class="form-group">
             <label for="job-title">직급:</label>
             <select id="job-title" name="job-title" class="emplWrite">
                 <!-- 옵션은 JavaScript로 동적으로 생성 -->
@@ -109,16 +109,7 @@ emplAdd:hover {
 	   		<!-- 의사에만 해당하는 필드 -->
 	        <div class="form-group doctor-field">
 	            <label for="department">부서:</label>
-	            <input type="text" id="department" name="departmentId" class="emplWrite">
-	        </div>
-	        <div class="form-group doctor-field">
-	            <label for="specialty">전문분야:</label>
-	            <input type="text" id="specialty" name="specialty"  class="emplWrite">
-	        </div>
-	        <!-- 간호사에만 해당하는 필드 -->
-	        <div class="form-group nurse-field" style="display:none;">
-	            <label for="role">역할:</label>
-	            <input type="text" id="role" name="role">
+	            <input type="text" id="department" name="departmentId" class="emplWrite" placeholder="부서과" >
 	        </div>
 			
 			<label for="photo">증명사진:</label>
@@ -128,89 +119,97 @@ emplAdd:hover {
 		</form>
 	</div>
 	<script>
-	window.onload = function() {
-	    var message = "${message}";
-	    if (message) {
-	        alert(message);
-	    }
+	  document.addEventListener("DOMContentLoaded", function() {
+	        console.log("Script loaded successfully.");  // 확인용 로그
+	        var message = "${message}";
+	        if (message) {
+	            alert(message);
+	        }
 
-	    // 기본적으로 첫 번째 라디오 버튼에 따라 옵션 설정
-	    updateJobTitleOptions();
-	    document.querySelector("form").addEventListener("submit", validateAndSubmit);
-	}
+	        // 라디오 버튼 클릭 시 updateJobTitleOptions 호출
+	        document.querySelectorAll('input[name="job"]').forEach(function(radio) {
+	            radio.addEventListener('click', function(){
+	                console.log("Radio button clicked, calling updateJobTitleOptions");
+	                updateJobTitleOptions();
+	            });
+	        });
 
-	function updateJobTitleOptions() {
-	    const jobTitleSelect = document.getElementById("job-title");
-	    const doctorOptions = ["인턴", "레지던트", "전문의", "교수", "퇴직"];
-	    const nurseOptions = ["인턴", "정규직", "수간호사", "퇴직"];
 
-	    // 직업 선택에 따라 옵션 변경
-	    if (document.querySelector('input[name="job"]:checked').value === "doctor") {
-	        updateSelectOptions(jobTitleSelect, doctorOptions);
-	        document.querySelectorAll('.doctor-field').forEach(e => e.style.display = 'block');
-	        document.querySelectorAll('.nurse-field').forEach(e => e.style.display = 'none');
-	    } else if (document.querySelector('input[name="job"]:checked').value === "nurse") {
-	        updateSelectOptions(jobTitleSelect, nurseOptions);
-	        document.querySelectorAll('.doctor-field').forEach(e => e.style.display = 'none');
-	        document.querySelectorAll('.nurse-field').forEach(e => e.style.display = 'block');
-	    }
-	}
+	        // 첫 번째 라디오 버튼에 따라 옵션 설정
+	        updateJobTitleOptions();
 
-	function updateSelectOptions(selectElement, options) {
-	    selectElement.innerHTML = "";
-	    options.forEach(option => {
-	        const opt = document.createElement("option");
-	        opt.value = option;
-	        opt.text = option;
-	        selectElement.add(opt);
+	        // 폼 제출 시 validateAndSubmit 호출
+	        document.querySelector("form").addEventListener("submit", validateAndSubmit);
 	    });
-	}
 
-	function validateAndSubmit(event) {
-	    event.preventDefault();
-	    const ssn = document.getElementById("birthdate").value;
-	    const phone = document.getElementById("phone").value;
+	    function updateJobTitleOptions() {
+	        console.log("Updating job title options...");  // 확인용 로그
+	        const jobTitleSelect = document.getElementById("job-title");
+	        const doctorOptions = ["인턴", "레지던트", "전문의", "교수", "퇴직"];
+	        const nurseOptions = ["인턴", "정규직", "수간호사", "퇴직"];
 
-	    if (!validateSSN(ssn)) {
-	        alert("주민번호 형식이 잘못되었습니다. 올바른 형식: 123456-1234567");
-	        return false;
+	        if (document.querySelector('input[name="job"]:checked').value === "doctor") {
+	            updateSelectOptions(jobTitleSelect, doctorOptions);
+	            document.querySelectorAll('.doctor-field').forEach(e => e.style.display = 'block');
+	            document.querySelectorAll('.nurse-field').forEach(e => e.style.display = 'none');
+	        } else if (document.querySelector('input[name="job"]:checked').value === "nurse") {
+	            updateSelectOptions(jobTitleSelect, nurseOptions);
+	            document.querySelectorAll('.doctor-field').forEach(e => e.style.display = 'none');
+	            document.querySelectorAll('.nurse-field').forEach(e => e.style.display = 'block');
+	        }
 	    }
 
-	    if (!validatePhone(phone)) {
-	        alert("전화번호 형식이 잘못되었습니다. 올바른 형식: 010-1234-5678");
-	        return false;
+	    function updateSelectOptions(selectElement, options) {
+	        console.log("Updating select options...");  // 확인용 로그
+	        selectElement.innerHTML = "";
+	        options.forEach(option => {
+	            const opt = document.createElement("option");
+	            opt.value = option;
+	            opt.text = option;
+	            selectElement.add(opt);
+	        });
 	    }
 
-	    // 여기에서 주민번호로 데이터베이스 유효성 검사를 실행합니다.
-	    checkSSNInDatabase(ssn, function(isValid) {
-	        if (!isValid) {
-	            alert("이미 존재하는 주민번호입니다.");
+	    function validateAndSubmit(event) {
+	        event.preventDefault();
+	        const ssn = document.getElementById("birthdate").value;
+	        const phone = document.getElementById("phone").value;
+
+	        if (!validateSSN(ssn)) {
+	            alert("주민번호 형식이 잘못되었습니다. 올바른 형식: 123456-1234567");
 	            return false;
 	        }
-	        // 유효성 검사가 완료되면 폼을 제출합니다.
-	        document.querySelector("form").submit();
-	    });
-	}
 
-	function validateSSN(ssn) {
-	    const ssnPattern = /^\d{6}-\d{7}$/;
-	    return ssnPattern.test(ssn);
-	}
+	        if (!validatePhone(phone)) {
+	            alert("전화번호 형식이 잘못되었습니다. 올바른 형식: 010-1234-5678");
+	            return false;
+	        }
 
-	function validatePhone(phone) {
-	    const phonePattern = /^\d{3}-\d{4}-\d{4}$/;
-	    return phonePattern.test(phone);
-	}
+	        checkSSNInDatabase(ssn, function(isValid) {
+	            if (!isValid) {
+	                alert("이미 존재하는 주민번호입니다.");
+	                return false;
+	            }
+	            document.querySelector("form").submit();
+	        });
+	    }
 
-	function checkSSNInDatabase(ssn, callback) {
-	    // 여기에 Ajax 요청을 통해 서버와 통신하는 코드를 추가할 수 있습니다.
-	    // 예시로 setTimeout을 사용하여 비동기 콜백 함수를 처리합니다.
-	    setTimeout(() => {
-	        // 가정: DB에 주민번호가 없다고 가정 (즉, 새로운 주민번호)
-	        const isValid = true;  // 실제 구현 시 서버에서 유효성 검사 결과를 받아옵니다.
-	        callback(isValid);
-	    }, 1000);
-	}
+	    function validateSSN(ssn) {
+	        const ssnPattern = /^\d{6}-\d{7}$/;
+	        return ssnPattern.test(ssn);
+	    }
+
+	    function validatePhone(phone) {
+	        const phonePattern = /^\d{3}-\d{4}-\d{4}$/;
+	        return phonePattern.test(phone);
+	    }
+
+	    function checkSSNInDatabase(ssn, callback) {
+	        setTimeout(() => {
+	            const isValid = true;
+	            callback(isValid);
+	        }, 1000);
+	    }
 	</script>
 </body>
 </html>
