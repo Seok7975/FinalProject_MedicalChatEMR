@@ -32,6 +32,7 @@ header {
 	background-color: #b8edb5;
 	padding: 10px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin-bottom: 8px;
 }
 
 .header {
@@ -160,19 +161,20 @@ nav {
 	padding: 20px;
 	border-right: 1px solid #ddd;
 	box-sizing: border-box;
+	margin-right: 8px;
 }
 
 .content {
 	flex: 1;
-	padding: 10px;
+	padding: 0px;
 	background-color: white;
 	border-radius: 8px;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 	display: grid;
 	grid-template-areas: "patient-info symptoms view" "history status view"
 		"diagnosis diagnosis diagnosis" "search prescriptions medicine"
-		"search prescriptions drug" ;
-	grid-gap: 20px;
+		"search prescriptions drug";
+	grid-gap: 8px;
 	grid-template-columns: 1fr 1fr 2fr;
 	grid-template-rows: auto auto auto 1fr;
 }
@@ -182,7 +184,7 @@ nav {
 }
 
 .section {
-	padding: 15px;
+	padding: 10px;
 	border: 1px solid #ddd;
 	border-radius: 8px;
 	background-color: #fafafa;
@@ -191,6 +193,7 @@ nav {
 
 .section h2 {
 	margin-top: 0;
+	margin-bottom: -3px;
 }
 
 .patient-info {
@@ -209,7 +212,7 @@ nav {
 	grid-area: view;
 	display: flex;
 	flex-wrap: wrap;
-	height: 100%;
+	height: auto;
 	gap: 10px;
 }
 
@@ -236,8 +239,8 @@ nav {
 
 .table th, .table td {
 	border: 1px solid #ddd;
-	padding: 8px;
-	text-align: left;
+	padding: 4px;
+	text-align: center;
 }
 
 .appointment-list ul, .patient-list ul, .patient-management ul {
@@ -303,9 +306,77 @@ footer p {
 .fc-scroller-harness {
 	overflow: auto;
 }
-.medicine-result, .drug-result{
+
+.medicine-result, .drug-result {
 	margin-bottom: 10px;
 	cursor: pointer;
+}
+
+.search, .search2 {
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.prescriptions, .prescriptions2 {
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: auto;
+}
+
+.searchBox {
+	align-content: center;
+	margin-bottom: 10px;
+}
+
+.content h2 {
+	padding: 10px
+}
+
+.form-container {
+	width: 100%;
+	max-width: 570px; /* 최대 너비를 설정하여 너무 넓지 않도록 제한 */
+	padding: 10px;
+	background-color: #e2e5e291;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	margin: 3px auto 3px auto;
+}
+
+.symptoms textarea {
+	width: calc(100% - 6px); /* 부모 요소의 너비에서 margin을 뺀 값 */
+	height: 200px;
+	box-sizing: border-box;
+	margin: 0px;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	font-size: 16px;
+	resize: none; /* 사용자가 크기 조정하지 못하도록 설정 */
+	overflow-y: auto; /* 세로 스크롤 */
+	overflow-x: hidden; /* 가로 스크롤 숨김 */
+}
+
+.symptoms textarea::placeholder {
+	color: #aaa;
+}
+
+.history {
+	grid-area: history;
+	font-size: 13px; /* 폰트 크기를 줄였습니다. */
+}
+
+.history .table th {
+	font-size: 12px; /* 표의 제목 부분 폰트 크기도 줄였습니다. */
+}
+/* 처방 표 폰트 크기 조정 */
+.prescriptions .table, .drug .table {
+	font-size: 14px; /* 전체 폰트 크기를 줄였습니다. */
+}
+
+.prescriptions .table th, .drug .table th {
+	font-size: 12px; /* 표의 제목 부분 폰트 크기를 줄였습니다. */
 }
 </style>
 </head>
@@ -419,9 +490,7 @@ footer p {
 			</div>
 			<div class="section symptoms">
 				<h2>증상</h2>
-				<p>2024-07-31</p>
-				<p>c/c ankle pain</p>
-				<p>9/30 부터 발목통이 시작</p>
+				<textarea id="Symptoms" name="symptoms" placeholder="증상을 입력하세요"></textarea>
 			</div>
 			<div class="section view" style="grid-row: span 2;">
 				<div>이미지뷰</div>
@@ -433,39 +502,41 @@ footer p {
 				<h2>상병</h2>
 				<p>상병 정보가 여기에 표시됩니다.</p>
 			</div>
-			
+
 			<!-- 약품 검색 api -->
 			<div class="section search medicine">
 				<h2>약품 검색</h2>
-				<input type="text" id="medicine-name" placeholder="약품명">
-				<div id="medicine-results"
-					style="max-height: 350px;">
+				<input type="text" class="searchBox" id="medicine-name"
+					placeholder="약품명" oninput="searchMedicine()">
+				<div id="medicine-results" style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
 			</div>
-			<div class="section prescriptions medicine" style="grid-column: span 2;">
-				<h2>처방 목록</h2>
+			<div class="section prescriptions medicine"
+				style="grid-column: span 2;">
+				<h2>처방</h2>
 				<table class="table" id="prescriptions">
 					<thead>
 						<tr>
-							<th>약품코드</th>
+							<th>약품 코드</th>
 							<th>약품명(한글)</th>
-							<th>사용법<th>
+							<th>복용법</th>
+							<th>업체명</th>
+							<th>삭제</th>
 						</tr>
 					</thead>
 					<tbody>
 						<!-- 처방 리스트가 여기에 추가 -->
 					</tbody>
 				</table>
-			</div> 
-			
+			</div>
+
 			<!--약물 검색 api-->
 			<div class="section search drug">
 				<h2>약물 검색</h2>
-				<input type="text" id="drug-name" placeholder="약물명"
-					oninput="searchDrug()">
-				<div id="drug-results"
-					style="max-height: 350px;">
+				<input type="text" class="searchBox" id="drug-name"
+					placeholder="약물명" oninput="searchDrug()">
+				<div id="drug-results" style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
 			</div>
@@ -480,6 +551,7 @@ footer p {
 							<th>투여경로</th>
 							<th>투여 단위</th>
 							<th>1일 최대 투여량</th>
+							<th>삭제</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -497,7 +569,7 @@ function searchDrug() {
     const resultsDiv = document.getElementById('drug-results');
 
     const encodedName = encodeURIComponent(drugName);
-    fetch('/api/prescriptions/search?query=' + encodedName, {
+    fetch('/api/doctor/drugSearch?query=' + encodedName, {
         headers: {
             'Accept': 'application/xml',
         }
@@ -523,14 +595,13 @@ function searchDrug() {
             drugDiv.classList.add('drug-result');
 
             // XML 태그 이름을 정확하게 사용하여 데이터를 읽어옴
-            const cpntCd = items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음';
             const ingdNameKor = items[i].getElementsByTagName('drugCpntKorNm')[0]?.textContent || '정보 없음';
 
             // 텍스트가 올바르게 설정되도록 수정
             drugDiv.textContent = ingdNameKor;
 
             const drugData = {
-                cpntCd: cpntCd,
+                cpntCd: items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음',
                 ingdNameKor: ingdNameKor,
                 fomlNm: items[i].getElementsByTagName('fomlNm')[0]?.textContent || '정보 없음',
                 dosageRouteCode: items[i].getElementsByTagName('dosageRouteCode')[0]?.textContent || '정보 없음',
@@ -549,21 +620,86 @@ function searchDrug() {
     });
 }
 
-function addPrescription(medicineData) {
+/*약물 클릭하면 목록으로 이동하게끔 + 삭제 기능 추가 예정 */
+function addPrescription(drugData) {
     const drugPrescriptionTable = document.getElementById('drugPrescriptions').getElementsByTagName('tbody')[0];
 
     const newRow = drugPrescriptionTable.insertRow();
 
-    newRow.insertCell(0).textContent = medicineData.cpntCd || '정보 없음';
-    newRow.insertCell(1).textContent = medicineData.ingdNameKor || '정보 없음';
-    newRow.insertCell(2).textContent = medicineData.fomlNm || '정보 없음';
-    newRow.insertCell(3).textContent = medicineData.dosageRouteCode || '정보 없음';
-    newRow.insertCell(4).textContent = medicineData.dayMaxDosgQyUnit || '정보 없음';
-    newRow.insertCell(5).textContent = medicineData.dayMaxDosgQy || '정보 없음';
+    newRow.insertCell(0).textContent = drugData.cpntCd || '정보 없음';
+    newRow.insertCell(1).textContent = drugData.ingdNameKor || '정보 없음';
+    newRow.insertCell(2).textContent = drugData.fomlNm || '정보 없음';
+    newRow.insertCell(3).textContent = drugData.dosageRouteCode || '정보 없음';
+    newRow.insertCell(4).textContent = drugData.dayMaxDosgQyUnit || '정보 없음';
+    newRow.insertCell(5).textContent = drugData.dayMaxDosgQy || '정보 없음';
 }
 
+/* 처방 - open api 사용 >> 약품 */
+function searchMedicine() {
+    const medicineName = document.getElementById('medicine-name').value.trim();
+    const resultsDiv = document.getElementById('medicine-results');
+
+    const encodedName = encodeURIComponent(medicineName);
+    fetch('/api/doctor/prescriptionsSearch?query=' + encodedName, {
+        headers: {
+            'Accept': 'application/xml',
+        }
+    })
+    .then(response => response.text())
+    .then(str => {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(str, "application/xml");
+
+        const items = xmlDoc.getElementsByTagName('item');
+
+        if (items.length === 0) {
+            resultsDiv.innerHTML = '<p>검색된 약품이 없습니다.</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = '';  // 기존 내용을 지우고 새로 추가
+
+        for (let i = 0; i < items.length; i++) {
+            const medicineDiv = document.createElement('div');
+            medicineDiv.classList.add('medicine-result');
+
+         // 각 필드를 올바른 태그 이름으로 가져옴
+            const itemSeq = items[i].getElementsByTagName('itemSeq')[0]?.textContent || '정보 없음'; //약품 코드
+            const entpName = items[i].getElementsByTagName('entpName')[0]?.textContent || '정보 없음'; //약품 회사
+            const itemName = items[i].getElementsByTagName('itemName')[0]?.textContent || '정보 없음'; //약품 명
+            const useMethodQesitm = items[i].getElementsByTagName('useMethodQesitm')[0]?.textContent || '정보 없음'; //복용 방법
 
 
+            medicineDiv.textContent = itemName;  // 화면에 약품명을 표시
+
+            const medicineData = {
+                    entpName: entpName,
+                    itemSeq: itemSeq,
+                    itemName: itemName,
+                    useMethodQesitm: useMethodQesitm
+                };
+
+            // 클릭하면 처방에 추가
+            medicineDiv.onclick = () => addMedicinePrescription(medicineData);
+
+            resultsDiv.appendChild(medicineDiv);
+        }
+    })
+    .catch(error => {
+        resultsDiv.innerHTML = '<p>약품 데이터를 가져오는 중 오류가 발생했습니다.</p>';
+    });
+}
+
+function addMedicinePrescription(medicineData) {
+    const prescriptionTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
+
+    const newRow = prescriptionTable.insertRow();
+
+    newRow.insertCell(0).textContent = medicineData.itemSeq || '정보 없음';  // 약품 코드
+    newRow.insertCell(1).textContent = medicineData.entpName || '정보 없음';  // 약품회사
+    newRow.insertCell(1).textContent = medicineData.itemName || '정보 없음';  // 약품명
+    newRow.insertCell(2).textContent = medicineData.useMethodQesitm || '정보 없음';  // 복용방법
+}
 	
 
 /*전체 환자 관리 환자 */
@@ -658,6 +794,50 @@ function addPrescription(medicineData) {
 			});
 			calendar.render();
 		});
+		// 처방 삭제 기능 추가
+		function addMedicinePrescription(medicineData) {
+		    const prescriptionTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
+
+		    const newRow = prescriptionTable.insertRow();
+
+		    newRow.insertCell(0).textContent = medicineData.itemSeq || '정보 없음';  // 약품 코드
+		    newRow.insertCell(1).textContent = medicineData.entpName || '정보 없음';  // 약품회사
+		    newRow.insertCell(2).textContent = medicineData.itemName || '정보 없음';  // 약품명
+		    newRow.insertCell(3).textContent = medicineData.useMethodQesitm || '정보 없음';  // 복용방법
+
+		    // 삭제 버튼 추가
+		    const deleteCell = newRow.insertCell(4);
+		    const deleteButton = document.createElement('button');
+		    deleteButton.textContent = 'X';
+		    deleteButton.onclick = function () {
+		        prescriptionTable.deleteRow(newRow.rowIndex - 1);
+		    };
+		    deleteCell.appendChild(deleteButton);
+		}
+
+		// 약물 목록 삭제 기능 추가
+		function addPrescription(drugData) {
+		    const drugPrescriptionTable = document.getElementById('drugPrescriptions').getElementsByTagName('tbody')[0];
+
+		    const newRow = drugPrescriptionTable.insertRow();
+
+		    newRow.insertCell(0).textContent = drugData.cpntCd || '정보 없음';
+		    newRow.insertCell(1).textContent = drugData.ingdNameKor || '정보 없음';
+		    newRow.insertCell(2).textContent = drugData.fomlNm || '정보 없음';
+		    newRow.insertCell(3).textContent = drugData.dosageRouteCode || '정보 없음';
+		    newRow.insertCell(4).textContent = drugData.dayMaxDosgQyUnit || '정보 없음';
+		    newRow.insertCell(5).textContent = drugData.dayMaxDosgQy || '정보 없음';
+
+		    // 삭제 버튼 추가
+		    const deleteCell = newRow.insertCell(6);
+		    const deleteButton = document.createElement('button');
+		    deleteButton.textContent = 'X';
+		    deleteButton.onclick = function () {
+		        drugPrescriptionTable.deleteRow(newRow.rowIndex - 1);
+		    };
+		    deleteCell.appendChild(deleteButton);
+		}
 	</script>
 </body>
+<footer> </footer>
 </html>

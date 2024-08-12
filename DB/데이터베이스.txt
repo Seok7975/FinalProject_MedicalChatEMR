@@ -8,17 +8,18 @@ CREATE TABLE Admin (
 -- 환자 테이블
 CREATE TABLE Patient (
     id INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
-    name VARCHAR(100), -- 환자의 이름입니다.
+    name VARCHAR(50), -- 환자의 이름입니다.
     security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
-    date_of_birth DATE, -- 생년월일입니다.
     gender CHAR(1), -- 성별 ('M' 또는 'F').
-    address VARCHAR(255), -- 주소입니다.
+    address VARCHAR(255), -- 주소입니다
     phone VARCHAR(20), -- 전화번호입니다.
-    email VARCHAR(320), -- 이메일 주소입니다.
+    email VARCHAR(50), -- 이메일 주소입니다.
     blood_type CHAR(2), -- 혈액형입니다.
     height INT, -- 키(센티미터)입니다.
     weight INT, -- 체중(킬로그램)입니다.
     allergies TEXT, -- 알레르기 정보입니다.
+    blood_pressure VARCHAR(10), -- 혈압
+    temperature DECIMAL(4, 1), -- 체온
     smoking_status CHAR(1) -- 흡연 여부 ('Y' 또는 'N').
 );
 
@@ -30,12 +31,13 @@ CREATE TABLE Doctor (
     email VARCHAR(100) UNIQUE, -- 이메일 주소입니다.
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
-    password VARCHAR(15), --(초기에는 NULL)
+    password VARCHAR(15), -- (초기에는 NULL)
     department_id VARCHAR(10), -- 소속 진료과입니다.
     specialty VARCHAR(100), -- 전문 분야입니다.
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
     active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
 );
+
 
 
 -- 간호사 테이블
@@ -46,34 +48,57 @@ CREATE TABLE Nurse (
     email VARCHAR(320) UNIQUE, -- 이메일 주소입니다.
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
-    password VARCHAR(15), --(초기에는 NULL)
+    password VARCHAR(15), -- (초기에는 NULL)
     role CHAR(1) NOT NULL, -- 역할 ('N' - 일반 간호사, 'S' - 수간호사)
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
     active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
 );
 
--- 진료 테이블
+-- 진료 기록(환자의 진료기록 저장) 
 CREATE TABLE MedicalRecord (
- chart_num INT AUTO_INCREMENT PRIMARY KEY, -- 차트 번호, 프라이머리 키
+    chart_num INT AUTO_INCREMENT PRIMARY KEY, -- 차트 번호, 프라이머리 키
     patient_id INT NOT NULL, -- 환자 ID, 환자 테이블의 ID를 참조
     doc_id INT NOT NULL, -- 진료 의사 ID, 의사 테이블의 ID를 참조
     symptoms TEXT, -- 증상
-    blood_pressure VARCHAR(10), -- 혈압
-    temperature DECIMAL(4, 1), -- 체온
-    disease_code VARCHAR(10), -- 질병 코드
-    disease_name VARCHAR(255), -- 질병 명칭
     surgery_status CHAR(1), -- 수술 여부 ('Y' 또는 'N')
     progress TEXT, -- 경과
-    prescription_name VARCHAR(255), -- 처방의약품 명칭
-    dosage_per_time DECIMAL(5, 2), -- 1회 투여량
-    times_per_day INT, -- 1일 투여횟수
-    total_days INT, -- 총 투여 일수
-    usage_instructions TEXT, -- 용법
     visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 진료 일자, 타임 스탬프
     FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE CASCADE
+    FOREIGN KEY (doc_id) REFERENCES Doctor(id) ON DELETE CASCADE
 );
 
+-- 진단 테이블(질병 정보 저장)
+CREATE TABLE Diagnosis (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chart_num INT NOT NULL, -- MedicalRecord의 차트 번호 참조
+    disease_code VARCHAR(10), -- 질병 코드
+    disease_name VARCHAR(255), -- 질병 명칭
+    FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
+);
+
+-- 약품 테이블(처방)
+CREATE TABLE Prescriptions (
+    no INT AUTO_INCREMENT PRIMARY KEY,        -- 고유 번호 (프라이머리 키)
+    chart_num INT NOT NULL,                   -- MedicalRecord의 차트 번호 참조 (외래 키)
+    entpName VARCHAR(255) NOT NULL,           -- 약품 회사
+    itemSeq VARCHAR(100) NOT NULL,            -- 코드
+    itemName VARCHAR(100) NOT NULL,           -- 약품명
+    useMethodQesitm TEXT,                     -- 복용방법
+    FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
+);
+
+-- 약물 테이블(약물 정보 저장)
+CREATE TABLE Drugs (
+    no INT AUTO_INCREMENT PRIMARY KEY,
+    chart_num INT NOT NULL, -- MedicalRecord의 차트 번호 참조
+    cpntCd VARCHAR(100), -- 성분코드 (CPNT_CD)
+    ingdNameKor VARCHAR(200), -- 성분명(한글) (DRUG_CPNT_KOR_NM)
+    fomlNm VARCHAR(30), -- 제형명 (FOML_NM)
+    dosageRouteCode VARCHAR(50), -- 투여경로 (DOSAGE_ROUTE_CODE)
+    dayMaxDosgQyUnit VARCHAR(50), -- 투여 단위 (DAY_MAX_DOSG_QY_UNIT)
+    dayMaxDosgQy DECIMAL(10, 5), -- 1일 최대 투여량 (DAY_MAX_DOSG_QY)
+    FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
+);
 
 
 -- 환자 의사 간호사 테이블 (수간호사가 담당 의사, 간호사 배정)
