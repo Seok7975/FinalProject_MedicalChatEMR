@@ -1,0 +1,30 @@
+<!-- https://mvnrepository.com/artifact/org.dcm4che/dcm4che-core -->
+<dependency>
+    <groupId>org.dcm4che</groupId>
+    <artifactId>dcm4che-core</artifactId>
+    <version>5.32.0</version>
+</dependency>
+
+
+<!-- https://mvnrepository.com/artifact/org.dcm4che/dcm4che-imageio -->
+<dependency>
+    <groupId>org.dcm4che</groupId>
+    <artifactId>dcm4che-imageio</artifactId>
+    <version>5.32.0</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.dcm4che/dcm4che-parent -->
+<dependency>
+    <groupId>org.dcm4che</groupId>
+    <artifactId>dcm4che-parent</artifactId>
+    <version>5.32.0</version>
+    <type>pom</type>
+</dependency>
+
+dcm관련 의존성 주입
+
+**중요**
+저 dependency를 그대로 pom.xml에 넣으면 .jar파일이 자동으로 다운이 안 된다!
+
+C:\Users\(사용자이름)\.m2\repository\org
+
+이 위치에다가 현재 첨부되어 있는 dcm4che 폴더를 집어 넣으면 된다!
