@@ -158,11 +158,12 @@ public class FileController {
 	        System.out.println("Modality retrieved: " + modality);
 
 	        // 2. 해당 MODALITY 값을 가진 모든 파일 데이터를 가져옵니다.
-	        String fileSql = "SELECT file_name, file_data FROM dicom_files WHERE modality = ?";
+	        String fileSql = "SELECT file_name, file_data, pname FROM dicom_files WHERE modality = ?";
 	        List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{modality}, (rs, rowNum) -> {
 	            Map<String, Object> map = new HashMap<>();
 	            map.put("file_name", rs.getString("file_name"));
 	            map.put("file_data", Base64.getEncoder().encodeToString(rs.getBytes("file_data"))); // Base64로 인코딩
+	            map.put("pname", rs.getString("pname"));
 	            return map;
 	        });
 	        System.out.println("File data list size: " + fileDataList.size());
