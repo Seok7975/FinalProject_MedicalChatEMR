@@ -1,13 +1,13 @@
 -- 관리자 테이블 
 CREATE TABLE Admin (
-    id CHAR(36) PRIMARY KEY, -- 관리자의 고유 식별자입니다.
+    no CHAR(36) PRIMARY KEY, -- 관리자의 고유 식별자입니다.
     password VARCHAR(20) NOT NULL, -- 관리자의 비밀번호입니다.
     admin_email VARCHAR(320) UNIQUE -- 관리자의 이메일 주소입니다.
 ); 
 
 -- 환자 테이블
 CREATE TABLE Patient (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
     name VARCHAR(50), -- 환자의 이름입니다.
     security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
     gender CHAR(1), -- 성별 ('M' 또는 'F').
@@ -25,7 +25,7 @@ CREATE TABLE Patient (
 
 -- 의사 테이블
 CREATE TABLE Doctor (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 의사의 고유 식별자입니다.
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 의사의 고유 식별자입니다.
     name VARCHAR(100), -- 의사의 이름입니다.
     security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
     email VARCHAR(100) UNIQUE, -- 이메일 주소입니다.
@@ -42,7 +42,7 @@ CREATE TABLE Doctor (
 
 -- 간호사 테이블
 CREATE TABLE Nurse (
-    id INT AUTO_INCREMENT PRIMARY KEY, -- 간호사의 고유 식별자입니다.
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 간호사의 고유 식별자입니다.
     name VARCHAR(100), -- 간호사의 이름입니다.
     security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
     email VARCHAR(320) UNIQUE, -- 이메일 주소입니다.
@@ -103,7 +103,7 @@ CREATE TABLE Drugs (
 
 -- 환자 의사 간호사 테이블 (수간호사가 담당 의사, 간호사 배정)
 CREATE TABLE Patient_Assignment (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    no INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL,
     doctor_id INT, -- 담당 의사의 식별자입니다.
     nurse_id INT, -- 담당 간호사의 식별자입니다.
@@ -115,7 +115,7 @@ CREATE TABLE Patient_Assignment (
 
 -- 의사 환자 관계 테이블
 CREATE TABLE Patient_Doctor (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    no INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL, -- 관리받는 환자의 식별자입니다.
     doctor_id INT NOT NULL, -- 담당 의사의 내부 ID입니다.
     relationship_start_date DATE, -- 관리 시작 날짜입니다.
@@ -127,7 +127,7 @@ CREATE TABLE Patient_Doctor (
 
 -- 간호사 환자 관계 테이블
 CREATE TABLE Patient_Nurse (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    no INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL, -- 관리받는 환자의 식별자입니다.
     nurse_id INT NOT NULL, -- 담당 간호사의 내부 ID입니다.
     relationship_start_date DATE, -- 관리 시작 날짜입니다.
