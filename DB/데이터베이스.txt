@@ -14,7 +14,7 @@ CREATE TABLE Patient (
     address VARCHAR(255), -- 주소입니다
     phone VARCHAR(20), -- 전화번호입니다.
     email VARCHAR(50), -- 이메일 주소입니다.
-    blood_type CHAR(2), -- 혈액형입니다.
+    blood_type CHAR(6), -- 혈액형입니다.
     height INT, -- 키(센티미터)입니다.
     weight INT, -- 체중(킬로그램)입니다.
     allergies TEXT, -- 알레르기 정보입니다.
