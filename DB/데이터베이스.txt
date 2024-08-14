@@ -7,7 +7,7 @@ CREATE TABLE Admin (
 
 -- 환자 테이블
 CREATE TABLE Patient (
-    id LONG AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
+    id INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
     name VARCHAR(50), -- 환자의 이름입니다.
     security_num CHAR(14) UNIQUE, -- 주민등록번호입니다.
     gender CHAR(1), -- 성별 ('M' 또는 'F').
