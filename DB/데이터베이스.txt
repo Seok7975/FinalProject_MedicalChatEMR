@@ -96,7 +96,7 @@ CREATE TABLE Drugs (
     fomlNm VARCHAR(30), -- 제형명 (FOML_NM)
     dosageRouteCode VARCHAR(50), -- 투여경로 (DOSAGE_ROUTE_CODE)
     dayMaxDosgQyUnit VARCHAR(50), -- 투여 단위 (DAY_MAX_DOSG_QY_UNIT)
-    dayMaxDosgQy DECIMAL(10, 5), -- 1일 최대 투여량 (DAY_MAX_DOSG_QY)
+    dayMaxDosgQy VARCHAR(20) , -- 1일 최대 투여량 (DAY_MAX_DOSG_QY)
     FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
 );
 
