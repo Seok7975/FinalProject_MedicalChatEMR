@@ -35,7 +35,7 @@ CREATE TABLE Doctor (
     department_id VARCHAR(10), -- 소속 진료과입니다.
     specialty VARCHAR(100), -- 전문 분야입니다.
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
-    active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
+    active_status VARCHAR(50) NOT NULL -- 현재 활동 상태
 );
 
 
@@ -49,9 +49,9 @@ CREATE TABLE Nurse (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), -- (초기에는 NULL)
-    role CHAR(1) NOT NULL, -- 역할 ('N' - 일반 간호사, 'S' - 수간호사)
+    role VARCHAR(255) NOT NULL, -- 역할 ('N' - 일반 간호사, 'S' - 수간호사)
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
-    active_status ENUM('자리 비움', '진료 중', '점심시간') NOT NULL DEFAULT '자리 비움' -- 현재 활동 상태
+    active_status VARCHAR(50) NOT NULL ; -- 현재 활동 상태
 );
 
 -- 진료 기록(환자의 진료기록 저장) 
