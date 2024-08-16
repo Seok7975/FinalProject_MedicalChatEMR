@@ -287,6 +287,7 @@ footer p {
 	font-size: 0.6em;
 	padding-left: 5px;
 	padding-right: 5px;
+	margin-top : 30px;
 }
 
 .fc-header-toolbar {
@@ -383,6 +384,22 @@ footer p {
 .diagnosis-results, .medicine-results, .drug-results, .searchList {
 	cursor: pointer;
 }
+
+.leftSidebar, .rightSidebar {
+	background-color: #e9e9e9;
+	width: 230px;
+	padding: 10px;
+	box-sizing: border-box;
+	overflow-y: auto;
+}
+
+.scrollable-patient-list {
+    max-height: 250px; /* 원하는 최대 높이 설정 */
+    overflow-y: auto;  /* 스크롤 생성 */
+}
+
+
+
 </style>
 
 </head>
@@ -425,23 +442,61 @@ footer p {
 			</div>
 			<div class="search-section">
 				<input type="text" placeholder="환자검색">
-				<button>검색</button>
 				<button>새로고침</button>
 			</div>
 			<div class="patient-list" id="all-patients">
 				<h2>진료 대기 목록</h2>
+				  <div class="scrollable-patient-list">
 				<ul>
 					<li>환자1</li>
 					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
+					<li>환자2</li>
 				</ul>
+			</div>
 			</div>
 			<div class="patient-list" id="managed-patients"
 				style="display: none;">
 				<h2>진료 완료 목록</h2>
+				 <div class="scrollable-patient-list">
 				<ul>
 					<li>환자 A</li>
 					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
+					<li>환자 B</li>
 				</ul>
+			</div>
 			</div>
 			<div id='calendar'></div>
 		</section>
@@ -492,10 +547,6 @@ footer p {
 						<tr>
 							<td>체온</td>
 							<td>정상</td>
-						</tr>
-						<tr>
-							<td>체온</td>
-							<td></td>
 						</tr>
 					</tbody>
 				</table>
@@ -597,6 +648,43 @@ footer p {
 		</section>
 	</main>
 	<script>
+	 $(document).ready(function() {
+	        // API 검색 결과 클릭 외 영역 클릭 시 닫힘
+	        $(document).click(function(e) {
+	            const target = $(e.target);
+
+	            // 클릭한 영역이 질병 검색결과와 관련 없으면 닫기
+	            if (!target.closest('#diagnosis-name').length && !target.closest('#diagnosis-results').length) {
+	                $('#diagnosis-results').hide();
+	            }
+	            
+	            // 클릭한 영역이 약품 검색결과와 관련 없으면 닫기
+	            if (!target.closest('#medicine-name').length && !target.closest('#medicine-results').length) {
+	                $('#medicine-results').hide();
+	            }
+	            
+	            // 클릭한 영역이 약물 검색결과와 관련 없으면 닫기
+	            if (!target.closest('#drug-name').length && !target.closest('#drug-results').length) {
+	                $('#drug-results').hide();
+	            }
+	        });
+
+	        // 질병 검색창에 포커스가 있으면 검색결과를 다시 보여줌
+	        $('#diagnosis-name').on('focus', function() {
+	            $('#diagnosis-results').show();
+	        });
+	        
+	        // 약품 검색창에 포커스가 있으면 검색결과를 다시 보여줌
+	        $('#medicine-name').on('focus', function() {
+	            $('#medicine-results').show();
+	        });
+
+	        // 약물 검색창에 포커스가 있으면 검색결과를 다시 보여줌
+	        $('#drug-name').on('focus', function() {
+	            $('#drug-results').show();
+	        });
+	    });
+	 
 		//질병 검색 api
 		function searchDiagnosis() {
 			const diagnosisName = $('#diagnosis-name').val().trim();
