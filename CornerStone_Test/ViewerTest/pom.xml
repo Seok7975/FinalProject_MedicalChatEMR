@@ -58,8 +58,6 @@
     <artifactId>dcm4che-core</artifactId>
     <version>5.32.0</version>
 </dependency>
-
-
 <!-- https://mvnrepository.com/artifact/org.dcm4che/dcm4che-imageio -->
 <dependency>
     <groupId>org.dcm4che</groupId>
@@ -73,14 +71,13 @@
     <version>5.32.0</version>
     <type>pom</type>
 </dependency>
+<!-- https://mvnrepository.com/artifact/com.groupdocs/groupdocs-conversion -->
+<dependency>
+    <groupId>com.groupdocs</groupId>
+    <artifactId>groupdocs-conversion</artifactId>
+    <version>24.7</version>
+</dependency>
 
-        <!-- Lombok for easier code maintenance -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
