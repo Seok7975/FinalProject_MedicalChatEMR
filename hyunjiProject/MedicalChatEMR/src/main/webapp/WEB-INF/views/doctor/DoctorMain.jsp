@@ -818,6 +818,8 @@ function addDrugToTable(cpntCd, ingdNameKor, fomlNm, dosageRouteCode, dayMaxDosg
 			});
 			document.getElementById(tabId).classList.add('active');
 		}
+
+		/*달력 API 함수*/
 		document.addEventListener('DOMContentLoaded', function() {
 			var calendarEl = document.getElementById('calendar');
 
@@ -843,6 +845,80 @@ function addDrugToTable(cpntCd, ingdNameKor, fomlNm, dosageRouteCode, dayMaxDosg
 			});
 			calendar.render();
 		});
+
+/*API 데이터 DB에 저장*/
+		function saveData() {
+			// 진단 데이터 수집
+			const diagnosisData = [];
+			$('#diagnosis tbody tr').each(function() {
+				const diseaseCode = $(this).find('td:nth-child(1)').text();
+				const diseaseName = $(this).find('td:nth-child(2)').text();
+				diagnosisData.push({
+					disease_code : diseaseCode,
+					disease_name : diseaseName
+				});
+			});
+
+			// 처방 데이터 수집
+			const prescriptionData = [];
+			$('#prescriptions tbody tr').each(function() {
+				const itemSeq = $(this).find('td:nth-child(1)').text();
+				const itemName = $(this).find('td:nth-child(2)').text();
+				const useMethod = $(this).find('td:nth-child(3)').text();
+				const entpName = $(this).find('td:nth-child(4)').text();
+				prescriptionData.push({
+					itemSeq : itemSeq,
+					itemName : itemName,
+					useMethodQesitm : useMethod,
+					entpName : entpName
+				});
+			});
+
+			// 약물 데이터 수집
+			const drugData = [];
+			$('#drugPrescriptions tbody tr').each(
+					function() {
+						const cpntCd = $(this).find('td:nth-child(1)').text();
+						const ingdNameKor = $(this).find('td:nth-child(2)')
+								.text();
+						const fomlNm = $(this).find('td:nth-child(3)').text();
+						const dosageRouteCode = $(this).find('td:nth-child(4)')
+								.text();
+						const dayMaxDosgQyUnit = $(this)
+								.find('td:nth-child(5)').text();
+						const dayMaxDosgQy = $(this).find('td:nth-child(6)')
+								.text();
+						drugData.push({
+							cpntCd : cpntCd,
+							drugCpntKorNm : ingdNameKor,
+							fomlNm : fomlNm,
+							dosageRouteCode : dosageRouteCode,
+							dayMaxDosgQyUnit : dayMaxDosgQyUnit,
+							dayMaxDosgQy : dayMaxDosgQy
+						});
+					});
+
+			// 데이터 저장 요청을 서버로 전송
+			const requestData = {
+				diagnosis : diagnosisData,
+				prescriptions : prescriptionData,
+				drugs : drugData
+			};
+
+			$.ajax({
+				url : '/api/doctor/saveAllPrescriptions',
+				method : 'POST',
+				contentType : 'application/json',
+				data : JSON.stringify(requestData),
+				success : function(response) {
+					alert("저장되었습니다.");
+				},
+				error : function(error) {
+					console.error("저장 중 오류 발생", error);
+					alert("저장 중 오류가 발생했습니다.");
+				}
+			});
+		}
 	</script>
 </body>
 <footer> </footer>
