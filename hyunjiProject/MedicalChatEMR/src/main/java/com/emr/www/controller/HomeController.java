@@ -22,12 +22,12 @@ public class HomeController {
 	
 	//병원장 페이지에서 동적으로 메인 보드에 기능 페이지 로드
 		//직원 생성 페이지
-	 @GetMapping("/admin/employee-create")
+	 @GetMapping("/admin/employeeCreate")
 	    public String showEmployeeCreatePage() {
 	        return "admin/employeeCreate"; // "WEB-INF/views/admin/employeeCreate.jsp"를 의미
 	    }
 	 //직원 조회/수정/퇴사 페이지
-	 @GetMapping("/admin/employee-view")
+	 @GetMapping("/admin/employeeView")
 	 public String showEmployeeEditePage() {
 		 return "admin/employeeView"; // "WEB-INF/views/admin/employeeView.jsp"를 의미
 	 }

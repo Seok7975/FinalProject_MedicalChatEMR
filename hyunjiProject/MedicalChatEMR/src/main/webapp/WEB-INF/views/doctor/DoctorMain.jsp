@@ -13,6 +13,7 @@
 	rel='stylesheet' />
 <script
 	src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
 html, body {
 	margin: 0;
@@ -378,7 +379,12 @@ footer p {
 .prescriptions .table th, .drug .table th {
 	font-size: 12px; /* 표의 제목 부분 폰트 크기를 줄였습니다. */
 }
+
+.diagnosis-results, .medicine-results, .drug-results, .searchList {
+	cursor: pointer;
+}
 </style>
+
 </head>
 
 <body>
@@ -498,16 +504,39 @@ footer p {
 				<div>이미지뷰</div>
 				<div>이미지뷰</div>
 			</div>
-			<div class="section diagnosis" style="grid-column: span 3;">
-				<h2>상병</h2>
-				<p>상병 정보가 여기에 표시됩니다.</p>
+
+			<!-- 질병 API -->
+			<div class="section search diagnosis" style="grid-column: span 1;">
+				<h2>질병 검색</h2>
+				<input type="text" id="diagnosis-name" class="searchBox"
+					placeholder="질병명" onchange="searchDiagnosis()">
+				<div id="diagnosis-results" style="max-height: 350px;">
+					<!-- 검색 결과가 여기에 추가됩니다 -->
+				</div>
 			</div>
+			<div class="section prescriptions diagnosis"
+				style="grid-column: span 2;">
+				<h2>상병</h2>
+				<table class="table" id="diagnosis">
+					<thead>
+						<tr>
+							<th>질병 코드</th>
+							<th>질병 명칭</th>
+							<th>삭제</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- 질병 리스트가 여기에 추가 -->
+					</tbody>
+				</table>
+			</div>
+
 
 			<!-- 약품 검색 api -->
 			<div class="section search medicine">
 				<h2>약품 검색</h2>
 				<input type="text" class="searchBox" id="medicine-name"
-					placeholder="약품명" oninput="searchMedicine()">
+					placeholder="약품명" onchange="searchMedicine()">
 				<div id="medicine-results" style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
@@ -519,9 +548,9 @@ footer p {
 					<thead>
 						<tr>
 							<th>약품 코드</th>
+							<th>업체명</th>
 							<th>약품명(한글)</th>
 							<th>복용법</th>
-							<th>업체명</th>
 							<th>삭제</th>
 						</tr>
 					</thead>
@@ -535,7 +564,7 @@ footer p {
 			<div class="section search drug">
 				<h2>약물 검색</h2>
 				<input type="text" class="searchBox" id="drug-name"
-					placeholder="약물명" oninput="searchDrug()">
+					placeholder="약물명" onchange="searchDrug()">
 				<div id="drug-results" style="max-height: 350px;">
 					<!-- 검색 결과가 여기에 추가됩니다 -->
 				</div>
@@ -562,145 +591,163 @@ footer p {
 		</section>
 	</main>
 	<script>
-	
-	/*처방 - open api 사용 >> 약물*/
-function searchDrug() {
-    const drugName = document.getElementById('drug-name').value.trim();
-    const resultsDiv = document.getElementById('drug-results');
+	//질병 검색 api
+	function searchDiagnosis() {
+    const diagnosisName = $('#diagnosis-name').val().trim();
 
-    const encodedName = encodeURIComponent(drugName);
-    fetch('/api/doctor/drugSearch?query=' + encodedName, {
-        headers: {
-            'Accept': 'application/xml',
+    $.ajax({
+        url: '/api/doctor/diagnosisSearch',
+        method: 'GET',
+        data: { query: diagnosisName },
+        dataType: 'xml', // XML 데이터 타입으로 설정
+        success: function (xml) {
+            $('#diagnosis-results').empty();  // 기존 결과를 비움
+            $('#diagnosis tbody').empty(); // 테이블의 기존 데이터를 비움 (선택적으로 초기화할 수 있음)
+
+            const items = $(xml).find('item');  // XML에서 item 태그를 찾아 반복 처리
+
+            if (items.length === 0) {
+                $('#diagnosis-results').append('<p>검색 결과가 없습니다.</p>');
+                return;
+            }
+
+            // 검색된 각 item에 대한 처리
+            items.each(function () {
+                const diseaseCode = $(this).find('disease_code').text();
+                const diseaseName = $(this).find('disease_name').text();
+
+                // 검색 결과를 화면에 표시 (클릭 이벤트 추가)
+                const resultDiv = $('<div class="diagnosis-results">' + diseaseName + '</div>');
+                resultDiv.on('click', function () {
+                    addDiagnosisToTable(diseaseCode, diseaseName);
+                });
+                $('#diagnosis-results').append(resultDiv);
+            });
+        },
+        error: function (error) {
+            $('#diagnosis-results').html('<p>오류가 발생했습니다.</p>');
         }
-    })
-    .then(response => response.text())
-    .then(str => {
-        // XML 데이터를 문자열로 출력
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(str, "application/xml");
-
-        // 올바른 태그 이름으로 데이터 파싱
-        const items = xmlDoc.getElementsByTagName('item');
-
-        if (items.length === 0) {
-            resultsDiv.innerHTML = '<p>검색된 약품이 없습니다.</p>';
-            return;
-        }
-
-        resultsDiv.innerHTML = '';  // 기존 내용을 지우고 새로 추가
-
-        for (let i = 0; i < items.length; i++) {
-            const drugDiv = document.createElement('div');
-            drugDiv.classList.add('drug-result');
-
-            // XML 태그 이름을 정확하게 사용하여 데이터를 읽어옴
-            const ingdNameKor = items[i].getElementsByTagName('drugCpntKorNm')[0]?.textContent || '정보 없음';
-
-            // 텍스트가 올바르게 설정되도록 수정
-            drugDiv.textContent = ingdNameKor;
-
-            const drugData = {
-                cpntCd: items[i].getElementsByTagName('cpntCd')[0]?.textContent || '정보 없음',
-                ingdNameKor: ingdNameKor,
-                fomlNm: items[i].getElementsByTagName('fomlNm')[0]?.textContent || '정보 없음',
-                dosageRouteCode: items[i].getElementsByTagName('dosageRouteCode')[0]?.textContent || '정보 없음',
-                dayMaxDosgQyUnit: items[i].getElementsByTagName('dayMaxDosgQyUnit')[0]?.textContent || '정보 없음',
-                dayMaxDosgQy: items[i].getElementsByTagName('dayMaxDosgQy')[0]?.textContent || '정보 없음'
-            };
-
-            // 클릭하면 처방에 추가
-            drugDiv.onclick = () => addPrescription(drugData);
-
-            resultsDiv.appendChild(drugDiv);
-        }
-    })
-    .catch(error => {
-        resultsDiv.innerHTML = '<p>약품 데이터를 가져오는 중 오류가 발생했습니다.</p>';
     });
 }
 
-/*약물 클릭하면 목록으로 이동하게끔 + 삭제 기능 추가 예정 */
-function addPrescription(drugData) {
-    const drugPrescriptionTable = document.getElementById('drugPrescriptions').getElementsByTagName('tbody')[0];
-
-    const newRow = drugPrescriptionTable.insertRow();
-
-    newRow.insertCell(0).textContent = drugData.cpntCd || '정보 없음';
-    newRow.insertCell(1).textContent = drugData.ingdNameKor || '정보 없음';
-    newRow.insertCell(2).textContent = drugData.fomlNm || '정보 없음';
-    newRow.insertCell(3).textContent = drugData.dosageRouteCode || '정보 없음';
-    newRow.insertCell(4).textContent = drugData.dayMaxDosgQyUnit || '정보 없음';
-    newRow.insertCell(5).textContent = drugData.dayMaxDosgQy || '정보 없음';
+// 질병 항목을 테이블에 추가하는 함수
+function addDiagnosisToTable(diseaseCode, diseaseName) {
+	
+	  const newRowHtml = '<tr>' +
+      '<td>' + diseaseCode + '</td>' +
+      '<td>' + diseaseName + '</td>' +
+      '<td><button class="searchList" onclick="$(this).closest(\'tr\').remove()">X</button></td>' +
+      '</tr>';
+    
+    $('#diagnosis tbody').append(newRowHtml);
 }
 
-/* 처방 - open api 사용 >> 약품 */
+//약품 검색 API
 function searchMedicine() {
-    const medicineName = document.getElementById('medicine-name').value.trim();
-    const resultsDiv = document.getElementById('medicine-results');
+    const medicineName = $('#medicine-name').val().trim();
 
-    const encodedName = encodeURIComponent(medicineName);
-    fetch('/api/doctor/prescriptionsSearch?query=' + encodedName, {
-        headers: {
-            'Accept': 'application/xml',
+    $.ajax({
+        url: '/api/doctor/prescriptionsSearch',
+        method: 'GET',
+        data: { query: medicineName },
+        dataType: 'xml',
+        success: function (xml) {
+            $('#medicine-results').empty();
+            $('#prescriptions tbody').empty();
+
+            const items = $(xml).find('item');
+
+            if (items.length === 0) {
+                $('#medicine-results').append('<p>검색 결과가 없습니다.</p>');
+                return;
+            }
+
+            items.each(function () {
+                const itemSeq = $(this).find('itemSeq').text();
+                const entpName = $(this).find('entpName').text();
+                const itemName = $(this).find('itemName').text();
+                const useMethod = $(this).find('useMethodQesitm').text();
+                
+                const resultDiv = $('<div class="medicine-results">' + itemName + '</div>');
+                resultDiv.on('click', function () {
+                    addMedicineToTable(itemSeq, itemName, entpName, useMethod);
+                });
+                $('#medicine-results').append(resultDiv);
+            });
+        },
+        error: function () {
+            $('#medicine-results').html('<p>오류가 발생했습니다.</p>');
         }
-    })
-    .then(response => response.text())
-    .then(str => {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(str, "application/xml");
-
-        const items = xmlDoc.getElementsByTagName('item');
-
-        if (items.length === 0) {
-            resultsDiv.innerHTML = '<p>검색된 약품이 없습니다.</p>';
-            return;
-        }
-
-        resultsDiv.innerHTML = '';  // 기존 내용을 지우고 새로 추가
-
-        for (let i = 0; i < items.length; i++) {
-            const medicineDiv = document.createElement('div');
-            medicineDiv.classList.add('medicine-result');
-
-         // 각 필드를 올바른 태그 이름으로 가져옴
-            const itemSeq = items[i].getElementsByTagName('itemSeq')[0]?.textContent || '정보 없음'; //약품 코드
-            const entpName = items[i].getElementsByTagName('entpName')[0]?.textContent || '정보 없음'; //약품 회사
-            const itemName = items[i].getElementsByTagName('itemName')[0]?.textContent || '정보 없음'; //약품 명
-            const useMethodQesitm = items[i].getElementsByTagName('useMethodQesitm')[0]?.textContent || '정보 없음'; //복용 방법
-
-
-            medicineDiv.textContent = itemName;  // 화면에 약품명을 표시
-
-            const medicineData = {
-                    entpName: entpName,
-                    itemSeq: itemSeq,
-                    itemName: itemName,
-                    useMethodQesitm: useMethodQesitm
-                };
-
-            // 클릭하면 처방에 추가
-            medicineDiv.onclick = () => addMedicinePrescription(medicineData);
-
-            resultsDiv.appendChild(medicineDiv);
-        }
-    })
-    .catch(error => {
-        resultsDiv.innerHTML = '<p>약품 데이터를 가져오는 중 오류가 발생했습니다.</p>';
     });
 }
 
-function addMedicinePrescription(medicineData) {
-    const prescriptionTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
-
-    const newRow = prescriptionTable.insertRow();
-
-    newRow.insertCell(0).textContent = medicineData.itemSeq || '정보 없음';  // 약품 코드
-    newRow.insertCell(1).textContent = medicineData.entpName || '정보 없음';  // 약품회사
-    newRow.insertCell(1).textContent = medicineData.itemName || '정보 없음';  // 약품명
-    newRow.insertCell(2).textContent = medicineData.useMethodQesitm || '정보 없음';  // 복용방법
+//약품 목록에 추가
+function addMedicineToTable(itemSeq, itemName, entpName, useMethod) {
+	 const newRowHtml = '<tr>' +
+     '<td>' + itemSeq + '</td>' +
+     '<td>' + itemName + '</td>' +
+     '<td>' + useMethod + '</td>' +
+     '<td>' + entpName + '</td>' +
+     '<td><button class="searchList" onclick="$(this).closest(\'tr\').remove()">X</button></td>' +
+     '</tr>';
+ $('#prescriptions tbody').append(newRowHtml);
 }
-	
+
+// 약물 검색 API
+function searchDrug() {
+    const drugName = $('#drug-name').val().trim();
+
+    $.ajax({
+        url: '/api/doctor/drugSearch',
+        method: 'GET',
+        data: { query: drugName },
+        dataType: 'xml',
+        success: function (xml) {
+            $('#drug-results').empty();
+            $('#drugPrescriptions tbody').empty();
+
+            const items = $(xml).find('item');
+
+            if (items.length === 0) {
+                $('#drug-results').append('<p>검색 결과가 없습니다.</p>');
+                return;
+            }
+
+            items.each(function () {
+                const cpntCd = $(this).find('cpntCd').text();
+                const ingdNameKor = $(this).find('drugCpntKorNm').text();
+                const fomlNm = $(this).find('fomlNm').text();
+                const dosageRouteCode = $(this).find('dosageRouteCode').text();
+                const dayMaxDosgQyUnit = $(this).find('dayMaxDosgQyUnit').text();
+                const dayMaxDosgQy = $(this).find('dayMaxDosgQy').text();
+
+                const resultDiv = $('<div class="drug-results">' + ingdNameKor + '</div>');
+                resultDiv.on('click', function () {
+                    addDrugToTable(cpntCd, ingdNameKor, fomlNm, dosageRouteCode, dayMaxDosgQyUnit, dayMaxDosgQy);
+                });
+                $('#drug-results').append(resultDiv);
+            });
+        },
+        error: function () {
+            $('#drug-results').html('<p>오류가 발생했습니다.</p>');
+        }
+    });
+}
+
+//약물 목록에 추가
+function addDrugToTable(cpntCd, ingdNameKor, fomlNm, dosageRouteCode, dayMaxDosgQyUnit, dayMaxDosgQy) {
+	const newRowHtml = '<tr>' +
+    '<td>' + cpntCd + '</td>' +
+    '<td>' + ingdNameKor + '</td>' +
+    '<td>' + fomlNm + '</td>' +
+    '<td>' + dosageRouteCode + '</td>' +
+    '<td>' + dayMaxDosgQyUnit + '</td>' +
+    '<td>' + dayMaxDosgQy + '</td>' +
+    '<td><button class="searchList" onclick="$(this).closest(\'tr\').remove()">X</button></td>' +
+    '</tr>';
+    
+    $('#drugPrescriptions tbody').append(newRowHtml);
+}
 
 /*전체 환자 관리 환자 */
 		function showAllPatients() {
@@ -741,11 +788,13 @@ function addMedicinePrescription(medicineData) {
 				dropdown.style.display = 'none';
 			}
 		});
-
+		
+		//프로필 활동상태
 		function setStatus(status, color) {
 			document.querySelector('.status-indicator').style.backgroundColor = color;
 		}
 
+		//환자 관리 목록
 		document.getElementById('tab-all-patients').addEventListener('click',
 				function() {
 					setActiveTab('all-patients-info', 'tab-all-patients');
@@ -794,49 +843,6 @@ function addMedicinePrescription(medicineData) {
 			});
 			calendar.render();
 		});
-		// 처방 삭제 기능 추가
-		function addMedicinePrescription(medicineData) {
-		    const prescriptionTable = document.getElementById('prescriptions').getElementsByTagName('tbody')[0];
-
-		    const newRow = prescriptionTable.insertRow();
-
-		    newRow.insertCell(0).textContent = medicineData.itemSeq || '정보 없음';  // 약품 코드
-		    newRow.insertCell(1).textContent = medicineData.entpName || '정보 없음';  // 약품회사
-		    newRow.insertCell(2).textContent = medicineData.itemName || '정보 없음';  // 약품명
-		    newRow.insertCell(3).textContent = medicineData.useMethodQesitm || '정보 없음';  // 복용방법
-
-		    // 삭제 버튼 추가
-		    const deleteCell = newRow.insertCell(4);
-		    const deleteButton = document.createElement('button');
-		    deleteButton.textContent = 'X';
-		    deleteButton.onclick = function () {
-		        prescriptionTable.deleteRow(newRow.rowIndex - 1);
-		    };
-		    deleteCell.appendChild(deleteButton);
-		}
-
-		// 약물 목록 삭제 기능 추가
-		function addPrescription(drugData) {
-		    const drugPrescriptionTable = document.getElementById('drugPrescriptions').getElementsByTagName('tbody')[0];
-
-		    const newRow = drugPrescriptionTable.insertRow();
-
-		    newRow.insertCell(0).textContent = drugData.cpntCd || '정보 없음';
-		    newRow.insertCell(1).textContent = drugData.ingdNameKor || '정보 없음';
-		    newRow.insertCell(2).textContent = drugData.fomlNm || '정보 없음';
-		    newRow.insertCell(3).textContent = drugData.dosageRouteCode || '정보 없음';
-		    newRow.insertCell(4).textContent = drugData.dayMaxDosgQyUnit || '정보 없음';
-		    newRow.insertCell(5).textContent = drugData.dayMaxDosgQy || '정보 없음';
-
-		    // 삭제 버튼 추가
-		    const deleteCell = newRow.insertCell(6);
-		    const deleteButton = document.createElement('button');
-		    deleteButton.textContent = 'X';
-		    deleteButton.onclick = function () {
-		        drugPrescriptionTable.deleteRow(newRow.rowIndex - 1);
-		    };
-		    deleteCell.appendChild(deleteButton);
-		}
 	</script>
 </body>
 <footer> </footer>

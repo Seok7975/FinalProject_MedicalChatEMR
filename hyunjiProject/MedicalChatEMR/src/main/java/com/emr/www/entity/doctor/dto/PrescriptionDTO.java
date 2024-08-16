@@ -3,8 +3,8 @@ package com.emr.www.entity.doctor.dto;
 
 public class PrescriptionDTO {
 
-	private String entpName; //약품 회사
 	private String itemSeq; //코드
+	private String entpName; //약품 회사
 	private String itemName; //약품명
 	private String useMethodQesitm; //복용방법
 	
