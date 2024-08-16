@@ -818,6 +818,7 @@ function addDrugToTable(cpntCd, ingdNameKor, fomlNm, dosageRouteCode, dayMaxDosg
 			});
 			document.getElementById(tabId).classList.add('active');
 		}
+
 		/*달력 API 함수*/
 		document.addEventListener('DOMContentLoaded', function() {
 			var calendarEl = document.getElementById('calendar');
