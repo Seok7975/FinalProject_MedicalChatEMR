@@ -69,7 +69,7 @@ CREATE TABLE MedicalRecord (
 
 -- 진단 테이블(질병 정보 저장)
 CREATE TABLE Diagnosis (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    no INT AUTO_INCREMENT PRIMARY KEY,
     chart_num INT NOT NULL, -- MedicalRecord의 차트 번호 참조
     disease_code VARCHAR(10), -- 질병 코드
     disease_name VARCHAR(255), -- 질병 명칭
@@ -80,10 +80,10 @@ CREATE TABLE Diagnosis (
 CREATE TABLE Prescriptions (
     no INT AUTO_INCREMENT PRIMARY KEY,        -- 고유 번호 (프라이머리 키)
     chart_num INT NOT NULL,                   -- MedicalRecord의 차트 번호 참조 (외래 키)
-    entpName VARCHAR(255) NOT NULL,           -- 약품 회사
-    itemSeq VARCHAR(100) NOT NULL,            -- 코드
-    itemName VARCHAR(100) NOT NULL,           -- 약품명
-    useMethodQesitm TEXT,                     -- 복용방법
+    entpName VARCHAR(255),           -- 약품 회사
+    itemSeq VARCHAR(100),            -- 코드
+    itemName VARCHAR(100),           -- 약품명
+    useMethodQesitm TEXT,             -- 복용방법
     FOREIGN KEY (chart_num) REFERENCES MedicalRecord(chart_num) ON DELETE CASCADE
 );
 
