@@ -879,8 +879,7 @@ footer {
 						</tr>
 						<tr>
 							<td>B02CD34</td>
-							<td>스크롤바
-								테스트용~!@~!@~#@#$!@#!@#!@#!@#!@#!@#!@#$~!@#~!@#~~~!@#~!@#~!@#~!@#~23`</td>
+							<td>스크롤바 테스트용~!@~!@~#@#$!@#!@#!@#!@#!@#!@#!@#$~!@#~!@#~~~!@#~!@#~!@#~!@#~23`</td>
 							<td>정제</td>
 							<td>경구</td>
 							<td>mg</td>
@@ -888,8 +887,7 @@ footer {
 						</tr>
 						<tr>
 							<td>B02CD34</td>
-							<td>스크롤바
-								테스트용~!@~!@~#@#$!@#!@#!@#!@#!@#!@#!@#$~!@#~!@#~~~!@#~!@#~!@#~!@#~23`</td>
+							<td>스크롤바 테스트용~!@~!@~#@#$!@#!@#!@#!@#!@#!@#!@#$~!@#~!@#~~~!@#~!@#~!@#~!@#~23`</td>
 							<td>정제</td>
 							<td>경구</td>
 							<td>mg</td>
@@ -935,7 +933,7 @@ footer {
 		<div class="modal-content">
 			<span class="close">&times;</span>
 			<h2>신규 환자 등록</h2>
-			<form id="patientRegisterForm" method="POST" action="registerPatient">
+			<form id="patientRegisterForm">
 				<div class="form-group">
 					<label for="patientName">이름:</label> <input type="text"
 						id="patientName" name="patientName" required>
@@ -948,10 +946,11 @@ footer {
 				<div class="gender-selection">
 					<label>성별:</label>
 					<div class="radio-inline">
-						<label> <input type="radio" name="patientGender" value="M"
-							required> 남성
-						</label> <label> <input type="radio" name="patientGender"
-							value="F" required> 여성
+						<label>
+							<input type="radio" name="patientGender" value="M" required> 남성
+						</label> 
+						<label>
+							<input type="radio" name="patientGender" value="F" required> 여성
 						</label>
 					</div>
 				</div>
@@ -994,8 +993,8 @@ footer {
 					<div class="blood-type-input-group">
 						<select id="patientRhFactor" name="patientRhFactor" required>
 							<option value="">Rh 선택</option>
-							<option value="(+)">Rh+</option>
-							<option value="(-)">Rh-</option>
+							<option value="+">Rh+</option>
+							<option value="-">Rh-</option>
 						</select> <select id="patientABOBloodType" name="patientABOBloodType"
 							required>
 							<option value="">선택</option>
@@ -1013,22 +1012,19 @@ footer {
 				</div>
 				<div class="form-group">
 					<label for="patientWeight">체중(kg):</label> <input type="number"
-						id="patientWeight" name="patientWeight" required>
+						id="patientWeight" name="patientWeight"  required>
 				</div>
 				<div class="form-group">
 					<label for="patientAllergies">알레르기:</label>
-					<textarea id="patientAllergies" name="patientAllergies"
-						maxlength="1000"></textarea>
+					<textarea id="patientAllergies" name="patientAllergies" maxlength="1000"></textarea>
 				</div>
 				<div class="form-group">
-					<label for="patientBloodPressure">혈압(mmHg):</label> <input
-						type="text" id="patientBloodPressure" name="patientBloodPressure"
-						maxlength="10">
+					<label for="patientBloodPressure">혈압(mmHg):</label> 
+					<input type="text" id="patientBloodPressure" name="patientBloodPressure" maxlength="10">
 				</div>
 				<div class="form-group">
-					<label for="patientTemperature">체온(℃):</label> <input type="text"
-						id="patientTemperature" name="patientTemperature" maxlength="4"
-						step="0.1">
+					<label for="patientTemperature">체온(℃):</label> 
+					<input type="text" id="patientTemperature" name="patientTemperature" maxlength="4" step="0.1">
 				</div>
 				<div class="smoking-status-selection">
 					<label>흡연 여부:</label>
@@ -1068,7 +1064,7 @@ footer {
 				<div class="form-group">
 					<label for="visitReason">내원 사유:</label>
 					<textarea id="visitReason" name="visitReason" required></textarea>
-				</div>
+				</div>	
 				<div class="form-group">
 					<button type="submit">내원 등록</button>
 				</div>
@@ -1337,85 +1333,6 @@ footer {
 		    input.value = input.value.replace(/-/g, '');
 		}
 
-		// 환자등록
-	    document.getElementById('patientRegisterForm').addEventListener('submit', function(e) {
-	        e.preventDefault();
-	        
-	        // 폼 데이터 수집
-			const formData = new FormData(this);
-			const patientData = {};
-			formData.forEach((value, key) => {
-			    switch(key) {
-			        case 'patientEmailId':
-			        case 'patientEmailDomain':
-			            if (!patientData.email) patientData.email = '';
-			            patientData.email += value + (key === 'patientEmailId' ? '@' : '');
-			            break;
-			        case 'patientRhFactor':
-			        case 'patientABOBloodType':
-			            if (!patientData.blood_type) patientData.blood_type = '';
-			            patientData.blood_type += value;
-			            break;
-			        case 'patientName':
-			            patientData.name = value;
-			            break;
-			        case 'patientSecurityNum':
-			            patientData.securityNum = value; // replace(/-/g, '');
-			            break;
-			        case 'patientGender':
-			            patientData.gender = value;
-			            break;
-			        case 'patientAddress':
-			            patientData.address = value;
-			            break;
-			        case 'patientPhone':
-			            patientData.phone = value; //.replace(/-/g, '');
-			            break;
-			        case 'patientHeight':
-			            patientData.height = value;
-			            break;
-			        case 'patientWeight':
-			            patientData.weight = value;
-			            break;
-			        case 'patientAllergies':
-			            patientData.allergies = value;
-			            break;
-			        case 'patientBloodPressure':
-			            patientData.blood_pressure = value;
-			            break;
-			        case 'patientTemperature':
-			            patientData.temperature = value; 
-			            break;
-			        case 'patientSmokingStatus':
-			            patientData.smoking_status = value;
-			            break;
-			        default:
-			            patientData[key] = value;
-			    }
-			});
-
-	
-	        // 주민등록번호와 전화번호의 하이픈 유지
-	
-	        // AJAX 요청
-	        fetch('/headnurse/registerPatient', {
-	            method: 'POST',
-	            headers: {
-	                'Content-Type': 'application/json',
-	            },
-	            body: JSON.stringify(patientData)
-	        })
-	        .then(response => response.json())
-	        .then(data => {
-	            alert('환자가 성공적으로 등록되었습니다.');
-	            patientRegisterModal.style.display = 'none';
-	            // 필요한 경우 페이지 새로고침 또는 환자 목록 업데이트
-	        })
-	        .catch(error => {
-	            console.error('Error:', error);
-	            alert('환자 등록 중 오류가 발생했습니다.');
-	        });
-	    });
 
 
     </script>
