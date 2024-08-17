@@ -32,8 +32,8 @@ CREATE TABLE Doctor (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(16) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), -- (초기에는 NULL)
+    position VARCHAR(20) -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
     department_id VARCHAR(10), -- 소속 진료과입니다.
-    specialty VARCHAR(100), -- 전문 분야입니다.
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
     active_status VARCHAR(50) NOT NULL -- 현재 활동 상태
 );
@@ -49,7 +49,7 @@ CREATE TABLE Nurse (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(16) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), -- (초기에는 NULL)
-    role VARCHAR(255) NOT NULL, -- 역할 ('N' - 일반 간호사, 'S' - 수간호사)
+    position VARCHAR(20) -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
     active_status VARCHAR(50) NOT NULL ; -- 현재 활동 상태
 );
