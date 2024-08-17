@@ -1,14 +1,13 @@
 package com.emr.www.entity.doctor.dto;
-import javax.xml.bind.annotation.XmlElement;
 
 public class DrugDTO {
 
-	private String cpntCd;
-	private String drugCpntKorNm;
-	private String fomlNm;
-	private String dosageRouteCode;
-	private String dayMaxDosgQyUnit;
-	private String dayMaxDosgQy;
+	private String cpntCd; //성분 코드
+	private String drugCpntKorNm; //성분 명
+	private String fomlNm; //제형명
+	private String dosageRouteCode; //투여 경로
+	private String dayMaxDosgQyUnit; //투여 단위
+	private String dayMaxDosgQy; //1일 최대 투여량
 
 	public String getCpntCd() {
 		return cpntCd;

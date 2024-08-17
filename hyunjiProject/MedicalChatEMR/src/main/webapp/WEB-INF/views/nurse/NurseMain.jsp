@@ -1,12 +1,18 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
-	
+    pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>전자 의료 기록 시스템</title>
+<title>Nurse Dashboard</title>
+<link
+	href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css'
+	rel='stylesheet' />
+<script
+	src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <style>
 html, body {
 	margin: 0;
@@ -26,6 +32,7 @@ header {
 	background-color: #b8edb5;
 	padding: 10px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin-bottom: 8px;
 }
 
 .header {
@@ -34,10 +41,14 @@ header {
 	margin-bottom: 20px;
 }
 
+.logo {
+	display: flex;
+	justify-content: flex-start;
+	flex: 1;
+}
+
 .logo img {
-	left: 10px;
-	position: absolute;
-	width: 250px;
+	width: 15vw;
 	height: auto;
 }
 
@@ -104,14 +115,6 @@ nav {
 	cursor: pointer;
 }
 
-.patient-search {
-	margin: 10px 0;
-	width: 90%;
-	padding: 8px;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-}
-
 .dropdown-menu {
 	display: none;
 	width: 130px;
@@ -145,154 +148,136 @@ nav {
 	height: 10px;
 	border-radius: 50%;
 	margin-right: 8px;
-	/* Space between color indicator and text */
 }
 
 .container {
 	display: flex;
 	flex: 1;
-	transition: all 0.4s ease;
 }
 
-.leftSidebar, .rightSidebar {
-	background-color: #e9e9e9;
-	width: 230px;
-	padding: 10px;
-	box-sizing: border-box;
-	overflow-y: auto;
-}
-
-.rightSidebar {
-	transition: all 0.4s ease;
-}
-
-.main {
-	flex: 2;
+.sidebar {
+	width: 20%;
+	background-color: #f0f0f0;
 	padding: 20px;
-	margin: 0 10px;
-	background-color: #f4f4f4;
-	overflow-y: auto;
+	border-right: 1px solid #ddd;
 	box-sizing: border-box;
-	transition: all 0.4s ease;
+	margin-right: 8px;
 }
 
-.card {
-	background-color: #ffffff;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	padding: 10px;
+.content {
+	flex: 1;
+	padding: 0px;
+	background-color: white;
 	border-radius: 8px;
-	height: 100%;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	display: grid;
+	grid-template-areas: "patient-info symptoms status" 
+		"history diagnosis prescriptions" 
+		"medicine medicine medicine";
+	grid-gap: 8px;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: auto auto auto 1fr;
 }
 
-table {
+.section {
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background-color: #fafafa;
+	overflow-y: auto;
+}
+
+.section h2 {
+	margin-top: 0;
+	margin-bottom: 8px;
+}
+
+.patient-info {
+	grid-area: patient-info;
+}
+
+.history {
+	grid-area: history;
+}
+
+.symptoms {
+	grid-area: symptoms;
+}
+
+.status {
+	grid-area: status;
+}
+
+.diagnosis {
+	grid-area: diagnosis;
+}
+
+.prescriptions {
+	grid-area: prescriptions;
+}
+
+.medicine {
+	grid-area: medicine;
+}
+
+.table {
 	width: 100%;
 	border-collapse: collapse;
 }
 
-.table-cell {
+.table th, .table td {
 	border: 1px solid #ddd;
-	padding: 8px;
-	text-align: left;
-}
-
-th {
-	background-color: #f4f4f4;
-}
-
-.header h1 {
-	margin: 0;
-	font-size: 24px;
-}
-
-.section {
-	margin-bottom: 20px;
-}
-
-.section h2 {
-	margin-bottom: 10px;
-	font-size: 18px;
-}
-
-.tabs {
-	display: flex;
-}
-
-.tab {
-	flex: 1;
-	text-align: center;
-	padding: 10px;
-	cursor: pointer;
-	background-color: #f0f0f0;
-	border-bottom: 2px solid transparent;
-	transition: background-color 0.4s, border-bottom 0.3s;
-}
-
-.tab.active {
-	background-color: #ffffff;
-	border-bottom: 2px solid #38a169;
-}
-
-.info {
-	display: none;
-}
-
-.info.active {
-	display: block;
-}
-
-.editable {
 	padding: 4px;
-	margin-top: 5px;
+	text-align: center;
 }
 
-.editable input {
-	border: none;
-	outline: none;
-	/* Remove default focus outline */
-	width: 100%;
-	background: transparent;
-	font-size: 14px;
-	pointer-events: none;
-	/* Disable interaction */
-	cursor: default;
+.scrollable-patient-list {
+    max-height: 250px;
+    overflow-y: auto;
 }
 
-td.editing {
-	background-color: #fbf6c390;
+#calendar {
+	max-width: 3000px;
+	height: 400px;
+	text-align: center;
+	font-size: 0.6em;
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-top: 30px;
 }
 
-td.editing input {
-	background-color: transparent;
-	/* Keep input background transparent */
-	pointer-events: auto;
-	/* Enable interaction */
-	cursor: text;
-	transition: all 0.4s ease;
+.fc-header-toolbar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 }
 
-.record:hover {
-	cursor: pointer;
+.fc-toolbar-chunk {
+	margin: 2px 0;
 }
 
-.hidden {
-	width: 0;
-	padding: 0;
-	overflow: hidden;
-	display: none;
+.fc-daygrid-day {
+	height: 0.6em;
+}
+
+.fc-scroller-harness {
+	overflow: auto;
 }
 </style>
+
 </head>
 
 <body>
 	<header>
-		<div class="logo">
-			<img src="Img/Logo.png">
-		</div>
 		<nav>
+			<div class="logo">
+				<img src="/Img/Logo.png" alt="Logo">
+			</div>
 			<button id="messages-btn" class="nav-btn">Message</button>
 			<button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
 			<div class="profile-info">
-				<img id="profile-image" src="doctorProfile.png" alt="Profile Image">
+				<img id="profile-image" src="nurseProfile.png" alt="Profile Image">
 				<div class="status-indicator"></div>
 				<button id="logout-btn" class="logout-btn">Log Out</button>
 				<div class="dropdown-menu">
@@ -312,316 +297,243 @@ td.editing input {
 		</nav>
 	</header>
 
-	<div class="container">
-		<div class="leftSidebar">
-			<div class="card">
-				<div class="tabs">
-					<div id="tab-all-patients" class="tab active">전체 환자</div>
-					<div id="tab-managed-patients" class="tab">관리 환자</div>
-				</div>
-				<input class="patient-search" type="text" placeholder="환자 검색"
-					id="patientSearch">
-				<button id="refresh-list"
-					style="width: 100%; padding: 10px; background-color: #38a169; color: white; border: none; border-radius: 4px;">새로고침</button>
-				<div id="all-patients-info" class="info active">
-					<h2>전체 환자 목록</h2>
-					<ul id="patientList"></ul>
-				</div>
-				<div id="managed-patients-info" class="info">
-					<h2>관리 환자 목록</h2>
-					<!-- 관리 환자 정보 -->
-				</div>
+	<main class="container">
+		<section class="sidebar">
+			<div class="tab-buttons">
+				<div class="tab active" id="tab-all-patients"
+					onclick="showAllPatients()">대기 환자</div>
+				<div class="tab" id="tab-managed-patients"
+					onclick="showManagedPatients()">완료 환자</div>
 			</div>
-		</div>
-
-		<main class="main">
-			<section class="patient-details card">
-				<div class="header">
-					<h1>환자 EHR</h1>
-					<button id="edit-btn" class="nav-btn" style="margin-top: 10px;">수정</button>
-					<button id="save-btn" class="nav-btn"
-						style="margin-top: 10px; display: none;">저장</button>
-				</div>
-				<div class="section">
-					<h2>기본 정보</h2>
-					<table id="basic-info-table">
-						<tr>
-							<th class="table-cell">환자 ID</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.id" readonly></td>
-							<th class="table-cell">이름</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.name" readonly></td>
-							<th class="table-cell">주민번호</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.securityNum" readonly></td>
-						</tr>
-						<tr>
-							<th class="table-cell">성별</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.gender" readonly></td>
-							<th class="table-cell">키</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.height" readonly></td>
-							<th class="table-cell">체중</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.weight" readonly></td>
-						</tr>
-						<tr>
-							<th class="table-cell">혈액형</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.bloodType" readonly></td>
-							<th class="table-cell">알레르기</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.allergies" readonly></td>
-							<th class="table-cell">흡연 여부</th>
-							<td class="editable table-cell"><input type="text" value=""
-								name="patient.smokingStatus" readonly></td>
-						</tr>
-						<tr>
-							<th class="table-cell">주소</th>
-							<td class="editable table-cell" colspan="5"><input
-								type="text" value="" name="patient.address" readonly></td>
-						</tr>
-					</table>
-				</div>
-
-				<div class="section">
-					<h2>진료 기록</h2>
-					<table id="recordTable">
-						<tr>
-							<th class="table-cell">날짜</th>
-							<th class="table-cell">진단</th>
-							<th class="table-cell">처방</th>
-							<th class="table-cell">담당의</th>
-						</tr>
-						<!-- 진료 기록 데이터가 여기에 추가됩니다 -->
-					</table>
-					<div id="record-details" class="section" style="display: none;">
-						<h3>진료 정보</h3>
-						<table id="details-table">
-							<tr>
-								<th class="table-cell">항목</th>
-								<th class="table-cell">내용</th>
-							</tr>
-							<tr>
-								<td class="table-cell">진료 내용</td>
-								<td id="details-content" class="table-cell"></td>
-							</tr>
-						</table>
-					</div>
-				</div>
-			</section>
-		</main>
-
-		<div class="rightSidebar hidden">
-			<div class="card">
-				<p>메신저 기능</p>
+			<div class="scrollable-patient-list">
+				<h2>진료 대기 목록</h2>
+				<ul id="all-patients">
+					<li>환자1</li>
+					<li>환자2</li>
+					<li>환자3</li>
+				</ul>
 			</div>
-		</div>
-	</div>
+			<div class="scrollable-patient-list" id="managed-patients" style="display:none;">
+				<h2>진료 완료 목록</h2>
+				<ul>
+					<li>환자 A</li>
+					<li>환자 B</li>
+				</ul>
+			</div>
+			<div id='calendar'></div>
+		</section>
+
+		<section class="content">
+			<!-- 환자 정보 -->
+			<div class="section patient-info">
+				<h2>환자 정보</h2>
+				<table class="table">
+					<tr>
+						<th>환자 ID</th>
+						<td>12345</td>
+						<th>이름</th>
+						<td>홍길동</td>
+						<th>생년월일</th>
+						<td>1980-01-01</td>
+						<th>성별</th>
+						<td>남성</td>
+					</tr>
+					<tr>
+						<th>혈액형</th>
+						<td>A+</td>
+						<th>키</th>
+						<td>175cm</td>
+						<th>체중</th>
+						<td>70kg</td>
+						<th>흡연 여부</th>
+						<td>비흡연</td>
+					</tr>
+					<tr>
+						<th>알레르기</th>
+						<td>페니실린</td>
+						<th>주소</th>
+						<td colspan="5">서울시 강남구</td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- 진료 기록 -->
+			<div class="section history">
+				<h2>진료 기록</h2>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>날짜</th>
+							<th>진단</th>
+							<th>처방</th>
+							<th>담당의</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>2024-07-15</td>
+							<td>감기</td>
+							<td>해열제, 항생제</td>
+							<td>김의사</td>
+						</tr>
+						<tr>
+							<td>2024-06-01</td>
+							<td>고혈압</td>
+							<td>혈압약</td>
+							<td>이의사</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- 증상 -->
+			<div class="section symptoms">
+				<h2>증상</h2>
+				<p>두통과 어지러움</p>
+			</div>
+
+			<!-- 상태 -->
+			<div class="section status">
+				<h2>상태</h2>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>검사 항목</th>
+							<th>결과</th>
+							<th>정상 범위</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>혈압</td>
+							<td>130/85 mmHg</td>
+							<td>120/80 mmHg 이하</td>
+						</tr>
+						<tr>
+							<td>콜레스테롤</td>
+							<td>190 mg/dL</td>
+							<td>200 mg/dL 이하</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- 상병 -->
+			<div class="section diagnosis">
+				<h2>질병</h2>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>질병 코드</th>
+							<th>질병 명칭</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>M1036</td>
+							<td>만성두통</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- 처방 -->
+			<div class="section prescriptions">
+				<h2>처방</h2>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>약품 코드</th>
+							<th>업체명</th>
+							<th>약품명</th>
+							<th>복용법</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>A00123</td>
+							<td>제약사</td>
+							<td>타이레놀</td>
+							<td>1회 500mg 1일 2회</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- 투약 정보 -->
+			<div class="section medicine">
+				<h2>투약 정보</h2>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>성분코드</th>
+							<th>성분명(한글)</th>
+							<th>제형명</th>
+							<th>투여경로</th>
+							<th>투여 단위</th>
+							<th>1일 최대 투여량</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>B12345</td>
+							<td>아스피린</td>
+							<td>정제</td>
+							<td>경구</td>
+							<td>500mg</td>
+							<td>1일 2회</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+	</main>
 
 	<script>
-        // 프로필 이미지 클릭 시 드롭다운 토글
-        document.getElementById('profile-image').addEventListener('click', function (event) {
-            const dropdown = document.querySelector('.dropdown-menu');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-            event.stopPropagation(); // 이벤트 버블링 방지
-        });
+		// 탭 전환
+		function showAllPatients() {
+			document.getElementById('tab-all-patients').classList.add('active');
+			document.getElementById('tab-managed-patients').classList.remove('active');
+			document.getElementById('all-patients').style.display = 'block';
+			document.getElementById('managed-patients').style.display = 'none';
+		}
 
-        // 클릭 이외의 부분을 클릭했을 때 메뉴가 사라지도록 처리
-        document.addEventListener('click', function (event) {
-            const dropdown = document.querySelector('.dropdown-menu');
-            if (!event.target.matches('#profile-image') && !dropdown.contains(event.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
+		function showManagedPatients() {
+			document.getElementById('tab-all-patients').classList.remove('active');
+			document.getElementById('tab-managed-patients').classList.add('active');
+			document.getElementById('all-patients').style.display = 'none';
+			document.getElementById('managed-patients').style.display = 'block';
+		}
 
-        // 상태 설정
-        function setStatus(status, color) {
-            document.querySelector('.status-indicator').style.backgroundColor = color;
-        }
+		// 달력 API 함수
+		document.addEventListener('DOMContentLoaded', function() {
+			var calendarEl = document.getElementById('calendar');
 
-        // 탭 전환
-        document.getElementById('tab-all-patients').addEventListener('click', function () {
-            setActiveTab('all-patients-info', 'tab-all-patients');
-        });
-
-        document.getElementById('tab-managed-patients').addEventListener('click', function () {
-            setActiveTab('managed-patients-info', 'tab-managed-patients');
-        });
-
-        function setActiveTab(infoId, tabId) {
-            document.querySelectorAll('.info').forEach(function (info) {
-                info.classList.remove('active');
-            });
-            document.getElementById(infoId).classList.add('active');
-
-            document.querySelectorAll('.tab').forEach(function (tab) {
-                tab.classList.remove('active');
-            });
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // 환자 검색 및 목록 업데이트
-        document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('patientSearch').addEventListener('input', function () {
-                const searchTerm = document.getElementById('patientSearch').value.toLowerCase();
-                if (searchTerm) {
-                    fetchPatients(searchTerm);
-                } else {
-                    // 입력이 없으면 목록을 비우거나 초기 상태로 유지
-                    displayPatients([]);
-                }
-            });
-        });
-
-     // 환자 데이터를 가져오는 함수
-        function fetchPatients(searchTerm) {
-            // JavaScript의 encodeURIComponent 함수를 사용하여 직접 검색어를 인코딩
-            const encodedSearchTerm = encodeURIComponent(searchTerm);
-
-            fetch(`/api/patients?name=${encodedSearchTerm}`)
-                .then(response => response.json())
-                .then(data => {
-                    displayPatients(data);
-                });
-        }
-
-
-        // 환자를 목록에 표시
-        function displayPatients(patients) {
-            const patientList = document.getElementById('patientList');
-            patientList.innerHTML = '';
-
-            patients.forEach(patient => {
-                const li = document.createElement('li');
-                li.textContent = patient.name;
-                li.setAttribute('data-id', patient.id);
-                li.addEventListener('click', () => fetchPatientDetails(patient.id));
-                patientList.appendChild(li);
-            });
-        }
-
-        // 상세 환자 정보를 가져오는 함수
-        function fetchPatientDetails(patientId) {
-            fetch(`/api/patients/${patientId}`)
-                .then(response => response.json())
-                .then(data => {
-                    showPatientDetails(data.patient, data.medicalRecords);
-                });
-        }
-
-        // 환자 및 진료 기록 상세 정보를 표시
-        function showPatientDetails(patient, records) {
-            const basicInfoHtml = `
-                <tr>
-                    <th class="table-cell">환자 ID</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.id}" name="patient.id" readonly></td>
-                    <th class="table-cell">이름</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.name}" name="patient.name" readonly></td>
-                    <th class="table-cell">주민번호</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.securityNum}" name="patient.securityNum" readonly></td>
-                </tr>
-                <tr>
-                    <th class="table-cell">성별</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.gender}" name="patient.gender" readonly></td>
-                    <th class="table-cell">키</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.height}" name="patient.height" readonly></td>
-                    <th class="table-cell">체중</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.weight}" name="patient.weight" readonly></td>
-                </tr>
-                <tr>
-                    <th class="table-cell">혈액형</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.bloodType}" name="patient.bloodType" readonly></td>
-                    <th class="table-cell">알레르기</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.allergies}" name="patient.allergies" readonly></td>
-                    <th class="table-cell">흡연 여부</th>
-                    <td class="editable table-cell"><input type="text" value="${patient.smokingStatus}" name="patient.smokingStatus" readonly></td>
-                </tr>
-                <tr>
-                	<th class="table-cell">주소</th>
-                	<td class="editable table-cell" colspan="5"><input type="text" value="${patient.address}" name="patient.address" readonly></td>
-           		 </tr>`;
-
-            document.getElementById('basic-info-table').innerHTML = basicInfoHtml;
-
-            // 진료 기록 업데이트
-            const recordTable = document.getElementById('recordTable');
-            recordTable.querySelectorAll('.record').forEach(row => row.remove());
-
-            records.forEach(record => {
-                const tr = document.createElement('tr');
-                tr.className = 'record';
-                tr.dataset.details = `
-                    증상: ${record.symptoms} | 
-                    혈압: ${record.bloodPressure} | 
-                    체온: ${record.temperature} | 
-                    질병명: ${record.diseaseName} | 
-                    처방: ${record.prescriptionName}, ${record.dosagePerTime}mg x ${record.timesPerDay}회 x ${record.totalDays}일 (${record.usageInstructions})
-                `;
-                tr.innerHTML = `
-                    <td class="table-cell">${record.visitDate}</td>
-                    <td class="table-cell">${record.diseaseName}</td>
-                    <td class="table-cell">${record.prescriptionName}</td>
-                    <td class="table-cell">${record.doctorName}</td>
-                `;
-                tr.addEventListener('click', function () {
-                    const detailsContent = tr.dataset.details;
-                    const detailsSection = document.getElementById('record-details');
-                    const detailsText = document.getElementById('details-content');
-
-                    if (detailsSection.style.display === 'block' && detailsText.innerText === detailsContent) {
-                        detailsSection.style.display = 'none';
-                        detailsText.innerText = '';
-                    } else {
-                        detailsText.innerText = detailsContent;
-                        detailsSection.style.display = 'block';
-                    }
-                });
-
-                recordTable.appendChild(tr);
-            });
-        }
-
-        // 편집 모드 활성화
-        document.getElementById('edit-btn').addEventListener('click', function () {
-            document.querySelectorAll('.editable').forEach(function (cell) {
-                if (cell.querySelector('input').name !== 'patient.id' && cell.querySelector('input').name !== 'patient.securityNum'  && cell.querySelector('input').name !== 'patient.address') {
-                    cell.classList.add('editing');
-                    cell.querySelector('input').removeAttribute('readonly');
-                }
-            });
-
-            document.getElementById('edit-btn').style.display = 'none';
-            document.getElementById('save-btn').style.display = 'inline-block';
-        });
-
-        // 편집 모드 비활성화 및 변경사항 저장
-        document.getElementById('save-btn').addEventListener('click', function () {
-            document.querySelectorAll('.editable').forEach(function (cell) {
-                cell.classList.remove('editing');
-                cell.querySelector('input').setAttribute('readonly', true);
-            });
-
-            document.getElementById('edit-btn').style.display = 'inline-block';
-            document.getElementById('save-btn').style.display = 'none';
-
-            // 필요한 경우 업데이트된 데이터를 서버로 전송
-        });
-
-        // 메세지 (오른쪽 사이드바) 부분 버튼
-        document.getElementById('messages-btn').addEventListener('click', function () {
-            const rightSidebar = document.querySelector('.rightSidebar');
-            const mainContent = document.querySelector('.main');
-            if (rightSidebar.classList.contains('hidden')) {
-                rightSidebar.classList.remove('hidden');
-                mainContent.style.flex = '1';
-            } else {
-                rightSidebar.classList.add('hidden');
-                mainContent.style.flex = '2';
-            }
-        });
-    </script>
+			var calendar = new FullCalendar.Calendar(calendarEl, {
+				initialView: 'dayGridMonth',
+				locale: 'ko',
+				headerToolbar: {
+					left: 'prev,next today',
+					center: 'title',
+					right: 'dayGridMonth,timeGridWeek,timeGridDay'
+				},
+				dayCellContent: function(e) {
+					e.dayNumberText = e.dayNumberText.replace('일', ''); // '일' 문자 제거
+				},
+				events: [
+					{
+						title: 'All Day Event',
+						start: '2023-08-01'
+					},
+					{
+						title: 'Long Event',
+						start: '2023-08-07',
+						end: '2023-08-10'
+					}
+				]
+			});
+			calendar.render();
+		});
+	</script>
 </body>
 </html>
