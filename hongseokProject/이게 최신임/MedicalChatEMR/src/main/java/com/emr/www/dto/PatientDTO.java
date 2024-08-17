@@ -1,9 +1,10 @@
 package com.emr.www.dto;
 
 import java.math.BigDecimal;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +18,8 @@ public class PatientDTO {
     private String phone;
     private String email;
     private String blood_type;
-    private Integer height;
-    private Integer weight;
+    private Float height;
+    private Float weight;
     private String allergies;
     private String blood_pressure;
     private BigDecimal temperature;
@@ -27,7 +28,7 @@ public class PatientDTO {
     // id를 제외한 생성자 (새 환자 등록 시 사용)
     public PatientDTO(String name, String securityNum, Character gender, 
                       String address, String phone, String email, String blood_type, 
-                      Integer height, Integer weight, String allergies, 
+                      Float height, Float weight, String allergies, 
                       String blood_pressure, BigDecimal temperature, Character smoking_status) {
         this.name = name;
         this.securityNum = securityNum;

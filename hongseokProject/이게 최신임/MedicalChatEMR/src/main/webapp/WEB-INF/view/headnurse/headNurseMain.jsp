@@ -1026,9 +1026,8 @@ footer {
 						maxlength="10">
 				</div>
 				<div class="form-group">
-					<label for="patientTemperature">체온(℃):</label> <input type="text"
-						id="patientTemperature" name="patientTemperature" maxlength="4"
-						step="0.1">
+					<label for="patientTemperature">체온(℃):</label> <input type="number"
+						id="patientTemperature" name="patientTemperature" step="0.1">
 				</div>
 				<div class="smoking-status-selection">
 					<label>흡연 여부:</label>
@@ -1322,6 +1321,20 @@ footer {
 		    }
 		});
 		
+		// 혈압 "/"만 가능하게 제한
+		document.getElementById('patientBloodPressure').addEventListener('input', function() {
+		    // 현재 입력된 값에서 숫자, 소수점, 슬래시("/")만 남기고 필터링
+		    this.value = this.value.replace(/[^0-9./]/g, '');
+		    
+		});
+		
+		// 체온 글자수 제한
+		document.getElementById('patientTemperature').addEventListener('input', function() {
+		    if (this.value.length > 4) {
+		        this.value = this.value.slice(0, 4);
+		    }
+		});
+		
 		// 폼 제출 시 하이픈 제거 (환자 등록)
 //		document.getElementById('patientRegisterForm').addEventListener('submit', function (e) {
 //		    removeHyphen(this.querySelector('[name="patientSecurityNum"]'));
@@ -1333,91 +1346,132 @@ footer {
 //		});
 		
 		// 하이픈 제거 함수
-		function removeHyphen(input) {
-		    input.value = input.value.replace(/-/g, '');
-		}
+//		function removeHyphen(input) {
+//		    input.value = input.value.replace(/-/g, '');
+//		}
 
-		// 환자등록
-	    document.getElementById('patientRegisterForm').addEventListener('submit', function(e) {
-	        e.preventDefault();
-	        
-	        // 폼 데이터 수집
-			const formData = new FormData(this);
-			const patientData = {};
-			formData.forEach((value, key) => {
-			    switch(key) {
-			        case 'patientEmailId':
-			        case 'patientEmailDomain':
-			            if (!patientData.email) patientData.email = '';
-			            patientData.email += value + (key === 'patientEmailId' ? '@' : '');
-			            break;
-			        case 'patientRhFactor':
-			        case 'patientABOBloodType':
-			            if (!patientData.blood_type) patientData.blood_type = '';
-			            patientData.blood_type += value;
-			            break;
-			        case 'patientName':
-			            patientData.name = value;
-			            break;
-			        case 'patientSecurityNum':
-			            patientData.securityNum = value; // replace(/-/g, '');
-			            break;
-			        case 'patientGender':
-			            patientData.gender = value;
-			            break;
-			        case 'patientAddress':
-			            patientData.address = value;
-			            break;
-			        case 'patientPhone':
-			            patientData.phone = value; //.replace(/-/g, '');
-			            break;
-			        case 'patientHeight':
-			            patientData.height = value;
-			            break;
-			        case 'patientWeight':
-			            patientData.weight = value;
-			            break;
-			        case 'patientAllergies':
-			            patientData.allergies = value;
-			            break;
-			        case 'patientBloodPressure':
-			            patientData.blood_pressure = value;
-			            break;
-			        case 'patientTemperature':
-			            patientData.temperature = value; 
-			            break;
-			        case 'patientSmokingStatus':
-			            patientData.smoking_status = value;
-			            break;
-			        default:
-			            patientData[key] = value;
+
+		// 환자등록 폼 제출 로직
+		document.getElementById('patientRegisterForm').addEventListener('submit', function(e) {
+		    e.preventDefault();
+		
+		    const securityNumInput = document.getElementById('patientSecurityNum');
+		    const securityNum = securityNumInput.value;
+		
+		    // 주민등록번호 유효성 검사
+		    fetch('/headnurse/validateSecurityNum', {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json',
+		        },
+		        body: JSON.stringify({ securityNum: securityNum })
+		    })
+		    .then(response => {
+		        if (response.ok) {
+		            return response.text();
+		        } else {
+		            return response.text().then(text => {
+		                throw new Error(text || 'Invalid security number');
+		            });
+		        }
+		    })
+		    .then(message => {
+		        // 유효성 검사 통과 시 환자 등록 로직 실행
+		        submitPatientRegistrationForm();
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('유효성 검사 중 오류가 발생했습니다: ' + error.message);
+		    });
+		});
+
+		// 실제 환자 등록 로직
+		function submitPatientRegistrationForm() {
+		    // 폼 데이터 수집
+		    const formData = new FormData(document.getElementById('patientRegisterForm'));
+		    const patientData = {};
+		
+		    formData.forEach((value, key) => {
+		        switch(key) {
+		            case 'patientEmailId':
+		            case 'patientEmailDomain':
+		                if (!patientData.email) patientData.email = '';
+		                patientData.email += value + (key === 'patientEmailId' ? '@' : '');
+		                break;
+		            case 'patientRhFactor':
+		            case 'patientABOBloodType':
+		                if (!patientData.blood_type) patientData.blood_type = '';
+		                patientData.blood_type += value;
+		                break;
+		            case 'patientName':
+		                patientData.name = value;
+		                break;
+		            case 'patientSecurityNum':
+		                patientData.securityNum = value;
+		                break;
+		            case 'patientGender':
+		                patientData.gender = value;
+		                break;
+		            case 'patientPostcode':
+		            case 'patientAddress':
+		            case 'patientDetailAddress':
+		                if (!patientData.address) patientData.address = '';
+		                patientData.address += value + ' ';
+		                break;
+		            case 'patientPhone':
+		                patientData.phone = value;
+		                break;
+		            case 'patientHeight':
+		                patientData.height = value;
+		                break;
+		            case 'patientWeight':
+		                patientData.weight = value;
+		                break;
+		            case 'patientAllergies':
+		                patientData.allergies = value;
+		                break;
+		            case 'patientBloodPressure':
+		                patientData.blood_pressure = value;
+		                break;
+		            case 'patientTemperature':
+		                patientData.temperature = value;
+		                break;
+		            case 'patientSmokingStatus':
+		                patientData.smoking_status = value;
+		                break;
+		            default:
+		                patientData[key] = value;
+		        }
+		    });
+		
+		    // AJAX 요청을 통해 환자 등록
+			fetch('/headnurse/registerPatient', {
+			    method: 'POST',
+			    headers: {
+			        'Content-Type': 'application/json', // Content-Type을 JSON으로 설정
+			    },
+			    body: JSON.stringify(patientData) // JSON 형식으로 변환하여 전송
+			})
+			.then(response => {
+			    if (response.ok) {
+			        return response.json();
+			    } else {
+			        return response.text().then(text => {
+			            throw new Error(text || '환자 등록 중 오류가 발생했습니다.');
+			        });
 			    }
+			})
+			.then(data => {
+			    alert('환자가 성공적으로 등록되었습니다.');
+			    document.getElementById('patientRegisterModal').style.display = 'none';
+			    // 필요한 경우 페이지 새로고침 또는 환자 목록 업데이트
+			})
+			.catch(error => {
+			    console.error('Error:', error);
+			    alert('환자 등록 중 오류가 발생했습니다: ' + error.message);
 			});
-
-	
-	        // 주민등록번호와 전화번호의 하이픈 유지
-	
-	        // AJAX 요청
-	        fetch('/headnurse/registerPatient', {
-	            method: 'POST',
-	            headers: {
-	                'Content-Type': 'application/json',
-	            },
-	            body: JSON.stringify(patientData)
-	        })
-	        .then(response => response.json())
-	        .then(data => {
-	            alert('환자가 성공적으로 등록되었습니다.');
-	            patientRegisterModal.style.display = 'none';
-	            // 필요한 경우 페이지 새로고침 또는 환자 목록 업데이트
-	        })
-	        .catch(error => {
-	            console.error('Error:', error);
-	            alert('환자 등록 중 오류가 발생했습니다.');
-	        });
-	    });
-
-
+		}
+		
     </script>
 </body>
 

@@ -43,9 +43,11 @@ public class Patient {
     @Column(name = "blood_type", length = 6)
     private String blood_type;
 
-    private Integer height;
+    @Column
+    private Float height;
 
-    private Integer weight;
+    @Column
+    private Float weight;
 
     @Column(columnDefinition = "TEXT")
     private String allergies;

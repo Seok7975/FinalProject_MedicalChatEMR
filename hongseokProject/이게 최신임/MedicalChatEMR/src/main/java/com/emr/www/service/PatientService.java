@@ -22,23 +22,11 @@ public class PatientService {
     private static final Logger log = LoggerFactory.getLogger(PatientService.class);
 
     
-//    public PatientDTO registerPatient(PatientDTO patientDTO) {
-//        log.info("Registering new patient: {}", patientDTO);
-//        
-//        Patient patient = new Patient();
-//        BeanUtils.copyProperties(patientDTO, patient);
-//        
-//        log.info("Converted to Patient entity: {}", patient);
-//        
-//        Patient savedPatient = patientRepository.save(patient);
-//        
-//        log.info("Saved Patient: {}", savedPatient);
-//        
-//        PatientDTO savedDTO = new PatientDTO();
-//        BeanUtils.copyProperties(savedPatient, savedDTO);
-//        
-//        return savedDTO;
-//    }
+    // 주민등록번호 중복 여부 확인 메서드
+    public boolean isSecurityNumExists(String securityNum) {
+        return patientRepository.findBySecurityNum(securityNum) != null;
+    }
+    
     @Transactional
     public Patient registerPatient(PatientDTO patientDTO) {
         log.info("Starting patient registration process with DTO: {}", patientDTO);
@@ -54,20 +42,10 @@ public class PatientService {
 
         // 환자 정보 저장
         Patient savedPatient = patientRepository.save(patient);
-        
         log.info("Patient saved successfully. Generated ID: {}", savedPatient.getId_no());
-
         return savedPatient;
     }
 
-//    public PatientDTO registerPatient(PatientDTO patientDTO) {
-//        Patient patient = new Patient();
-//        BeanUtils.copyProperties(patientDTO, patient);
-//        Patient savedPatient = patientRepository.save(patient);
-//        PatientDTO savedPatientDTO = new PatientDTO();
-//        BeanUtils.copyProperties(savedPatient, savedPatientDTO);
-//        return savedPatientDTO;
-//    }
 
     public PatientDTO getPatientBySecurityNum(String securityNum) {
         Patient patient = patientRepository.findBySecurityNum(securityNum);
