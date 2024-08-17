@@ -35,7 +35,7 @@ CREATE TABLE Doctor (
     department_id VARCHAR(10), -- 소속 진료과입니다.
     specialty VARCHAR(100), -- 전문 분야입니다.
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
-    active_status VARCHAR(50) NOT NULL -- 현재 활동 상태
+    active_status VARCHAR(50) NOT NULL -- 현재 활동 상태 > 진료 중 / 점심 시간 / 자리 비움
 );
 
 
