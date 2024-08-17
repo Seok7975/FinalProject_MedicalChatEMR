@@ -41,12 +41,22 @@ public class PatientService {
 //    }
     @Transactional
     public Patient registerPatient(PatientDTO patientDTO) {
-        log.info("Registering new patient: {}", patientDTO);
+        log.info("Starting patient registration process with DTO: {}", patientDTO);
+
+        // DTO를 엔티티로 변환
         Patient patient = new Patient();
         BeanUtils.copyProperties(patientDTO, patient);
-        log.info("Converted to Patient entity: {}", patient);
+        
+        // ID를 null로 설정하여 자동 생성되도록 함
+//        patient.setId(null);
+
+        log.info("Converted PatientDTO to Patient entity: {}", patient);
+
+        // 환자 정보 저장
         Patient savedPatient = patientRepository.save(patient);
-        log.info("Saved Patient: {}", savedPatient);
+        
+        log.info("Patient saved successfully. Generated ID: {}", savedPatient.getId_no());
+
         return savedPatient;
     }
 

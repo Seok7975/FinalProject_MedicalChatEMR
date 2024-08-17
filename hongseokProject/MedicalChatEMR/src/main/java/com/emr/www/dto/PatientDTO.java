@@ -1,58 +1,58 @@
 package com.emr.www.dto;
 
 import java.math.BigDecimal;
-
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PatientDTO {
-    private Long id;
+    private Long id_no;
     private String name;
     private String securityNum;
     private Character gender;
     private String address;
     private String phone;
     private String email;
-    private String bloodType;
+    private String blood_type;
     private Integer height;
     private Integer weight;
     private String allergies;
-    private String bloodPressure;
+    private String blood_pressure;
     private BigDecimal temperature;
-    private Character smokingStatus;
-
-    // 기본 생성자
-    public PatientDTO() {}
+    private Character smoking_status;
 
     // id를 제외한 생성자 (새 환자 등록 시 사용)
     public PatientDTO(String name, String securityNum, Character gender, 
-                      String address, String phone, String email, String bloodType, 
+                      String address, String phone, String email, String blood_type, 
                       Integer height, Integer weight, String allergies, 
-                      String bloodPressure, BigDecimal temperature, Character smokingStatus) {
+                      String blood_pressure, BigDecimal temperature, Character smoking_status) {
         this.name = name;
         this.securityNum = securityNum;
         this.gender = gender;
         this.address = address;
         this.phone = phone;
         this.email = email;
-        this.bloodType = bloodType;
+        this.blood_type = blood_type;
         this.height = height;
         this.weight = weight;
         this.allergies = allergies;
-        this.bloodPressure = bloodPressure;
+        this.blood_pressure = blood_pressure;
         this.temperature = temperature;
-        this.smokingStatus = smokingStatus;
-    }
+        this.smoking_status = smoking_status;
+    } 
 
     // 모든 필드를 포함하는 생성자 (기존 환자 정보 조회 시 사용)
-    public PatientDTO(Long id, String name, String securityNum, Character gender, 
-                      String address, String phone, String email, String bloodType, 
-                      Integer height, Integer weight, String allergies, 
-                      String bloodPressure, BigDecimal temperature, Character smokingStatus) {
-        this(name, securityNum, gender, address, phone, email, bloodType, 
-             height, weight, allergies, bloodPressure, temperature, smokingStatus);
-        this.id = id;
-    }
+//    public PatientDTO(Long id, String name, String securityNum, Character gender, 
+//                      String address, String phone, String email, String bloodType, 
+//                      Integer height, Integer weight, String allergies, 
+//                      String bloodPressure, BigDecimal temperature, Character smokingStatus) {
+//        this(name, securityNum, gender, address, phone, email, bloodType, 
+//             height, weight, allergies, bloodPressure, temperature, smokingStatus);
+//        this.id = id;
+//    }
 }
 
 

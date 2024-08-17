@@ -66,16 +66,16 @@ public class HeadnurseController {
 //        return ResponseEntity.ok().body("Patient registered successfully");
 //    }
 
-	@PostMapping("/registerPatient")
-	@ResponseBody
-	public ResponseEntity<PatientDTO> registerPatient(@RequestBody PatientDTO patientDTO) {
-	    log.info("Received PatientDTO: {}", patientDTO);
-	    Patient savedPatient = patientService.registerPatient(patientDTO);
-	    log.info("Saved Patient: {}", savedPatient);
-	    PatientDTO savedPatientDTO = new PatientDTO();
-	    BeanUtils.copyProperties(savedPatient, savedPatientDTO);
-	    return ResponseEntity.ok(savedPatientDTO);
-	}
+    @PostMapping("/registerPatient")
+    @ResponseBody
+    public ResponseEntity<PatientDTO> registerPatient(@RequestBody PatientDTO patientDTO) {
+        log.info("Received PatientDTO: {}", patientDTO);
+        Patient savedPatient = patientService.registerPatient(patientDTO);
+        log.info("Saved Patient: {}", savedPatient);
+        PatientDTO savedPatientDTO = new PatientDTO();
+        BeanUtils.copyProperties(savedPatient, savedPatientDTO);
+        return ResponseEntity.ok(savedPatientDTO);
+    }
 
     // 환자 조회
     @GetMapping("/patient/{securityNum}")
