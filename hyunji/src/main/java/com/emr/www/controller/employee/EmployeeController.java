@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.emr.www.controller.employee.exception.LicenseKeyNotFoundException;
 import com.emr.www.service.employee.EmployeeService;
 
 @Controller
@@ -35,37 +36,49 @@ public class EmployeeController {
 		return "/login/findPassword"; // src/main/webapp/WEB-INF/views/login/findPassword.jsp 로 렌더링
 	}
 
-	//회원가입 post 요청 처리
+	// 회원가입 POST 요청 처리
 	@PostMapping("/signup")
-	public ResponseEntity<String> handleSignup(@RequestParam String licenseId, 
-            @RequestParam String password, Model model) {
-
-		
-		// 사용자 등록 처리
+	public ResponseEntity<String> handleSignup(@RequestParam String licenseId, @RequestParam String password) {
 		try {
+			// 사용자 등록 처리
 			employeeService.registerUser(licenseId, password);
-			// 성공적으로 완료되면 200 OK 응답 반환
-			return ResponseEntity.ok("회원가입이 성공적으로 완료 되었습니다.");
+			return ResponseEntity.ok("초기 비밀번호 설정이 완료되었습니다.");
+		} catch (LicenseKeyNotFoundException e) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("승인되지 않은 ID입니다.");
+		} catch (IllegalStateException e) {
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("User registration failed");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 설정에 실패했습니다.");
 		}
 	}
 
 	//로그인 post 요청 처리 
 	@PostMapping("/Login")
-	public String Login(@RequestParam String licenseId, @RequestParam String password, Model model) {
-		String userType = employeeService.validateUser(licenseId, password);
+	public String Login(@RequestParam String licenseId, @RequestParam String password, @RequestParam(required = false) boolean isAdmin, Model model) {
+		String userType;
+
+		if (isAdmin) {
+			userType = employeeService.validateAdmin(licenseId, password); // 관리자 검증 로직
+		} else {
+			userType = employeeService.validateUser(licenseId, password); // 의사와 간호사 검증 로직
+		}
+
+		// 비밀번호가 설정되지 않은 경우
+		if ("password_not_set".equals(userType)) {
+			return "redirect:/loginMain?passwordNotSet=true"; // URL 파라미터 추가
+		}
 
 		System.out.println("반환된 타입 : " + userType);
 		if ("doctor".equals(userType)) {
 			return "redirect:/doctor/main"; // 의사 메인 페이지로 이동
 		} else if ("nurse".equals(userType)) {
 			return "redirect:/nurse/main"; // 간호사 메인 페이지로 이동
-		} else if ("admin".equals(userType)) {
+		} else if ("head_nurse".equals(userType)) {
+	        return "redirect:/headNurse/headNurseMain";  // 수간호사 메인 페이지로 이동
+		}else if ("admin".equals(userType)) {
 			return "redirect:/admin/main"; //관리자 메인 페이지로 이동
 		}
-		// 로그인 실패 시 에러 메시지를 클라이언트에 전달
-        model.addAttribute("loginError", true);
-        return "login/LoginMain"; // 로그인 실패 시 다시 로그인 페이지로 이동
+		// 로그인 실패 시 파라미터로 전달
+		return "redirect:/loginMain?loginError=true";
 	}
 }

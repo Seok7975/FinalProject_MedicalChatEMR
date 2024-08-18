@@ -9,9 +9,7 @@
 <title>Login | Page | Medical EMR</title>
 <link
 	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-	rel="stylesheet"
-	integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-	crossorigin="anonymous">
+	rel="stylesheet">
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
 	rel='stylesheet'>
 <link rel="stylesheet" type="text/css" href="/resources/css/login.css">
@@ -52,20 +50,8 @@
 							and medications</li>
 						<li><i class='bx bxs-heart'></i>Expert insights and patient
 							stories</li>
-
 					</ul>
 				</div>
-
-				<a href="https://www.example.com"> <img
-					src="https://www.doctorespecialistas.com/img/gral/headerFooter/img-footer-medtalk-doctores-especialistas.png"
-					srcset="https://www.doctorespecialistas.com/img/gral/headerFooter/img-footer-medtalk-doctores-especialistas.webp"
-					class="img-responsive img-center" width="190" height="40"
-					alt="Logo MedTalk"> <img
-					src="https://www.doctorespecialistas.com/img/gral/headerFooter/img-logo-footer-doctor-especialistas.png"
-					srcset="https://www.doctorespecialistas.com/img/gral/headerFooter/img-logo-footer-doctor-especialistas.webp"
-					class="img-responsive img-center" width="190" height="40"
-					alt="Logo Doctor Especialistas">
-				</a>
 			</div>
 			<div class="bg-holder-downside">
 
@@ -73,12 +59,6 @@
 					and Terms of Service apply.</span>
 
 				<div class="foreignSupport">
-					<img
-						src="https://www.doctorespecialistas.com/img/gral/headerFooter/img-logo-medical-tourism-footer.png"
-						class="img-responsive img-center" width="170" height="45"
-						alt="Logo Medical Tourism">
-
-
 					<hr>
 					<span>Privacy Notice | Terms of Service | Cookie Preferences
 					</span>
@@ -104,15 +84,16 @@
 
 				<div class="position-relative text-center my-4">
 					<hr>
-					<span class="divider-content-center">OR</span>
+					<span class="divider-content-center"></span>
 				</div>
 
 				<!-- Form action set to /login with method POST -->
 				<form action="/Login" method="POST">
 					<div class="mb-3">
 						<input type="text" class="form-control form-control-lg"
-							id="exampleInputuuid" name="licenseId" aria-describedby="uuidHelp"
-							placeholder="Enter Your License ID" required>
+							id="exampleInputuuid" name="licenseId"
+							aria-describedby="uuidHelp" placeholder="Enter Your License ID"
+							required>
 					</div>
 					<div class="mb-3">
 						<input type="password" class="form-control form-control-lg"
@@ -120,10 +101,11 @@
 							autocomplete="none" required>
 					</div>
 					<div class="d-flex justify-content-between mb-4">
-						<div class="form-check">
-							<input type="checkbox" class="form-check-input"
-								id="exampleCheck1"> <label class="form-check-label"
-								for="exampleCheck1">Remember Me</label>
+						<div>
+							<!-- Label element is now associated with the checkbox -->
+							<input type="checkbox" id="isAdmin" name="isAdmin"> <label
+								for="isAdmin" style="cursor: pointer;">관리자 모드</label>
+							<!-- 클릭 시 체크박스 선택 가능 -->
 						</div>
 						<a href="#" class="text-decoration-none"
 							onclick="openFindPassword()">Forgot Password?</a>
@@ -145,10 +127,18 @@
 	    function openFindPassword() {
 	        window.open('/findPassword', 'FindPasswordWindow', 'width=500,height=550');
 	    }
-	 // 로그인 실패 시 경고창 띄우기
-        <% if (request.getAttribute("loginError") != null) { %>
-        alert("해당 계정은 존재하지 않습니다. 다시 확인해주세요.");
-        <% } %>
+	    // URL 파라미터 읽기
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // 비밀번호가 설정되지 않은 경우
+        if (urlParams.has('passwordNotSet')) {
+            alert('회원가입을 통해 초기 비밀번호를 설정해주세요.');
+        }
+
+        // 로그인 오류가 발생한 경우
+        if (urlParams.has('loginError')) {
+            alert('해당 계정은 존재하지 않습니다. 다시 확인해주세요.');
+        }
 	</script>
 
 
