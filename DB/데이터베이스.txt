@@ -2,7 +2,7 @@
 CREATE TABLE Admin (
     id CHAR(36) PRIMARY KEY, -- 관리자의 고유 식별자입니다.
     password VARCHAR(20) NOT NULL, -- 관리자의 비밀번호입니다.
-    admin_email VARCHAR(320) UNIQUE -- 관리자의 이메일 주소입니다.
+    license_id VARCHAR(100) UNIQUE -- 관리자의 이메일 주소입니다.
 ); 
 
 -- 환자 테이블
