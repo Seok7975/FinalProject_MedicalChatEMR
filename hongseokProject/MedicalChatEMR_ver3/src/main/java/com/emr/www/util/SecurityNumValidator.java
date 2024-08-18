@@ -14,7 +14,7 @@ public class SecurityNumValidator {
     	
         // 주민등록번호 형식: 6자리 숫자 + '-' + 7자리 숫자
         if (securityNum == null || !securityNum.matches("\\d{6}-\\d{7}")) {
-            log.debug("형식이 잘못되었거나 null인 주민등록번호 : {}\n", securityNum);
+            log.debug("형식이 잘못되었거나 null인 주민등록번호 : {}", securityNum);
             return false;
         }
 
@@ -22,7 +22,7 @@ public class SecurityNumValidator {
         String number = securityNum.replace("-", "");
         
         if (number.length() != 13) {
-        	log.debug("주민등록번호 길이가 잘못되었습니다 : {}\n", number);
+        	log.debug("민등록번호 길이가 잘못되었습니다 : {}", number);
             return false;
         }
 
@@ -37,9 +37,7 @@ public class SecurityNumValidator {
 
         // 11로 나눈 나머지를 구하여 11에서 빼고, 이를 10으로 나눈 나머지가 마지막 자리와 같으면 유효
         int checkDigit = (11 - (sum % 11)) % 10;
-        
-        System.out.printf("checkDigit : %d, 마지막수 : %d\n", checkDigit, Character.getNumericValue(number.charAt(12)));
-        	
+
         return checkDigit == Character.getNumericValue(number.charAt(12));
     }
 }
