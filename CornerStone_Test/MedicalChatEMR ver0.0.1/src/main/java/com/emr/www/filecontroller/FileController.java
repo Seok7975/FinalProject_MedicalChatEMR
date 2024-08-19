@@ -1,8 +1,7 @@
-package com.example.cornerstone;
+package com.emr.www.filecontroller;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
-import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che3.io.DicomInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -15,12 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import javax.sql.DataSource;
 
 import java.awt.image.BufferedImage;
@@ -34,7 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -54,42 +48,34 @@ public class FileController {
 		return "index";
 	}
 
-	@GetMapping("/doctor") 
-	public String doctor(Model model) {
-	    // Map 생성 및 값 추가
-	    Map<String, Object> patientInfo = new HashMap<>();
+
+	@GetMapping("/doctorUI")
+	public String handleFileUpload(Model model) {
+		
+		// 나중에 의사가 환자 정보 눌렀을때 값을 가지고 오게 할 부분?
+		Map<String, Object> patientInfo = new HashMap<>();
 	    patientInfo.put("pname", "HONG GIL DONG");
 	    patientInfo.put("pid", 14162);
 	    patientInfo.put("modality", "ct");
-
+		
 	    // Model에 Map을 추가
 	    model.addAttribute("patientInfo", patientInfo);
-
-	    return "doctorUi"; // 업로드 후 doctorUi로 리다이렉트
+		 
+		return "doctor/DoctorMain"; 
 	}
-
-
-	/*
-	 * @PostMapping("/upload") public String handleFileUpload(Model model) {
-	 * 
-	 * model.addAttribute("fileId", "HONG GIL DONG");
-	 * 
-	 * 
-	 * return "doctorUi"; // 업로드 후 viewer.html로 리다이렉트 }
-	 */
 	
 	@PostMapping("/viewer")
 	public String handleViewerRequest(@RequestBody Map<String, Integer> data, Model model) {
 		System.out.println("hi");
 	    int pid = data.get("pid");
 	    model.addAttribute("pid", pid);
-	    return "viewer"; // viewer 페이지로 리턴
+	    return "doctor/viewer"; // viewer 페이지로 리턴
 	}
 	
 	@GetMapping("/viewer")
 	public String showViewerPage(@RequestParam("pid") int pid, Model model) {
 	    model.addAttribute("pid", pid);
-	    return "viewer.html"; // viewer 페이지로 이동
+	    return "doctor/viewer"; // viewer 페이지로 이동
 	}
 	
 
@@ -227,7 +213,7 @@ public class FileController {
 					.body(resource);
 		} else {
 			// 파일이 여러 개인 경우 ZIP 파일로 압축
-			String zipFileName = pname +"_"+ modality + "_dcm.zip";
+			String zipFileName = pname +"_"+ modality + "_dicom.zip";
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ZipOutputStream zos = new ZipOutputStream(baos);
 
@@ -251,7 +237,7 @@ public class FileController {
 		}
 	}
 
-
+	
 	// DICOM 파일 삭제
 	@PostMapping("/deleteDICOM")
 	public ResponseEntity<String> deleteDICOM(@RequestParam String fileName) {
@@ -270,10 +256,13 @@ public class FileController {
 	@GetMapping("/dicom")
 	public ResponseEntity<List<Map<String, Object>>> getFile(@RequestParam("pid") int pid) {
 		try {
-			
-			String fileSql = "SELECT file_name, file_data, pname, modality, sop_instance_uid, annotations FROM dicom_files WHERE pid = ?";
+			String fileSql = "SELECT * FROM dicom_files WHERE pid = ?";
 			List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{pid}, (rs, rowNum) -> {
 				Map<String, Object> map = new HashMap<>();
+				map.put("pid", rs.getInt("pid"));
+				map.put("pbirthdatetime", rs.getString("pbirthdatetime"));
+				map.put("studydate", rs.getString("studydate"));
+				map.put("studytime", rs.getString("studytime"));
 				map.put("file_name", rs.getString("file_name"));
 				map.put("file_data", Base64.getEncoder().encodeToString(rs.getBytes("file_data"))); // Base64로 인코딩
 				map.put("pname", rs.getString("pname"));
