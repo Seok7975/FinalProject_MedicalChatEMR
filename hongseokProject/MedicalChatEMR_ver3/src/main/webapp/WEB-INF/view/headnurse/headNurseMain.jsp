@@ -657,7 +657,6 @@ footer {
 		<nav>
 			<button id="patient-register-btn" class="nav-btn">환자등록</button>
 			<button id="patient-visit-btn" class="nav-btn">환자내원</button>
-			<button id="patient-reservation-btn" class="nav-btn">예약</button>
 			<button id="patients-btn" class="nav-btn">환자상세정보</button>
 			<button id="messages-btn" class="nav-btn">메시지</button>
 			<button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
@@ -1010,11 +1009,11 @@ footer {
 
 				<div class="form-group">
 					<label for="patientHeight">키(cm):</label> <input type="number"
-						id="patientHeight" name="patientHeight" step="0.01" required>
+						id="patientHeight" name="patientHeight" required>
 				</div>
 				<div class="form-group">
 					<label for="patientWeight">체중(kg):</label> <input type="number"
-						id="patientWeight" name="patientWeight" step="0.01" required>
+						id="patientWeight" name="patientWeight" required>
 				</div>
 				<div class="form-group">
 					<label for="patientAllergies">알레르기:</label>
@@ -1221,6 +1220,11 @@ footer {
             e.target.value = !x[2] ? x[1] : x[1] + '-' + x[2] + (x[3] ? '-' + x[3] : '');
         });
 
+        // 폼 제출 시 하이픈 제거 (선택적)
+//        document.getElementById('patientRegisterForm').addEventListener('submit', function (e) {
+//            let phoneInput = document.getElementById('patientPhone');
+//            phoneInput.value = phoneInput.value.replace(/-/g, '');
+//        });
 
 
 		
@@ -1331,6 +1335,20 @@ footer {
 		    }
 		});
 		
+		// 폼 제출 시 하이픈 제거 (환자 등록)
+//		document.getElementById('patientRegisterForm').addEventListener('submit', function (e) {
+//		    removeHyphen(this.querySelector('[name="patientSecurityNum"]'));
+//		});
+		
+		// 폼 제출 시 하이픈 제거 (환자 내원)
+//		document.getElementById('patientVisitForm').addEventListener('submit', function (e) {
+//		    removeHyphen(this.querySelector('[name="patientSecurityNum"]'));
+//		});
+		
+		// 하이픈 제거 함수
+//		function removeHyphen(input) {
+//		    input.value = input.value.replace(/-/g, '');
+//		}
 
 
 		// 환자등록 폼 제출 로직
@@ -1341,7 +1359,7 @@ footer {
 		    const securityNum = securityNumInput.value;
 		
 		    // 주민등록번호 유효성 검사
-		    fetch('/api/patients/validateSecurityNum', {
+		    fetch('/headnurse/validateSecurityNum', {
 		        method: 'POST',
 		        headers: {
 		            'Content-Type': 'application/json',
@@ -1410,10 +1428,10 @@ footer {
 		                patientData.weight = value;
 		                break;
 		            case 'patientAllergies':
-		                patientData.allergies = value.trim() === '' ? null : value;
+		                patientData.allergies = value;
 		                break;
 		            case 'patientBloodPressure':
-		                patientData.blood_pressure = value.trim() === '' ? null : value;
+		                patientData.blood_pressure = value;
 		                break;
 		            case 'patientTemperature':
 		                patientData.temperature = value;
@@ -1427,7 +1445,7 @@ footer {
 		    });
 		
 		    // AJAX 요청을 통해 환자 등록
-			fetch('/api/patients/registerPatient', {
+			fetch('/headnurse/registerPatient', {
 			    method: 'POST',
 			    headers: {
 			        'Content-Type': 'application/json', // Content-Type을 JSON으로 설정

@@ -1,4 +1,4 @@
-package com.emr.www.config;
+package com.emr.www.config.rest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
