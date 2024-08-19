@@ -5,8 +5,8 @@ CREATE TABLE Admin (
    admin_email VARCHAR(320) UNIQUE -- 관리자의 이메일 주소입니다.
 ); 
 
--- 환자 테이블
-CREATE TABLE Patient (
+-- 환자 등록 테이블
+CREATE TABLE RegisterPatients (
     no INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
     name VARCHAR(50), -- 환자의 이름입니다.
     securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
@@ -14,13 +14,13 @@ CREATE TABLE Patient (
     address VARCHAR(255), -- 주소입니다
     phone VARCHAR(20), -- 전화번호입니다.
     email VARCHAR(50), -- 이메일 주소입니다.
-    blood_type CHAR(6), -- 혈액형입니다.
+    bloodType CHAR(6), -- 혈액형입니다.
     height FLOAT, -- 키(센티미터)입니다.
     weight FLOAT, -- 체중(킬로그램)입니다.
     allergies TEXT, -- 알레르기 정보입니다.
-    blood_pressure VARCHAR(10), -- 혈압
+    bloodPressure VARCHAR(10), -- 혈압
     temperature DECIMAL(4, 1), -- 체온
-    smoking_status CHAR(1) -- 흡연 여부 ('Y' 또는 'N').
+    smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N').
 );
 
 -- 의사 테이블
