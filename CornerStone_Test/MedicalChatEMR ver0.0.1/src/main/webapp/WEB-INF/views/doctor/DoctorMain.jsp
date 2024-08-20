@@ -9,6 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medical Dashboard</title>
 <c:set var="contextPath" value="${pageContext.request.contextPath}" />
+<link rel="icon" href="${contextPath}/img/medical.ico" />
 <link
 	href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css'
 	rel='stylesheet' />
