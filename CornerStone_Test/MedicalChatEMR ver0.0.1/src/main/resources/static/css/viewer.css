@@ -20,6 +20,13 @@ body {
 	align-items: center;
 }
 
+.logo img {
+    width: 15vw;
+    height: auto; /* 기존 코드 */
+    max-height: 50px; /* 이미지의 최대 높이를 설정 */
+}
+
+
 .toolbar {
 	background-color: #f0f0f0;
 	padding: 10px;
@@ -45,15 +52,12 @@ body {
 }
 
 .center-panel {
-	flex: 1;
-	background-color: #000;
-	border: 2px solid #ff0000;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	position: relative;
-	overflow: hidden;
-	cursor: url(/img/cross.cur) 8 8, auto;
+    flex: 1;
+    background-color: #000;
+    border: 4px solid #ff0000;
+    margin: 10px 10px;
+    position: relative;
+    overflow: hidden; /* 오버플로우 숨기기 */
 }
 
 
@@ -66,16 +70,31 @@ body {
     cursor: url(/img/cross.cur) 8 8, auto;
 }
 
-.wadoBox{
-	width: calc(-150px + 100vw); 
+.wadoBox {
+    width: 100%;  /* 너비를 100%로 설정하여 그리드가 유연하게 확장되도록 함 */
     height: 100%;
     display: grid;
-    /* background-color: black; */    
+    grid-template-columns: repeat(1, 1fr);
+    grid-template-rows: repeat(1, 1fr);
+    gap: 8px; /* 필요에 따라 그리드 간격 설정 */
 }
-.parentDiv{
-	/* background-color: black; */
-    border: 3px solid rgb(56, 56, 56);
+
+.parentDiv {
+    border: 4px solid rgb(56, 56, 56);
+    background-color: black;  /* 필요에 따라 배경색 설정 */
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box; /* 부모 크기에 맞게 사이즈 조정 */
+    overflow: hidden; /* 내부 요소가 부모를 넘지 않도록 설정 */
 }
+
+.layout-active {
+    border: 4px solid yellow;
+}
+
 
 
 .footer {
@@ -125,11 +144,17 @@ body {
 .action-button {
 	background: #007bff;
 	color: white;
-	padding: 8px 15px;
+    white-space: nowrap; /* 텍스트가 줄바꿈되지 않도록 설정 */
+    text-overflow: ellipsis;
+    font-size: 0.9em; /* 폰트 크기 축소 */
+    min-width: 150px; /* 버튼의 최소 너비를 설정 */
+    padding: 10px 0; /* 버튼 패딩을 조정하여 버튼 크기 유지 */
+    padding-left: 12px;
+    text-align: center; /* 텍스트 가운데 정렬 */
 }
 
 .action-button i {
-	margin-right: 8px;
+	margin-right: 5px;
 }
 
 .action-button:hover {
@@ -173,13 +198,30 @@ body {
 }
 
 .topLeft, .topRight, .bottomLeft, .bottomRight {
+	user-select: none;
 	position: absolute;
 	color: white;
 	padding: 10px;
-	z-index: 1;
-	font-size: calc(1rem + 1vw);
+	z-index: 1;	
 	max-font-size: 1rem;
 }
+/* 레이아웃 크기 별 폰트 사이즈 설정 하기 */
+.XLarge{
+	font-size: 0.9vw;
+}
+
+.large{
+	font-size: 0.7vw;
+}
+
+.medium{
+	font-size: 0.6vw;
+}
+
+.small{
+	font-size: 0.5vw;
+}
+
 
 .topLeft {
 	top: 10px;
@@ -203,10 +245,6 @@ body {
 
 .block {
 	display: block;
-}
-
-.responsive-font {
-	font-size: 0.9vw;
 }
 
 .playClipModal {
@@ -255,7 +293,7 @@ p.fpswords {
 	user-select: none;
 }
 
-.interface-button.disabled {
+.disabled {
 	background-color: #888;
 	cursor: not-allowed;
 	opacity: 0.6;

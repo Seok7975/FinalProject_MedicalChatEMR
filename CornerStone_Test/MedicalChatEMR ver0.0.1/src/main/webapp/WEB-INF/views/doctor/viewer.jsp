@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,6 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OHIF-XNAT Viewer</title>
 <c:set var="contextPath" value="${pageContext.request.contextPath}" />
+<link rel="icon" href="${contextPath}/img/medical.ico" />
 <link rel="stylesheet"
 	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet"
@@ -33,17 +34,20 @@
 <script src="${contextPath}/js/cornerstone/cornerstone.min.js"></script>
 <script src="${contextPath}/js/cornerstone/cornerstoneMath.min.js"></script>
 <script src="${contextPath}/js/cornerstone/dicomParser.min.js"></script>
-<script	src="https://unpkg.com/cornerstone-tools@4.22.1/dist/cornerstoneTools.js"></script>
+<script
+	src="https://unpkg.com/cornerstone-tools@4.22.1/dist/cornerstoneTools.js"></script>
 
 </head>
 
 <body>
-<span id="contextPath" hidden>${contextPath}</span>
+	<span id="contextPath" hidden>${contextPath}</span>
 	<div class="container">
 		<header class="header">
-			<div class="logo">
-				<img src="LOGO.jpg" alt="Logo">
-			</div>
+			<nav>
+				<div class="logo">
+					<img src="/Img/Logo.png" alt="Logo">
+				</div>
+			</nav>
 		</header>
 		<nav class="toolbar">
 			<div class="interface-toolbar">
@@ -64,9 +68,6 @@
 				</button>
 				<button class="interface-button tool-button" data-tool="playClip">
 					<i class="fas fa-play"></i> 플레이클립
-				</button>
-				<button class="interface-button">
-					<i class="fas fa-tools"></i> GSPS 도구
 				</button>
 				<button class="interface-button" data-tool="tools">
 					<i class="fa-solid fa-toolbox"></i> <span class="tools_naming">도구</span>
@@ -178,7 +179,7 @@
 				</button>
 			</div>
 		</nav>
-		
+
 		<main class="main-content">
 			<aside class="left-panel">
 				<h3>TEST</h3>
@@ -187,13 +188,13 @@
 				<p>RS-5293-132</p>
 				<div class="action-buttons">
 					<button class="action-button tool-button dcmDownLoad">
-						<i class="fas fa-download"></i> DICOM 다운로드
+						<i class="fas fa-download"></i> <span>DICOM 다운로드</span>
 					</button>
 					<button class="action-button tool-button imageDownLoad">
-						<i class="fas fa-image"></i> JPG 다운로드
+						<i class="fas fa-image"></i> <span>JPG 다운로드</span>
 					</button>
 					<button class="action-button tool-button dcmDelete">
-						<i class="fas fa-trash"></i> 삭제하기
+						<i class="fas fa-trash"></i> <span>삭제하기</span>
 					</button>
 				</div>
 			</aside>
@@ -222,14 +223,14 @@
 							</div>
 						</div>
 
-						<div class="topLeft responsive-font"></div>
-						<div class="topRight responsive-font">
+						<div class="topLeft XLarge"></div>
+						<div class="topRight XLarge">
 							<span class="block">test</span>
 						</div>
-						<div class="bottomLeft responsive-font">
-							<span class="block">test</span>
+						<div class="bottomLeft XLarge">
+							<span class="block"></span>
 						</div>
-						<div class="bottomRight responsive-font">
+						<div class="bottomRight XLarge">
 							<span class="block wwwc"></span>
 						</div>
 						<div id="dicomImage" class="image-placeholder"></div>
@@ -237,25 +238,16 @@
 				</div>
 			</div>
 
- 			<aside class="right-panel">
-				<h3>Contour-based ROIs</h3>
-				<p>In-Progress Contour Collections</p>
-				<ul>
-					<li>ISOCENTRE</li>
-					<li>NORM</li>
-					<li>CTV</li>
-					<li>Heart</li>
-					<li>Both Lungs</li>
-				</ul>
-			</aside> 
+			<aside class="right-panel"></aside>
 		</main>
-		
+
 		<footer class="footer">
 			<!-- <p>Zoom: 172% | W: 360 L: 60 | Lossless / Uncompressed</p> -->
 			<p class="copyright">Icons by fontawesome</p>
 		</footer>
 	</div>
-	<input type="text" id="pid" value="${pid}" hidden/> 
+	<input type="text" id="pid" value="${pid}" hidden />
+	
 <script>
 //cornerstone 관련 설정
 console.log("Setting external libraries");
@@ -296,17 +288,21 @@ const refreshButton = document.querySelector('[data-tool="refresh"]');
 const refreshModal = document.querySelector('.refreshModal');
 
 let isPlayClipActive = false;
+let isSingleLayout = true;
 let currentImageIndex = 0;
 let currentViewport = null; // 현재 뷰포트를 저장하기 위한 변수
 let isScrollLoopActive = false; // 스크롤 루프 기능 활성화 상태 저장 변수
 let stopClipPlaybackGlobal;  // 전역 변수로 함수 참조를 저장할 변수
 let isZoomActive = false;
 let originalImageSize = null;
+let activeImageElement = null;
 let isPlaying = false; // 클립 재생 상태
+let isLayout = false;
 let playInterval; // 클립 재생을 위한 인터벌
 let fps = 20; // 초기 FPS 값
 
 let imageIds = [];  // 전역 변수로 이동
+let fileDataListGlobal = [];
 let sopInstanceUIDs = [];
 let currentFileNames  = []; // dcm 파일 이름
 let currentImageName = ''; // 현재 표시 중인 이미지의 파일 이름
@@ -415,47 +411,6 @@ $(".dcmDownLoad").click(function () {
 });
 
 
-// JPG 다운로드 이벤트(서버요청 방식)
-/* $(".imageDownLoad").click(function () {
-    Swal.fire({
-        title: '모든 이미지 파일을 다운로드 하시겠습니까?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: '확인',
-        cancelButtonText: '취소'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // 서버로 이미지 다운로드 요청을 보냄
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', '/downloadJPG?fileNames=' + encodeURIComponent(currentFileNames.join(',')) + '&pname=' + encodeURIComponent(currentPname) 
-            		+ '&modality=' + encodeURIComponent(currentModality), true);
-            xhr.responseType = 'blob';  // Blob 타입의 응답을 받음
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    const blob = xhr.response;
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = currentFileNames.length > 1 ? currentPname + '_' + currentModality + "_images.zip" : currentFileNames[0].replace(".dcm", ".jpg");
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-
-                    Swal.fire('다운로드가 완료되었습니다!', '', 'success');
-                } else {
-                    Swal.fire('다운로드에 실패했습니다!', '오류가 발생했습니다: ' + xhr.statusText, 'error');
-                }
-            };
-            xhr.onerror = function () {
-                Swal.fire('다운로드에 실패했습니다!', '오류가 발생했습니다: ' + xhr.statusText, 'error');
-            };
-            xhr.send();
-        }
-    });
-}); */
 
 // canvas를 활용한 jpg 다운로드
 $(".imageDownLoad").click(function () {
@@ -639,7 +594,10 @@ imageLayoutButton.addEventListener('click', function (e) {
                 gridItem.addEventListener('click', function () {
                     const rows = parseInt(gridItem.dataset.row);
                     const cols = parseInt(gridItem.dataset.col);
-                    updateCenterPanelLayout(rows, cols);
+                    updateWadoBoxLayout(rows, cols);
+                    if(rows === 1 && cols === 1)
+                    	resetCenterPanel();
+                    
                     hideLayoutMenu(); // 메뉴 숨기기
                 });
             }
@@ -699,34 +657,221 @@ function removeHighlightGridItems() {
 }
 
 //레이아웃 업데이트 함수
-function updateCenterPanelLayout(rows, cols) {
+function updateWadoBoxLayout(rows, cols) {
+    // 레이아웃 상태 업데이트
+    isSingleLayout = (rows === 1 && cols === 1);
+    
+    const wadoBox = document.querySelector('.wadoBox');
     const centerPanel = document.querySelector('.center-panel');
 
-    // 기존의 그리드 컨테이너가 있으면 제거
-    let gridContainer = document.querySelector('.grid-container');
-    if (gridContainer) {
-        centerPanel.removeChild(gridContainer);
-    }
+    // center-panel의 테두리 제거
+    centerPanel.style.border = 'none';
 
-    // 새로운 그리드 컨테이너 생성
-    gridContainer = document.createElement('div');
-    gridContainer.classList.add('grid-container');
+    // 기존 그리드 초기화
+    wadoBox.innerHTML = '';
 
-    gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-    gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    // 그리드 설정
+    wadoBox.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+    wadoBox.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
 
-    // 선택된 그리드 크기만큼 요소를 생성하여 추가
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            const gridCell = document.createElement('div');
-            gridCell.classList.add('grid-cell');
-            gridCell.innerHTML = `<canvas class="cornerstone-canvas"></canvas>`;
-            gridContainer.appendChild(gridCell);
+    // 폰트 크기 클래스 결정
+    const fontSizeClass = getFontSizeClass(rows, cols);
+
+    // 그리드 셀 생성 및 초기화
+    for (let i = 0; i < rows * cols; i++) {
+        const parentDiv = document.createElement('div');
+        parentDiv.classList.add('parentDiv', fontSizeClass);  // 폰트 크기 클래스 추가
+        parentDiv.setAttribute('data-value', i);
+
+        // 첫 번째 parentDiv에 테두리 적용
+        if (i === 0 && !(rows === 1 && cols === 1)) {
+            parentDiv.classList.add('layout-active');
+        }
+
+        // 클릭 이벤트 추가 (클릭된 요소에 테두리 적용)
+        if (!(rows === 1 && cols === 1)) {
+            imageScrollLoopButton.disabled = true; // 스크롤 루프 버튼 비활성화
+            playClipButton.disabled = true;
+            imageScrollLoopButton.classList.add('disabled');
+            playClipButton.classList.add('disabled');
+            
+            
+            
+            parentDiv.addEventListener('click', function () {
+                isLayout = true;
+                document.querySelectorAll('.parentDiv').forEach(div => div.classList.remove('layout-active'));
+                parentDiv.classList.add('layout-active');
+                currentImageName = currentFileNames[i];
+            });
+        } else {
+            isLayout = false;            
+            imageScrollLoopButton.disabled = false; // 스크롤 루프 버튼 활성화
+            playClipButton.disabled = false;
+            imageScrollLoopButton.classList.remove('disabled'); // 비활성화 상태 시각적 표시 해제
+            playClipButton.classList.remove('disabled');
+        }
+
+        createLayout(parentDiv, i);
+
+        const dicomImageDiv = document.createElement('div');
+        dicomImageDiv.classList.add('image-placeholder');
+        parentDiv.appendChild(dicomImageDiv);
+
+        wadoBox.appendChild(parentDiv);
+
+        // Cornerstone 요소 활성화
+        cornerstone.enable(dicomImageDiv);
+
+        // 이미지 로드 및 표시
+        if (i < imageIds.length) {
+        	cornerstone.loadImage(imageIds[i]).then(function(image) {
+        	    cornerstone.displayImage(dicomImageDiv, image);
+
+        	    // 이미지 활성화가 제대로 되었는지 확인한 후 이벤트 추가
+        	    if (cornerstone.getEnabledElement(dicomImageDiv)) {
+        	        dicomImageDiv.addEventListener('mousedown', windowLevelMouseDownHandler);
+        	    }
+
+        	}).catch(function(err) {
+        	    console.error('Error loading image for index ' + i, err);
+        	});
+        }
+
+        if (isSingleLayout) {
+            cornerstoneTools.removeTool('StackScrollMouseWheel');
+            cornerstoneTools.addTool(cornerstoneTools.StackScrollMouseWheelTool);
+            cornerstoneTools.setToolActive('StackScrollMouseWheel', {});
+        } else {
+            activateGridScrollWheel();
         }
     }
+}
 
-    // center-panel 내부에 그리드 컨테이너 추가
-    centerPanel.appendChild(gridContainer);
+
+
+
+function activateGridScrollWheel() {
+    const gridItems = document.querySelectorAll('.grid-item');
+    
+    gridItems.forEach(item => {
+        item.addEventListener('wheel', function(event) {
+            const dicomImageDiv = item.querySelector('.image-placeholder');
+            if (dicomImageDiv) {
+                const direction = event.deltaY > 0 ? 1 : -1;
+                scrollImageInGrid(dicomImageDiv, direction);
+            }
+        });
+    });
+}
+
+function scrollImageInGrid(element, direction) {
+    const stackState = cornerstoneTools.getToolState(element, 'stack');
+    if (stackState && stackState.data.length > 0) {
+        const stackData = stackState.data[0];
+        const imageCount = stackData.imageIds.length;
+        
+        // 현재 이미지 인덱스 업데이트
+        stackData.currentImageIdIndex = (stackData.currentImageIdIndex + direction + imageCount) % imageCount;
+        
+        cornerstone.loadAndCacheImage(stackData.imageIds[stackData.currentImageIdIndex]).then(function(image) {
+            cornerstone.displayImage(element, image);
+        });
+    }
+}
+
+
+
+//폰트 크기 매핑 테이블 생성
+const fontSizeMapping = {
+    large: [
+        [1, 4], [1, 5], [4, 1], [5, 1],
+        [2, 2], [2, 3], [2, 4], [3, 2], [4, 2]
+    ],
+    medium: [
+        [2, 5], [5, 2], [3, 3], [3, 4], [3, 5],
+        [4, 3], [5, 3]
+    ],
+    XLarge: [
+        [1, 1], [1, 2], [1, 3],
+        [2, 1], [3, 1]
+    ]
+};
+
+//폰트 크기 클래스 반환 함수
+function getFontSizeClass(rows, cols) {
+    for (const [fontSize, conditions] of Object.entries(fontSizeMapping)) {
+        if (conditions.some(([r, c]) => r === rows && c === cols)) {
+            return fontSize;
+        }
+    }
+    return 'small';  // 기본값은 small
+}
+
+//layout 요소 생성 함수
+function createLayout(parentDiv, index) {
+	
+    // 필요한 경우 추가 정보 표시용 요소들 추가
+    const topLeft = document.createElement('div');
+    const bottomRight = document.createElement('div');
+    
+    topLeft.classList.add('topLeft');
+    bottomRight.classList.add('bottomRight');
+
+    const pnameElement = document.createElement('span');
+    pnameElement.classList.add('block');
+    pnameElement.textContent = '환자명: ' + fileDataListGlobal[index]["pname"];
+
+    const pidElement = document.createElement('span');
+    pidElement.classList.add('block');
+    pidElement.textContent = 'PID: ' + fileDataListGlobal[index]["pid"];
+
+    const birthDateElement = document.createElement('span');
+    birthDateElement.classList.add('block');
+    birthDateElement.textContent = '생년월일: ' + fileDataListGlobal[index]["pbirthdatetime"];
+
+    const studyDateElement = document.createElement('span');
+    studyDateElement.classList.add('block');
+    studyDateElement.textContent = '검사일: ' + fileDataListGlobal[index]["studydate"];
+
+    const studyTimeElement = document.createElement('span');
+    studyTimeElement.classList.add('block');
+    studyTimeElement.textContent = '시간: ' + fileDataListGlobal[index]["studytime"];
+
+    const imageNumberElement = document.createElement('span');
+    imageNumberElement.classList.add('block');
+    imageNumberElement.textContent = 'Image: ' + (index + 1);
+
+    const imageWWWCElement = document.createElement('span');
+    imageWWWCElement.classList.add('block','wwwc');
+    imageWWWCElement.innerHTML = "WW : " + Math.round(initialWindowWidth) + "<br>WC : " + Math.round(initialWindowCenter);
+    
+    
+    // 요소 추가
+    topLeft.appendChild(imageNumberElement);
+    topLeft.appendChild(pnameElement);
+    topLeft.appendChild(pidElement);
+    topLeft.appendChild(birthDateElement);
+    topLeft.appendChild(studyDateElement);
+    topLeft.appendChild(studyTimeElement);
+    
+    bottomRight.appendChild(imageWWWCElement);
+
+    parentDiv.appendChild(topLeft);
+    parentDiv.appendChild(bottomRight);
+}
+
+
+// 리셋
+function resetCenterPanel() {
+    const centerPanel = document.querySelector('.center-panel');
+    centerPanel.style.border = '4px solid #ff0000'; // 빨간 테두리 복원
+}
+
+
+// top-left content요소
+function topLeftContent(){
+
+
 }
 
 // 레이아웃 메뉴 숨기기 함수
@@ -828,8 +973,19 @@ document.querySelectorAll('.tool-button').forEach(button => {
             case 'windowLevel':
                 setActiveButton(event.currentTarget);
                 disableAllTools();
-                addWindowLevelMouseListener();
+
+                document.querySelectorAll('.image-placeholder').forEach(imageDiv => {
+                    imageDiv.addEventListener('mousedown', function(e) {
+                        if (activeImageElement) {
+                            activeImageElement.removeEventListener('mousedown', windowLevelMouseDownHandler);
+                        }
+                        activeImageElement = imageDiv;
+                        windowLevelMouseDownHandler(e);
+                    });
+                });
+                
                 break;
+
 
             case 'invert':
                 viewport.invert = !viewport.invert;
@@ -1027,7 +1183,7 @@ fetch(fileUrl)
 
         // Base64 디코딩 후 Blob 생성 및 SOPInstanceUID 저장
         sopInstanceUIDs = fileDataList.map(fileData => fileData.sop_instance_uid); // SOPInstanceUID 저장
-
+        fileDataListGlobal = fileDataList;
         imageIds = fileDataList.map((fileData, index) => {
             const byteCharacters = atob(fileData.file_data); // Base64 디코딩
             const byteNumbers = new Array(byteCharacters.length);
@@ -1105,14 +1261,80 @@ fetch(fileUrl)
                     if (stackState && stackState.data.length > 0) {
                         const stackData = stackState.data[0];
                         currentImageIndex = stackData.currentImageIdIndex; // 현재 이미지 인덱스를 가져옴
-                        updateImageNumber(); // 이미지 번호 업데이트
+                        
+                        
+                        if(!isLayout){
+                        // 이미지 정보가 들어갈 부모 요소 선택
+                        const topLeftElement = document.querySelector('.topLeft');
 
+                        // imagePid 요소가 이미 존재하는지 확인
+                        let imagePidElement = document.querySelector('.imagePid');
+                        if(!imagePidElement){
+                        	imagePidElement = document.createElement('span');
+                        	imagePidElement.className = 'block imagePid';
+                            topLeftElement.appendChild(imagePidElement);
+                        }
+
+                        // imagePname 요소가 이미 존재하는지 확인
+                        let imagePnameElement = document.querySelector('.imagePname');
+                        if (!imagePnameElement) {
+                            // 존재하지 않으면 생성해서 추가
+                            imagePnameElement = document.createElement('span');
+                            imagePnameElement.className = 'block imagePname';
+                            topLeftElement.appendChild(imagePnameElement);
+                        }
+                        
+                        // imagePbirthdatetime 요소가 이미 존재하는지 확인
+                        let imagePbirthdatetime = document.querySelector('.imagePbirthdatetime');
+                        if(!imagePbirthdatetime){
+                        	// 존재하지 않으면 생성해서 추가
+                        	imagePbirthdatetime = document.createElement('span');
+                        	imagePbirthdatetime.className = 'block imagePbirthdatetime';
+                            topLeftElement.appendChild(imagePbirthdatetime);
+                        }
+                        
+                        // imageNumber 요소가 이미 존재하는지 확인
+                        let imageNumberElement = document.querySelector('.imageNumber');
+                        if (!imageNumberElement) {
+                            // 존재하지 않으면 생성해서 추가
+                            imageNumberElement = document.createElement('span');
+                            imageNumberElement.className = 'block imageNumber';
+                            topLeftElement.appendChild(imageNumberElement);
+                        }
+                        
+                        // imageDate 요소가 이미 존재하는지 확인
+                        let imageDateElement = document.querySelector('.imageDate');
+                        if (!imageDateElement) {
+                            // 존재하지 않으면 생성해서 추가
+                            imageDateElement = document.createElement('span');
+                            imageDateElement.className = 'block imageDate';
+                            topLeftElement.appendChild(imageDateElement);
+                        }
+                        
+                        // imageTime 요소가 이미 존재하는지 확인
+                        let imageTimeElement = document.querySelector('.imageTime');
+                        if (!imageTimeElement) {
+                            // 존재하지 않으면 생성해서 추가
+                            imageTimeElement = document.createElement('span');
+                            imageTimeElement.className = 'block imageTime';
+                            topLeftElement.appendChild(imageTimeElement);
+                        }
+
+                        // 요소에 값을 설정
+                        imageNumberElement.textContent = (currentImageIndex + 1) + '/' + fileDataListGlobal.length;
+                        imagePnameElement.textContent = fileDataListGlobal[0]["pname"];
+                        imagePidElement.textContent = fileDataListGlobal[0]["pid"];
+                        imagePbirthdatetime.textContent = fileDataListGlobal[0]["pbirthdatetime"];
+                        imageDateElement.textContent = fileDataListGlobal[0]["studydate"];
+                        imageTimeElement.textContent = fileDataListGlobal[0]["studytime"];
+                      }
                         // 현재 이미지 파일 이름 업데이트
                         currentImageName = currentFileNames[currentImageIndex];
                     }
                 });
 
                 const viewport = cornerstone.getViewport(element);
+                // 이미지 불러올떄 쓰는 window 값
                 document.querySelector('.wwwc').innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
                 resizeImage();
                 
@@ -1125,70 +1347,7 @@ fetch(fileUrl)
         
         function updateImageNumber() {
             console.log("pid:", pid);
-
-            // 이미지 정보가 들어갈 부모 요소 선택
-            const topLeftElement = document.querySelector('.topLeft');
-
-            // imagePid 요소가 이미 존재하는지 확인
-            let imagePidElement = document.querySelector('.imagePid');
-            if(!imagePidElement){
-            	imagePidElement = document.createElement('span');
-            	imagePidElement.className = 'block imagePid';
-                topLeftElement.appendChild(imagePidElement);
-            }
-
-            // imagePname 요소가 이미 존재하는지 확인
-            let imagePnameElement = document.querySelector('.imagePname');
-            if (!imagePnameElement) {
-                // 존재하지 않으면 생성해서 추가
-                imagePnameElement = document.createElement('span');
-                imagePnameElement.className = 'block imagePname';
-                topLeftElement.appendChild(imagePnameElement);
-            }
-            
-            // imagePbirthdatetime 요소가 이미 존재하는지 확인
-            let imagePbirthdatetime = document.querySelector('.imagePbirthdatetime');
-            if(!imagePbirthdatetime){
-            	// 존재하지 않으면 생성해서 추가
-            	imagePbirthdatetime = document.createElement('span');
-            	imagePbirthdatetime.className = 'block imagePbirthdatetime';
-                topLeftElement.appendChild(imagePbirthdatetime);
-            }
-            
-            // imageNumber 요소가 이미 존재하는지 확인
-            let imageNumberElement = document.querySelector('.imageNumber');
-            if (!imageNumberElement) {
-                // 존재하지 않으면 생성해서 추가
-                imageNumberElement = document.createElement('span');
-                imageNumberElement.className = 'block imageNumber';
-                topLeftElement.appendChild(imageNumberElement);
-            }
-            
-            // imageDate 요소가 이미 존재하는지 확인
-            let imageDateElement = document.querySelector('.imageDate');
-            if (!imageDateElement) {
-                // 존재하지 않으면 생성해서 추가
-                imageDateElement = document.createElement('span');
-                imageDateElement.className = 'block imageDate';
-                topLeftElement.appendChild(imageDateElement);
-            }
-            
-            // imageTime 요소가 이미 존재하는지 확인
-            let imageTimeElement = document.querySelector('.imageTime');
-            if (!imageTimeElement) {
-                // 존재하지 않으면 생성해서 추가
-                imageTimeElement = document.createElement('span');
-                imageTimeElement.className = 'block imageTime';
-                topLeftElement.appendChild(imageTimeElement);
-            }
-
-            // 요소에 값을 설정
-            imageNumberElement.textContent = (currentImageIndex + 1) + '/' + fileDataList.length;
-            imagePnameElement.textContent = fileDataList[0]["pname"];
-            imagePidElement.textContent = fileDataList[0]["pid"];
-            imagePbirthdatetime.textContent = fileDataList[0]["pbirthdatetime"];
-            imageDateElement.textContent = fileDataList[0]["studydate"];
-            imageTimeElement.textContent = fileDataList[0]["studytime"];
+			topLeftContent();
         }
 
         function resizeImage() {
@@ -1359,7 +1518,8 @@ function disableAllTools() {
         'Bidirectional',
         'CobbAngle',
         'TextMarker',
-        'Eraser'
+        'Eraser',
+        'Wwwc'
     ];
 
     tools.forEach(tool => {
@@ -1419,7 +1579,10 @@ function addWindowLevelMouseListener() {
 
 // 윈도우 레벨 마우스 리스너 제거 함수 (기존 코드)
 function removeWindowLevelMouseListener() {
-    element.removeEventListener('mousedown', windowLevelMouseDownHandler);
+    if (activeImageElement) {
+        activeImageElement.removeEventListener('mousedown', windowLevelMouseDownHandler);
+        activeImageElement = null; // 리스너 제거 후 활성화된 요소 초기화
+    }
 }
 
 // 윈도우 레벨 마우스 핸들러 (기존 코드)
@@ -1427,18 +1590,31 @@ function windowLevelMouseDownHandler(e) {
     let lastX = e.pageX;
     let lastY = e.pageY;
 
+    const targetElement = e.currentTarget; // 이벤트가 발생한 현재 타겟 요소
+
+    try {
+        let viewport = cornerstone.getViewport(targetElement); // 뷰포트 가져오기 시도
+    } catch (error) {
+        console.error("Element not enabled for cornerstone:", error);
+        return; // 요소가 활성화되지 않았으면 핸들러 종료
+    }
+
     function mouseMoveHandler(e) {
         const deltaX = e.pageX - lastX;
         const deltaY = e.pageY - lastY;
         lastX = e.pageX;
         lastY = e.pageY;
 
-        let viewport = cornerstone.getViewport(element);
+        let viewport = cornerstone.getViewport(targetElement);
         viewport.voi.windowWidth += (deltaX / viewport.scale);
         viewport.voi.windowCenter += (deltaY / viewport.scale);
-        cornerstone.setViewport(element, viewport);
+        cornerstone.setViewport(targetElement, viewport);
 
-        document.querySelector('.wwwc').innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
+        // 해당 요소의 bottomRight 부분 업데이트
+        const bottomRightElement = targetElement.querySelector('.bottomRight .wwwc');
+        if (bottomRightElement) {
+            bottomRightElement.innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
+        }
     }
 
     function mouseUpHandler() {
@@ -1449,6 +1625,7 @@ function windowLevelMouseDownHandler(e) {
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', mouseUpHandler);
 }
+
 
 // 확대 이벤트 함수
 function zoomMouseDownHandler(e) {
