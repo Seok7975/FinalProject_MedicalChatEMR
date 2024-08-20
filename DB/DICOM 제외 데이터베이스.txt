@@ -34,7 +34,7 @@ CREATE TABLE PatientVisits (
     doctorName VARCHAR(50), -- 담당 의사의 이름입니다.
     nurseName VARCHAR(50), -- 담당 간호사의 이름입니다.
     visitHistory TEXT, -- 내원 이력입니다. ex) 2024-08-19 19:48 피부염(담당의(없으면 없음), 담당간호사(없으면 없음))
-    FOREIGN KEY (securityNum) REFERENCES RegisterPatients(securityNum) -- RegisterPatients 테이블과의 외래키 관계
+    FOREIGN KEY (securityNum) REFERENCES PatientRegistrations(securityNum) -- RegisterPatients 테이블과의 외래키 관계
 );
 
 -- 의사 테이블
@@ -46,7 +46,7 @@ CREATE TABLE Doctor (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), -- (초기에는 NULL)
-    position VARCHAR(20) -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
+    position VARCHAR(20), -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
     department_id VARCHAR(10), -- 소속 진료과입니다.
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
     active_status VARCHAR(50) NOT NULL -- 현재 활동 상태 > 진료 중 / 점심 시간 / 자리 비움
@@ -63,9 +63,9 @@ CREATE TABLE Nurse (
     phone VARCHAR(20), -- 전화번호입니다.
     license_id CHAR(16) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
     password VARCHAR(15), -- (초기에는 NULL)
-    position VARCHAR(20) -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
+    position VARCHAR(20), -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
-    active_status VARCHAR(50) NOT NULL ; -- 현재 활동 상태
+    active_status VARCHAR(50) NOT NULL -- 현재 활동 상태
 );
 
 -- 진료 기록(환자의 진료기록 저장) 
@@ -77,8 +77,8 @@ CREATE TABLE MedicalRecord (
     surgery_status CHAR(1), -- 수술 여부 ('Y' 또는 'N')
     progress TEXT, -- 경과
     visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 진료 일자, 타임 스탬프
-    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (doc_id) REFERENCES Doctor(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (doc_id) REFERENCES Doctor(no) ON DELETE CASCADE
 );
 
 -- 진단 테이블(질병 정보 저장)
@@ -122,9 +122,9 @@ CREATE TABLE Patient_Assignment (
     doctor_id INT, -- 담당 의사의 식별자입니다.
     nurse_id INT, -- 담당 간호사의 식별자입니다.
     assignment_date DATE NOT NULL, -- 담당 지정 날짜입니다.
-    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE SET NULL,
-    FOREIGN KEY (nurse_id) REFERENCES Nurse(id) ON DELETE SET NULL
+    FOREIGN KEY (patient_id) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(no) ON DELETE SET NULL,
+    FOREIGN KEY (nurse_id) REFERENCES Nurse(no) ON DELETE SET NULL
 );
 
 -- 의사 환자 관계 테이블
@@ -134,8 +134,8 @@ CREATE TABLE Patient_Doctor (
     doctor_id INT NOT NULL, -- 담당 의사의 내부 ID입니다.
     relationship_start_date DATE, -- 관리 시작 날짜입니다.
     relationship_end_date DATE, -- 관리 종료 날짜입니다.
-    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(no) ON DELETE CASCADE
 );
 
 
@@ -146,7 +146,7 @@ CREATE TABLE Patient_Nurse (
     nurse_id INT NOT NULL, -- 담당 간호사의 내부 ID입니다.
     relationship_start_date DATE, -- 관리 시작 날짜입니다.
     relationship_end_date DATE, -- 관리 종료 날짜입니다.
-    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (nurse_id) REFERENCES Nurse(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (nurse_id) REFERENCES Nurse(no) ON DELETE CASCADE
 );
 
