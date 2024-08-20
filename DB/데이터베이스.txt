@@ -6,7 +6,7 @@ CREATE TABLE Admin (
 ); 
 
 -- 환자 등록 테이블
-CREATE TABLE RegisterPatients (
+CREATE TABLE PatientRegistrations (
     no INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
     name VARCHAR(50), -- 환자의 이름입니다.
     securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
@@ -24,7 +24,7 @@ CREATE TABLE RegisterPatients (
 );
 
 -- 환자내원 테이블
-CREATE TABLE VisitPatients (
+CREATE TABLE PatientVisits (
     visitId INT AUTO_INCREMENT PRIMARY KEY, -- 내원 기록의 고유 식별자입니다.
     visitDate DATE, -- 내원 날짜입니다.
     visitTime TIME, -- 진료 시각입니다.
