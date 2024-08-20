@@ -3,7 +3,7 @@ package com.emr.www.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.emr.www.service.PatientService;
+import com.emr.www.patient.service.PatientService;
 
 public class SecurityNumValidator {
 	

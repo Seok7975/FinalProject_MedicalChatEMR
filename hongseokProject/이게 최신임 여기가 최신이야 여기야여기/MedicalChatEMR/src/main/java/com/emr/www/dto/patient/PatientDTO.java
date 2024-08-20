@@ -1,4 +1,4 @@
-package com.emr.www.dto;
+package com.emr.www.dto.patient;
 
 import java.math.BigDecimal;
 
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatientDTO {
-    private Long idNo;
+    private Long no;
     private String name;
     private String securityNum;
     private Character gender;

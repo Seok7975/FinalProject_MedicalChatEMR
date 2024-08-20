@@ -1,4 +1,4 @@
-package com.emr.www.controller;
+package com.emr.www.controller.headnurse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

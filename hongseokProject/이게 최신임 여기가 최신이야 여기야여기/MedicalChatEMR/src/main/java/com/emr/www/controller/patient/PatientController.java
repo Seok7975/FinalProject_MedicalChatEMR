@@ -1,4 +1,4 @@
-package com.emr.www.controller;
+package com.emr.www.controller.patient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,14 +16,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.emr.www.dto.PatientDTO;
-import com.emr.www.entity.Patient;
-import com.emr.www.repository.PatientRepository;
-import com.emr.www.service.PatientService;
+import com.emr.www.dto.patient.PatientDTO;
+import com.emr.www.entity.patient.Patient;
+import com.emr.www.patient.service.PatientService;
+import com.emr.www.repository.patient.PatientRepository;
 import com.emr.www.util.SecurityNumValidator;
 
-@Controller
+@RestController // 모든 메서드가 @ResponseBody를 포함
 @RequestMapping("/api/patients") // 경로를 /api/patients로 설정
 public class PatientController {
 
@@ -79,8 +79,8 @@ public class PatientController {
         return ResponseEntity.ok(savedPatientDTO);
     }
 
-    // 환자 조회
-    @GetMapping("/patient/{securityNum}")
+    // 환자등록(중복된 환자 조회)
+    @GetMapping("/{securityNum}")
     @ResponseBody
     public ResponseEntity<PatientDTO> getPatient(@PathVariable String securityNum) {
         PatientDTO patient = patientService.getPatientBySecurityNum(securityNum);
@@ -95,6 +95,13 @@ public class PatientController {
     @GetMapping("/search")
     @ResponseBody
     public ResponseEntity<List<PatientDTO>> searchPatientsByName(@RequestParam("name") String name) {
+        log.info("검색 요청: 입력된 이름: {}", name); // 검색 요청 시 입력된 이름 로깅
+
+        if (name.trim().isEmpty()) {
+            log.info("빈 검색어로 요청됨");
+            return ResponseEntity.ok(new ArrayList<>()); // 빈 리스트 반환
+        }
+        
         // 입력된 이름을 포함하는 환자 목록을 조회합니다.
         List<Patient> patients = patientRepository.findByNameContaining(name);
         List<PatientDTO> patientDTOs = new ArrayList<>();
@@ -104,9 +111,36 @@ public class PatientController {
             PatientDTO dto = new PatientDTO();
             BeanUtils.copyProperties(patient, dto);
             patientDTOs.add(dto);
+            
+            // 검색된 환자의 이름과 주민등록번호 로깅
+            log.info("검색 결과: 이름: {}, 주민등록번호: {}", patient.getName(), patient.getSecurityNum());
         }
         
+        if (patientDTOs.isEmpty()) {
+            log.info("검색 결과가 없습니다. 입력된 이름: {}", name);
+        }
+
         return ResponseEntity.ok(patientDTOs);
+    }
+    
+    // 환자의 내원 정보를 등록
+    @PostMapping("/visit")
+    @ResponseBody
+    public ResponseEntity<String> registerPatientVisit(@RequestBody PatientDTO patientVisitDTO) {
+        log.info("환자 내원 정보: {}", patientVisitDTO);
+        
+        // 환자의 이름과 주민등록번호로 기존 환자를 찾습니다.
+        Patient patient = patientRepository.findByNameAndSecurityNum(
+                patientVisitDTO.getName(), patientVisitDTO.getSecurityNum());
+        
+        if (patient != null) {
+            // 내원 정보를 등록하는 로직 (예: 내원 내역 테이블에 저장)
+            // patientService.registerVisit(patient, patientVisitDTO); // 내원 정보 저장 로직
+            
+            return ResponseEntity.ok("환자 내원이 성공적으로 처리되었습니다.");
+        } else {
+            return ResponseEntity.badRequest().body("해당 정보와 일치하는 환자가 존재하지 않습니다.");
+        }
     }
 
 

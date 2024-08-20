@@ -1,4 +1,4 @@
-package com.emr.www.entity;
+package com.emr.www.entity.patient;
 
 import java.math.BigDecimal;
 
@@ -13,21 +13,22 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "RegisterPatients")
+@Table(name = "PatientRegistrations")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idNo")
-    private Long idNo;
+    @Column(name = "no")
+    private Long no;
 
     @Column(length = 50)
     private String name;
 
     @Column(name = "securityNum", length = 14, unique = true)
     private String securityNum;  
+    
     @Column(length = 1)
     private Character gender;
 

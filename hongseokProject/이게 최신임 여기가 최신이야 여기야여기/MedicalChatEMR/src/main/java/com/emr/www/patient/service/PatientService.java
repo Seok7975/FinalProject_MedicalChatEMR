@@ -1,4 +1,4 @@
-package com.emr.www.service;
+package com.emr.www.patient.service;
 
 import java.util.List;
 
@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.emr.www.dto.PatientDTO;
-import com.emr.www.entity.Patient;
-import com.emr.www.repository.PatientRepository;
+import com.emr.www.dto.patient.PatientDTO;
+import com.emr.www.entity.patient.Patient;
+import com.emr.www.repository.patient.PatientRepository;
 
 @Service
 public class PatientService {
@@ -46,7 +46,7 @@ public class PatientService {
 
 		// 환자 정보 저장
 		Patient savedPatient = patientRepository.save(patient);
-		log.info("환자가 성공적으로 저장되었습니다. 생성된 ID : {}\n", savedPatient.getIdNo());
+		log.info("환자가 성공적으로 저장되었습니다. 생성된 ID : {}\n", savedPatient.getNo());
 		return savedPatient;
 	}
 

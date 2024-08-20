@@ -1030,6 +1030,7 @@ footer {
 		</div>
 	</div>
 
+
 	<!-- 환자내원 모달 -->
 	<div id="patientVisitModal" class="modal">
 		<div class="modal-content">
@@ -1041,8 +1042,13 @@ footer {
 						id="visitDate" name="visitDate" required>
 				</div>
 				<div class="form-group">
-					<label for="patientName">성명:</label> <input type="text"
-						id="patientName" name="patientName" required>
+                	<label for="visitTime">내원(진료) 시각:</label>
+                	<input type="time" id="visitTime" name="visitTime" required>
+            	</div>
+				<div class="form-group">
+			    	<label for="patientName">성명:</label> 
+			    	<input type="text" id="patientName" name="patientName" required oninput="searchPatients(this.value)">
+			   		<div id="patientSearchResults" style="border: 1px solid #ccc; display: none; max-height: 150px; overflow-y: auto;"></div>
 				</div>
 				<div class="form-group">
 					<label for="patientSecurityNum">주민등록번호:</label> <input type="text"
@@ -1092,35 +1098,72 @@ footer {
         });
 
         // 캘린더 기능
-	    document.addEventListener('DOMContentLoaded', function() {
-	        var calendarEl = document.getElementById('calendar');
-	
-	        var calendar = new FullCalendar.Calendar(calendarEl, {
-	            initialView: 'dayGridMonth', // 기본 월간 보기로 설정
-	            locale: 'ko', // 한국어 로케일 설정
-	            headerToolbar: { // 달력의 헤더 툴바 설정
-	                left: 'prev,next today', // 이전, 다음 버튼 및 오늘 버튼
-	                center: 'title', // 중앙에 타이틀 표시
-	                right: 'dayGridMonth,timeGridWeek,timeGridDay' // 오른쪽에 월, 주, 일 보기 버튼
-	            },
-	            dateClick: function(info) { // 날짜 클릭 시 이벤트 핸들러
-	                alert('Date: ' + info.dateStr);
-	            },
-	            events: [ // 미리 정의된 이벤트들
-	                {
-	                    title: 'All Day Event', // 이벤트 제목
-	                    start: '2023-08-01' // 이벤트 시작 날짜
-	                },
-	                {
-	                    title: 'Long Event', // 이벤트 제목
-	                    start: '2023-08-07', // 이벤트 시작 날짜
-	                    end: '2023-08-10' // 이벤트 종료 날짜
-	                }
-	            ]
-	        });
-	
-	        calendar.render(); // 달력을 렌더링
-	    });
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'ko',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        dayHeaderContent: function(arg) {
+            var dayName = arg.text;
+            var element = document.createElement('span');
+            element.innerHTML = dayName;
+            element.style.fontSize = '1.4em';  // 요일 폰트 크기 증가
+            element.style.fontWeight = 'bold';  // 요일을 굵게 표시
+            return { domNodes: [element] };
+        },
+        dayCellContent: function(arg) {
+            var dayOfWeek = arg.date.getDay();
+            var dateText = arg.dayNumberText.replace('일', '');
+            
+            var element = document.createElement('div');
+            element.innerHTML = dateText;
+            element.style.fontSize = '1.4em';  // 날짜 숫자 폰트 크기 증가
+            element.style.fontWeight = 'bold';  // 날짜 숫자를 굵게 표시
+            
+            if (dayOfWeek === 0) {  // 일요일
+                element.style.color = 'red';
+            } else if (dayOfWeek === 6) {  // 토요일
+                element.style.color = 'blue';
+            }
+            
+            return { domNodes: [element] };
+        },
+        dateClick: function(info) {
+            var clickedDate = new Date(info.dateStr);
+            var calendarDate = calendar.getDate();
+
+            if (clickedDate.getMonth() < calendarDate.getMonth() && clickedDate.getFullYear() === calendarDate.getFullYear() ||
+                clickedDate.getFullYear() < calendarDate.getFullYear()) {
+                calendar.prev();
+            } else if (clickedDate.getMonth() > calendarDate.getMonth() && clickedDate.getFullYear() === calendarDate.getFullYear() ||
+                       clickedDate.getFullYear() > calendarDate.getFullYear()) {
+                calendar.next();
+            } else {
+                alert('Date: ' + info.dateStr);
+            }
+        },
+        events: [
+            {
+                title: 'All Day Event',
+                start: '2023-08-01'
+            },
+            {
+                title: 'Long Event',
+                start: '2023-08-07',
+                end: '2023-08-10'
+            }
+        ]
+    });
+
+    calendar.render();
+});
+
 
 
         // 탭 전환 기능
@@ -1406,13 +1449,14 @@ footer {
 			    body: JSON.stringify(patientData) // JSON 형식으로 변환하여 전송
 			})
 			.then(response => {
-			    if (response.ok) {
-			        return response.json();
-			    } else {
+			    if (response.status === 409) {
+			        throw new Error('중복된 주민등록번호가 있습니다.');
+			    } else if (!response.ok) {
 			        return response.text().then(text => {
 			            throw new Error(text || '환자 등록 중 오류가 발생했습니다.');
 			        });
 			    }
+			    return response.json();
 			})
 			.then(data => {
 			    alert('환자가 성공적으로 등록되었습니다.');
@@ -1425,6 +1469,67 @@ footer {
 			});
 		}
 		
+		function searchPatients(query) {
+		    if (query.length < 2) {
+		        document.getElementById('patientSearchResults').style.display = 'none';
+		        return;
+		    }
+		
+		    fetch(`/api/patients/search?name=${query}`)
+		        .then(response => response.json())
+		        .then(data => {
+		            const resultsDiv = document.getElementById('patientSearchResults');
+		            resultsDiv.innerHTML = '';
+		            if (data.length > 0) {
+		                data.forEach(patient => {
+		                    const option = document.createElement('div');
+		                    option.textContent = `${patient.name} - ${patient.securityNum}`;
+		                    option.style.cursor = 'pointer';
+		                    option.onclick = () => {
+		                        document.getElementById('patientName').value = patient.name;
+		                        document.getElementById('patientSecurityNum').value = patient.securityNum;
+		                        resultsDiv.style.display = 'none';
+		                    };
+		                    resultsDiv.appendChild(option);
+		                });
+		                resultsDiv.style.display = 'block';
+		            } else {
+		                resultsDiv.style.display = 'none';
+		            }
+		        })
+		        .catch(error => {
+		            console.error('Error:', error);
+		        });
+		}
+		
+		function registerVisit() {
+		    const visitData = {
+		        name: document.getElementById('patientName').value,
+		        securityNum: document.getElementById('patientSecurityNum').value,
+		        visitDate: document.getElementById('visitDate').value,
+		        visitReason: document.getElementById('visitReason').value
+		    };
+		
+		    fetch('/api/patients/visit', {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json',
+		        },
+		        body: JSON.stringify(visitData)
+		    })
+		    .then(response => {
+		        if (response.ok) {
+		            alert('내원이 성공적으로 등록되었습니다.');
+		            document.getElementById('patientVisitModal').style.display = 'none';
+		        } else {
+		            throw new Error('내원 등록 중 오류가 발생했습니다.');
+		        }
+		    })
+		    .catch(error => {
+		        console.error('Error:', error);
+		        alert('내원 등록 중 오류가 발생했습니다: ' + error.message);
+		    });
+		}	
     </script>
 </body>
 
