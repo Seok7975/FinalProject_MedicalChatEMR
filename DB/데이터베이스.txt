@@ -147,6 +147,7 @@ CREATE TABLE PatientNurse (
 );
 
 
+
 -- 다이콤 데이터베이스
 CREATE TABLE dicom_files (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
