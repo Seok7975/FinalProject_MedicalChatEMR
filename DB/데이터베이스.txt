@@ -54,17 +54,19 @@ CREATE TABLE Doctor (
 
 -- 간호사 테이블
 CREATE TABLE Nurse (
-    no INT AUTO_INCREMENT PRIMARY KEY, -- 간호사의 고유 식별자입니다.
-    name VARCHAR(100), -- 간호사의 이름입니다.
-    securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
-    email VARCHAR(320) UNIQUE, -- 이메일 주소입니다.
-    phone VARCHAR(20), -- 전화번호입니다.
-    licenseId CHAR(16) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
-    password VARCHAR(15), -- (초기에는 NULL)
-    position VARCHAR(20), -- 직급입니다.
-    profileImage VARCHAR(255), -- 증명사진 경로입니다.
-    activeStatus VARCHAR(50) NOT NULL -- 현재 활동 상태
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 간호사의 고유 식별자 (Primary Key)
+    name VARCHAR(100), -- 간호사의 이름
+    securityNum CHAR(14) UNIQUE, -- 주민등록번호 (Unique Key)
+    email VARCHAR(320) UNIQUE, -- 이메일 주소 (Unique Key)
+    phone VARCHAR(20), -- 전화번호
+    licenseId CHAR(16) UNIQUE, -- 면허 ID (Unique Key)
+    password VARCHAR(100), -- 비밀번호 (암호화 저장 추천)
+    position VARCHAR(50), -- 직급
+    departmentId VARCHAR(10), -- 소속 진료과
+    profileImage VARCHAR(255), -- 프로필 이미지 경로
+    activeStatus VARCHAR(50) -- 활동 상태
 );
+
 
 -- 진료 기록 테이블
 CREATE TABLE MedicalRecord (
