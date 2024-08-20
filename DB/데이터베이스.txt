@@ -66,6 +66,7 @@ CREATE TABLE Nurse (
     password VARCHAR(15), -- (초기에는 NULL)
     position VARCHAR(20) -- 직급 입니다.( 퇴사 처리도 여기서 가능 )
     profile_image VARCHAR(255), -- 증명사진 경로입니다.
+    department_id VARCHAR(10), -- 소속 진료과입니다.
     active_status VARCHAR(50) NOT NULL ; -- 현재 활동 상태
 );
 
