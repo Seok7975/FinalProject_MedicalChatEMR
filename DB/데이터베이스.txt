@@ -61,7 +61,7 @@ CREATE TABLE Nurse (
     phone VARCHAR(20), -- 전화번호
     licenseId CHAR(16) UNIQUE, -- 면허 ID (Unique Key)
     password VARCHAR(100), -- 비밀번호 (암호화 저장 추천)
-    position VARCHAR(50), -- 직급
+    position VARCHAR(10), -- 직급 - N/H
     departmentId VARCHAR(10), -- 소속 진료과
     profileImage VARCHAR(255), -- 프로필 이미지 경로
     activeStatus VARCHAR(50) -- 활동 상태
