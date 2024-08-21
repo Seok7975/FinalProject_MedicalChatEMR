@@ -120,9 +120,10 @@ CREATE TABLE Drugs (
     FOREIGN KEY (chartNum) REFERENCES MedicalRecord(chartNum) ON DELETE CASCADE
 );
 
--- 환자 의사 간호사 배정 테이블
 
-<!--
+<!-- 아래 쿼리문은 사용 안함
+
+-- 환자 의사 간호사 배정 테이블
 CREATE TABLE PatientAssignment (
     no INT AUTO_INCREMENT PRIMARY KEY,
     patientId INT NOT NULL,
