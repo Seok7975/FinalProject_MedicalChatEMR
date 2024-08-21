@@ -20,12 +20,15 @@ CREATE TABLE PatientRegistrations (
     allergies TEXT, -- 알레르기 정보입니다.
     bloodPressure VARCHAR(10), -- 혈압
     temperature DECIMAL(4, 1), -- 체온
-    smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N').
+    smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N')
+--  입원 기능 추가 예정
 );
+
 
 -- 환자 내원 테이블
 CREATE TABLE PatientVisits (
     no INT AUTO_INCREMENT PRIMARY KEY, -- 내원 기록의 고유 식별자입니다.
+    patientNo INT , -- 환자 등록 테이블 주키
     visitDate DATE, -- 내원 날짜입니다.
     visitTime TIME, -- 진료 시각입니다.
     patientName VARCHAR(50), -- 환자의 이름입니다.
@@ -34,7 +37,7 @@ CREATE TABLE PatientVisits (
     doctorName VARCHAR(50), -- 담당 의사의 이름입니다.
     nurseName VARCHAR(50), -- 담당 간호사의 이름입니다.
     visitHistory TEXT, -- 내원 이력입니다.
-    FOREIGN KEY (securityNum) REFERENCES PatientRegistrations(securityNum) -- 외래키 관계
+    FOREIGN KEY (securityNum) REFERENCES PatientRegistrations(no) -- 외래키 관계
 );
 
 -- 의사 테이블
