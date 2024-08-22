@@ -73,8 +73,8 @@ CREATE TABLE PatientVisits (
 -- 진료 기록 테이블
 CREATE TABLE MedicalRecord (
     chartNum INT AUTO_INCREMENT PRIMARY KEY, -- 차트 번호
-    patientId INT NOT NULL, -- 환자 ID
-    docId INT NOT NULL, -- 진료 의사 ID
+    patientNo INT NOT NULL, -- 환자 ID
+    docNo INT NOT NULL, -- 진료 의사 ID
     symptoms TEXT, -- 증상
     surgeryStatus CHAR(1), -- 수술 여부 ('Y' 또는 'N')
     progress TEXT, -- 경과
