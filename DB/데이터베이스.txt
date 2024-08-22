@@ -5,38 +5,6 @@ CREATE TABLE Admin (
     adminEmail VARCHAR(320) UNIQUE -- 관리자의 이메일 주소입니다.
 ); 
 
--- 환자 등록 테이블
-CREATE TABLE PatientRegistrations (
-    no INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
-    name VARCHAR(50), -- 환자의 이름입니다.
-    securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
-    gender CHAR(1), -- 성별 ('M' 또는 'F').
-    address VARCHAR(255), -- 주소입니다
-    phone VARCHAR(20), -- 전화번호입니다.
-    email VARCHAR(50), -- 이메일 주소입니다.
-    bloodType CHAR(6), -- 혈액형입니다.
-    height FLOAT, -- 키(센티미터)입니다.
-    weight FLOAT, -- 체중(킬로그램)입니다.
-    allergies TEXT, -- 알레르기 정보입니다.
-    bloodPressure VARCHAR(10), -- 혈압
-    temperature DECIMAL(4, 1), -- 체온
-    smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N').
-);
-
--- 환자 내원 테이블
-CREATE TABLE PatientVisits (
-    no INT AUTO_INCREMENT PRIMARY KEY, -- 내원 기록의 고유 식별자입니다.
-    visitDate DATE, -- 내원 날짜입니다.
-    visitTime TIME, -- 진료 시각입니다.
-    patientName VARCHAR(50), -- 환자의 이름입니다.
-    securityNum VARCHAR(14), -- 환자의 주민등록번호입니다.
-    visitReason TEXT, -- 내원 사유입니다.
-    doctorName VARCHAR(50), -- 담당 의사의 이름입니다.
-    nurseName VARCHAR(50), -- 담당 간호사의 이름입니다.
-    visitHistory TEXT, -- 내원 이력입니다.
-    FOREIGN KEY (securityNum) REFERENCES PatientRegistrations(securityNum) -- 외래키 관계
-);
-
 -- 의사 테이블
 CREATE TABLE Doctor (
     no INT AUTO_INCREMENT PRIMARY KEY, -- 의사의 고유 식별자입니다.
@@ -67,12 +35,46 @@ CREATE TABLE Nurse (
     activeStatus VARCHAR(50) -- 활동 상태
 );
 
+-- 환자 등록 테이블
+CREATE TABLE PatientRegistrations (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
+    name VARCHAR(50), -- 환자의 이름입니다.
+    securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
+    gender CHAR(1), -- 성별 ('M' 또는 'F').
+    address VARCHAR(255), -- 주소입니다
+    phone VARCHAR(20), -- 전화번호입니다.
+    email VARCHAR(50), -- 이메일 주소입니다.
+    bloodType CHAR(6), -- 혈액형입니다.
+    height FLOAT, -- 키(센티미터)입니다.
+    weight FLOAT, -- 체중(킬로그램)입니다.
+    allergies TEXT, -- 알레르기 정보입니다.
+    bloodPressure VARCHAR(10), -- 혈압
+    temperature DECIMAL(4, 1), -- 체온
+    smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N')
+--  입원 기능 추가 예정 + 기본 정보를 제외한 혈압, 체온 등에 관한 정보는 따로 테이블로 분리
+);
+
+
+-- 환자 내원 테이블
+CREATE TABLE PatientVisits (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 내원 기록의 고유 식별자입니다.
+    patientNo INT, -- 환자 등록 테이블 주키
+    patientName VARCHAR(50), -- 환자의 이름입니다.
+    securityNum VARCHAR(14), -- 환자의 주민등록번호입니다.
+    visitReason TEXT, -- 내원 사유입니다.
+    doctorNo INT, -- 담당 의사 (타입을 INT로 변경)
+    nurseNo INT, -- 담당 간호사 (타입을 INT로 변경)
+    FOREIGN KEY (patientNo) REFERENCES PatientRegistrations(no), -- 외래키 관계
+    FOREIGN KEY (doctorNo) REFERENCES Doctor(no), -- 외래키 관계
+    FOREIGN KEY (nurseNo) REFERENCES Nurse(no) -- 외래키 관계
+);
+
 
 -- 진료 기록 테이블
 CREATE TABLE MedicalRecord (
     chartNum INT AUTO_INCREMENT PRIMARY KEY, -- 차트 번호
-    patientId INT NOT NULL, -- 환자 ID
-    docId INT NOT NULL, -- 진료 의사 ID
+    patientNo INT NOT NULL, -- 환자 ID
+    docNo INT NOT NULL, -- 진료 의사 ID
     symptoms TEXT, -- 증상
     surgeryStatus CHAR(1), -- 수술 여부 ('Y' 또는 'N')
     progress TEXT, -- 경과
@@ -80,6 +82,7 @@ CREATE TABLE MedicalRecord (
     FOREIGN KEY (patientId) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
     FOREIGN KEY (docId) REFERENCES Doctor(no) ON DELETE CASCADE
 );
+
 
 -- 진단 테이블
 CREATE TABLE Diagnosis (
@@ -114,6 +117,8 @@ CREATE TABLE Drugs (
     FOREIGN KEY (chartNum) REFERENCES MedicalRecord(chartNum) ON DELETE CASCADE
 );
 
+<!-- 아래 쿼리문은 사용 안함
+
 -- 환자 의사 간호사 배정 테이블
 CREATE TABLE PatientAssignment (
     no INT AUTO_INCREMENT PRIMARY KEY,
@@ -147,7 +152,7 @@ CREATE TABLE PatientNurse (
     FOREIGN KEY (patientId) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
     FOREIGN KEY (nurseId) REFERENCES Nurse(no) ON DELETE CASCADE
 );
-
+-->
 
 
 -- 다이콤 데이터베이스

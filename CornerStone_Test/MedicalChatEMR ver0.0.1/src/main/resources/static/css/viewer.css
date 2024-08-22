@@ -135,7 +135,7 @@ body {
 	gap: 8px;
 }
 
-.action-buttons {
+.action-buttons,.dashboard {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
@@ -162,6 +162,35 @@ body {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 	transform: translateY(-2px);
 }
+
+.dashboard{
+	height: 50px;
+	margin-bottom: 10px;
+}
+
+.dashboard .dashboard-Button {
+    background: linear-gradient(135deg, #28a745, #218838); /* 그라데이션 배경 */
+    color: white;
+    font-size: 1em; /* 폰트 크기를 조금 더 키움 */
+    font-weight: bold; /* 글씨를 굵게 설정 */
+    min-width: 180px; /* 버튼 너비를 조금 더 넓힘 */
+    padding: 15px 20px; /* 패딩을 조정하여 버튼을 더 크게 보이게 함 */
+    border-radius: 8px; /* 둥근 모서리 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 그림자 효과 추가 */
+    transition: all 0.3s ease; /* 부드러운 트랜지션 효과 */
+}
+
+.dashboard .dashboard-Button i {
+    margin-right: 8px; /* 아이콘과 텍스트 사이의 간격 조정 */
+    font-size: 1.2em; /* 아이콘 크기 확대 */
+}
+
+.dashboard .dashboard-Button:hover {
+    background-color: #218838; /* 호버 시 배경색 변화 */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); /* 호버 시 그림자 더 진하게 */
+    transform: translateY(-3px); /* 호버 시 살짝 위로 이동 */
+}
+
 
 .interface-toolbar {
 	display: flex;

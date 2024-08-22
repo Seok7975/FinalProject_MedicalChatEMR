@@ -212,7 +212,7 @@ nav {
 	overflow-y: auto;
 }
 
-.section .dicom{
+.section .dicom {
 	width: 100px;
 	height: 600px;
 }
@@ -236,32 +236,32 @@ nav {
 }
 
 /* 1000px 이하에서 한 열로 배치 */
-@media (max-width: 1000px) {
-    .responsive-view .dicomImage {
-        flex: 1 1 100%; /* 한 줄씩 배치 */
-        height: 200px; /* 고정된 높이 유지 */
-    }
+@media ( max-width : 1000px) {
+	.responsive-view .dicomImage {
+		flex: 1 1 100%; /* 한 줄씩 배치 */
+		height: 200px; /* 고정된 높이 유지 */
+	}
 }
 
 /* 768px 이하에서 가로 스크롤 생기도록 설정 */
-@media (max-width: 768px) {
-    .responsive-view {
-        white-space: nowrap; /* div들이 한 줄로 나열되도록 설정 */
-        overflow-x: auto; /* 좌우 스크롤 활성화 */
-    }
-    .responsive-view .dicomImage {
-        display: inline-block; /* 한 줄로 나열 */
-        width: 300px; /* 고정된 너비 */
-        height: 300px; /* 고정된 높이 */
-    }
+@media ( max-width : 768px) {
+	.responsive-view {
+		white-space: nowrap; /* div들이 한 줄로 나열되도록 설정 */
+		overflow-x: auto; /* 좌우 스크롤 활성화 */
+	}
+	.responsive-view .dicomImage {
+		display: inline-block; /* 한 줄로 나열 */
+		width: 300px; /* 고정된 너비 */
+		height: 300px; /* 고정된 높이 */
+	}
 }
 
 /* 1000px 이상으로 돌아왔을 때 기본 2열 그리드로 복귀 */
-@media (min-width: 1001px) {
-    .responsive-view .dicomImage {
-        flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
-        height: 200px; /* 고정된 높이 설정 */
-    }
+@media ( min-width : 1001px) {
+	.responsive-view .dicomImage {
+		flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+		height: 200px; /* 고정된 높이 설정 */
+	}
 }
 
 .section h2 {
@@ -280,9 +280,10 @@ nav {
 .symptoms {
 	grid-area: symptoms;
 }
-.section.dicom{
+
+.section.dicom {
 	width: 80%; /* 기존의 크기에서 줄임 */
-    margin: 0 auto; /* 가운데 정렬 */
+	margin: 0 auto; /* 가운데 정렬 */
 }
 
 .section .view {
@@ -297,21 +298,22 @@ nav {
 }
 
 .view div {
-    flex: 1 1 calc(50% - 8px); /* 각 div의 너비 조정 */
-    height: 150px; /* 높이 조정 */
-    background-color: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	flex: 1 1 calc(50% - 8px); /* 각 div의 너비 조정 */
+	height: 150px; /* 높이 조정 */
+	background-color: #ddd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
+
 .responsive-view .dicomImage {
-    flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
-    height: 200px; /* 고정된 높이 설정 */
-    background-color: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden; /* 이미지가 컨테이너를 넘어가지 않도록 설정 */
+	flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+	height: 200px; /* 고정된 높이 설정 */
+	background-color: #ddd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden; /* 이미지가 컨테이너를 넘어가지 않도록 설정 */
 }
 
 /* 900px 이하에서 한 열로 배치 */
@@ -521,8 +523,37 @@ footer p {
 	max-height: 250px; /* 원하는 최대 높이 설정 */
 	overflow-y: auto; /* 스크롤 생성 */
 }
-.buttonSection{
+
+.buttonSection {
+	display: flex;
+	justify-content: flex-start;
 	margin-bottom: 10px;
+}
+
+.viewer {
+	background-color: #28a745; /* 주된 녹색 색상 */
+	user-select: none;
+	color: white; /* 글자색을 흰색으로 설정 */
+	padding: 5px 10px; /* 버튼 안쪽 여백 */
+	border: none; /* 테두리 제거 */
+	border-radius: 8px; /* 둥근 모서리 */
+	font-size: 0.75em; /* 글자 크기 설정 */
+	font-weight: bold; /* 글자를 굵게 표시 */
+	cursor: pointer; /* 커서가 손가락 모양으로 변경 */
+	transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+	color: white; /* 부드러운 전환 효과 */
+}
+
+.viewer:hover {
+	background-color: #218838; /* 호버 시 조금 더 짙은 녹색으로 변경 */
+	transform: translateY(-2px); /* 호버 시 버튼을 약간 위로 이동 */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 호버 시 그림자 추가 */
+}
+
+.viewer:active {
+	background-color: #1e7e34; /* 클릭 시 더 짙은 녹색 */
+	transform: translateY(0); /* 클릭 시 원래 위치로 복원 */
+	box-shadow: none; /* 클릭 시 그림자 제거 */
 }
 </style>
 
@@ -573,27 +604,9 @@ footer p {
 				<h2>진료 대기 목록</h2>
 				<div class="scrollable-patient-list">
 					<ul>
-						<li>환자1</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
-						<li>환자2</li>
+						<c:forEach var="patient" items="${patientList}">
+							<li onclick="showPatientInfo(${patient.no})">${patient.name}</li>
+						</c:forEach>
 					</ul>
 				</div>
 			</div>
@@ -626,15 +639,29 @@ footer p {
 			<div id='calendar'></div>
 		</section>
 		<section class="content">
-			<div class="section patient-info">
+			<div id="patient-info" class="section patient-info">
 				<h2>환자 정보</h2>
-				<p>이름: 홍길동</p>
-				<p>생년월일: 1980-01-01-4294756</p>
-				<p>체중: 50kg</p>
-				<p>키: 165cm</p>
-				<p>내원일: 2024-07-01</p>
-				<p>알레르기: 페니실린</p>
-				<p>흡연여부: 비흡연</p>
+				<p>
+					이름: <span id="patient-name"></span>
+				</p>
+				<p>
+					생년월일: <span id="patient-birthdate"></span>
+				</p>
+				<p>
+					체중: <span id="patient-weight"></span>
+				</p>
+				<p>
+					키: <span id="patient-height"></span>
+				</p>
+				<p>
+					내원일: <span id="patient-visit-date"></span>
+				</p>
+				<p>
+					알레르기: <span id="patient-allergies"></span>
+				</p>
+				<p>
+					흡연여부: <span id="patient-smoking-status"></span>
+				</p>
 			</div>
 			<div class="section history">
 				<h2>과거 진료 이력</h2>
@@ -685,7 +712,7 @@ footer p {
 				<div class="buttonSection">
 					<button class="viewer">자세히 보기</button>
 				</div>
-				<div class="view  responsive-view"  style="grid-row: span 2;">
+				<div class="view  responsive-view" style="grid-row: span 2;">
 					<div class="dicomImage" data-value="0"></div>
 					<div class="dicomImage" data-value="1"></div>
 					<div class="dicomImage" data-value="2"></div>
@@ -778,7 +805,8 @@ footer p {
 			</div>
 		</section>
 	</main>
-	<input type="text" id="pid" value="${patientInfo.pid}" hidden />
+	<input type="text" id="pid" value="${patient.no}" hidden />
+
 	<script>
 		$(document)
 				.ready(
@@ -1231,102 +1259,18 @@ footer p {
 	    let contextPath = $('#contextPath').text();
 
 	    const elements = document.querySelectorAll('.dicomImage'); // 모든 dicomImage div 요소 선택
-	    const pid = document.getElementById('pid').value; // 서버에서 전달되는 pid 변수
-	    const fileUrl = `${contextPath}/dicom?pid=${patientInfo.pid}`;
-
+		
 	    // 모든 dicomImage 요소를 cornerstone에 활성화
 	    elements.forEach(element => {
 	        cornerstone.enable(element);
 	    });
-
-	    // /dicom 엔드포인트 호출하여 DICOM 데이터 가져오기
-	    fetch(fileUrl)
-	        .then(response => {
-	            if (!response.ok) {
-	                throw new Error(`HTTP error! status: ${response.status}`);
-	            }
-	            return response.json(); // 데이터를 JSON으로 받음
-	        })
-	        .then(fileDataList => {
-	            console.log("Fetched DICOM data:", fileDataList);
-	            if (!Array.isArray(fileDataList) || fileDataList.length === 0) {
-	                throw new Error('No DICOM files found');
-	            }
-
-	            // Base64 디코딩 후 Blob 생성 및 SOPInstanceUID 저장
-	            const imageIds = fileDataList.map((fileData, index) => {
-	                const byteCharacters = atob(fileData.file_data); // Base64 디코딩
-	                const byteNumbers = new Array(byteCharacters.length);
-	                for (let i = 0; i < byteCharacters.length; i++) {
-	                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-	                }
-	                const byteArray = new Uint8Array(byteNumbers);
-	                const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
-	                return 'wadouri:' + fileBlobUrl;
-	            });
-
-	            function loadAndDisplayImage(index) {
-	                if (index >= elements.length) return; // 요소가 부족하면 함수 종료
-
-	                const element = elements[index]; // 각 div 요소에 해당하는 element 선택
-	                cornerstone.loadImage(imageIds[index]).then(function(image) {
-
-	                    // 처음 이미지를 로드할 때 원본 크기를 기억합니다.
-	                    if (!originalImageSize) {
-	                        originalImageSize = { width: image.columns, height: image.rows };
-	                    }
-
-	                    if (currentViewport) {
-	                        cornerstone.displayImage(element, image);
-	                        cornerstone.setViewport(element, currentViewport);
-	                    } else {
-	                        cornerstone.displayImage(element, image);
-	                        currentViewport = cornerstone.getViewport(element);
-	                    }
-
-	                    // 로드 후 즉시 리사이즈
-	                    resizeImage(element, image);
-
-	                }).catch(function(err) {
-	                    console.error('Error loading image:', err);
-	                });
-	            }
-
-	            // div 요소에 순서대로 이미지를 로드합니다.
-	            imageIds.forEach((imageId, index) => {
-	                loadAndDisplayImage(index);
-	            });
-
-	        })
-	        .catch(error => {
-	            console.error('Error fetching DICOM data:', error);
-	        });
-
-	    function resizeImage(element, image) {
-	        console.log("Resizing image");
-
-	        // 현재 뷰포트가 있으면 복사하고, 없으면 새로운 뷰포트를 생성
-	        let updatedViewport = currentViewport ? {...currentViewport} : cornerstone.getDefaultViewportForImage(element, image);
-
-	        // 현재 뷰포트의 스케일을 조정 (원본 이미지 크기를 기준으로)
-	        if (originalImageSize) {
-	            const containerWidth = element.clientWidth;
-	            const containerHeight = element.clientHeight;
-	            const scale = Math.min(containerWidth / originalImageSize.width, containerHeight / originalImageSize.height, 1);
-
-	            // 기존의 뷰포트 값을 유지하면서 scale만 업데이트
-	            updatedViewport.scale = scale;
-	        }
-
-	        // 뷰포트 설정 적용
-	        cornerstone.setViewport(element, updatedViewport);
-	        cornerstone.resize(element, true);
-	    }
-	    
 	    
 	    
 	 // 자세히 보기 버튼 이벤트
 	    $('.viewer').on('click', function() {
+	        // pid 값을 input 필드에서 가져오기
+	        const pid = document.getElementById('pid').value;
+	        console.log("pid : ",pid);
 	        // 서버로 POST 요청 전송
 	        fetch(contextPath + '/viewer', {
 	            method: 'POST',
@@ -1338,7 +1282,7 @@ footer p {
 	        .then(response => {
 	            if (response.ok) {
 	                // 성공적으로 처리된 경우, pid를 쿼리 파라미터로 전달하여 새로운 페이지로 이동
-	                window.location.href = contextPath + `/viewer?pid=${patientInfo.pid}`;
+	                window.location.href = contextPath + `/viewer?pid=${pid}`;
 	            } else {
 	                console.error('서버 응답 오류');
 	            }
@@ -1347,6 +1291,7 @@ footer p {
 	            console.error('요청 중 오류 발생', error);
 	        });
 	    });
+
 
 
 window.addEventListener('resize', function() {
@@ -1384,7 +1329,72 @@ function adjustLayout() {
 // 페이지 로드 시 레이아웃 조정
 adjustLayout();
 		
-		
+function showPatientInfo(patientNo) {
+    $.ajax({
+        url: '/getPatientInfo',
+        method: 'GET',
+        data: { no: patientNo }, // 환자 ID를 전달
+        success: function(data) {
+            // 서버로부터 받은 환자 정보를 HTML에 표시
+            const patient = data;
+            $('#patient-name').text(patient.name);
+            $('#patient-birthdate').text(patient.securityNum);
+            $('#patient-weight').text(patient.weight + 'kg');
+            $('#patient-height').text(patient.height + 'cm');
+            $('#patient-address').text(patient.address);
+            $('#patient-phone').text(patient.phone);
+            $('#patient-email').text(patient.email);
+            $('#patient-bloodType').text(patient.bloodType);
+            $('#patient-bloodPressure').text(patient.bloodPressure);
+            $('#patient-temperature').text(patient.temperature + '°C');
+            $('#patient-allergies').text(patient.allergies);
+            $('#patient-smoking-status').text(patient.smokingStatus === 'Y' ? '흡연' : '비흡연');
+            $('#pid').val(patient.no);
+            
+            // pid 값을 업데이트한 후 확인
+            console.log("Updated pid:", $('#pid').val());
+
+            // 이 시점에서 pid 값을 가져와도 문제없어야 함
+            const pid = $('#pid').val();
+            console.log("Final pid:", pid);
+            // DICOM 파일을 화면에 표시
+            const dicomFiles = patient.dicomFiles;
+            if (dicomFiles && dicomFiles.length > 0) {
+                dicomFiles.forEach((fileData, index) => {
+                    const byteCharacters = atob(fileData.file_data); // Base64 디코딩
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
+                    const imageId = 'wadouri:' + fileBlobUrl;
+
+                    // DICOM 이미지를 해당 요소에 로드
+                    if (index < $('.dicomImage').length) {
+                        const element = $('.dicomImage')[index];
+                        cornerstone.loadImage(imageId).then(function(image) {
+                            cornerstone.displayImage(element, image);
+                        }).catch(function(err) {
+                            console.error('Error loading image:', err);
+                        });
+                    }
+                });
+            } else {
+                console.log('No DICOM files found for this patient.');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching patient info:", xhr.responseText);
+        }
+    });
+}
+
+
+
+
+
+
 		
 		
 		
