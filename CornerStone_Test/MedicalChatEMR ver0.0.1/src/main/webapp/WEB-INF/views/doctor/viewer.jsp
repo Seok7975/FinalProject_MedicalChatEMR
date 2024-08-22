@@ -182,10 +182,12 @@
 
 		<main class="main-content">
 			<aside class="left-panel">
-				<h3>TEST</h3>
+				<div class="dashboard">
+					<button class="action-button tool-button dashboard-Button">
+						<i class="fa-solid fa-list"></i><span>진료대기 목록</span>
+					</button>
+				</div>
 				<div class="separator"></div>
-				<p>RS-5293-132</p>
-				<p>RS-5293-132</p>
 				<div class="action-buttons">
 					<button class="action-button tool-button dcmDownLoad">
 						<i class="fas fa-download"></i> <span>DICOM 다운로드</span>
@@ -224,9 +226,6 @@
 						</div>
 
 						<div class="topLeft XLarge"></div>
-						<div class="topRight XLarge">
-							<span class="block">test</span>
-						</div>
 						<div class="bottomLeft XLarge">
 							<span class="block"></span>
 						</div>
@@ -238,7 +237,7 @@
 				</div>
 			</div>
 
-			<aside class="right-panel"></aside>
+			<aside class="right-panel" style="user-select:none;"></aside>
 		</main>
 
 		<footer class="footer">
@@ -266,9 +265,13 @@ let contextPath = $('#contextPath').text();
 const element = document.getElementById('dicomImage');
 const playButton = document.querySelector('.playClipModal .fa-play').parentElement;
 const stopButton = document.querySelector('.playClipModal .fa-stop').parentElement;
-const pid = document.getElementById('pid').value; // 서버에서 전달되는 pid 변수
-const fileUrl = `${contextPath}/dicom?pid=${pid}`;
+const pid = document.getElementById('pid').value; 
+const fileUrl = contextPath + '/dicom?pid='+ pid;
 const customCursor = 'url(/img/cross.cur) 8 8, auto'; // 전역 변수로 설정
+
+
+console.log("pid: ", pid);  // 이 로그로 pid 값 확인
+
 
 const toolButton = document.querySelector('.interface-button i.fa-toolbox').parentElement;
 const toolModal = toolButton.nextElementSibling;
@@ -288,6 +291,7 @@ const refreshButton = document.querySelector('[data-tool="refresh"]');
 const refreshModal = document.querySelector('.refreshModal');
 
 let isPlayClipActive = false;
+let isWindowLevelActive = false;
 let isSingleLayout = true;
 let currentImageIndex = 0;
 let currentViewport = null; // 현재 뷰포트를 저장하기 위한 변수
@@ -363,6 +367,11 @@ toolButton.addEventListener('click', function (e) {
     }
 });
 
+// 진료대기 목록 버튼 이벤트
+$('.dashboard-Button').click(function() {
+    // 서버로 GET 요청 보내기
+    window.location.href = '/doctorUI';
+});
 
 // 파일 다운로드 및 삭제 버튼 이벤트
 $(".dcmDownLoad").click(function () {
@@ -592,11 +601,19 @@ imageLayoutButton.addEventListener('click', function (e) {
 
                 // 클릭 시 레이아웃 업데이트
                 gridItem.addEventListener('click', function () {
+                	
+                    // 도구 초기화 호출
+                    initializeAllTools();
+
+                    // 도구 비활성화 호출
+                    disableAllTools();
+                	
                     const rows = parseInt(gridItem.dataset.row);
                     const cols = parseInt(gridItem.dataset.col);
                     updateWadoBoxLayout(rows, cols);
-                    if(rows === 1 && cols === 1)
+                    if(rows === 1 && cols === 1){
                     	resetCenterPanel();
+                    }
                     
                     hideLayoutMenu(); // 메뉴 숨기기
                 });
@@ -658,44 +675,31 @@ function removeHighlightGridItems() {
 
 //레이아웃 업데이트 함수
 function updateWadoBoxLayout(rows, cols) {
-    // 레이아웃 상태 업데이트
     isSingleLayout = (rows === 1 && cols === 1);
-    
     const wadoBox = document.querySelector('.wadoBox');
     const centerPanel = document.querySelector('.center-panel');
-
-    // center-panel의 테두리 제거
     centerPanel.style.border = 'none';
+    wadoBox.innerHTML = ''; // 기존 그리드 초기화
 
-    // 기존 그리드 초기화
-    wadoBox.innerHTML = '';
-
-    // 그리드 설정
     wadoBox.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
     wadoBox.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
 
-    // 폰트 크기 클래스 결정
     const fontSizeClass = getFontSizeClass(rows, cols);
 
-    // 그리드 셀 생성 및 초기화
     for (let i = 0; i < rows * cols; i++) {
         const parentDiv = document.createElement('div');
-        parentDiv.classList.add('parentDiv', fontSizeClass);  // 폰트 크기 클래스 추가
+        parentDiv.classList.add('parentDiv', fontSizeClass);
         parentDiv.setAttribute('data-value', i);
 
-        // 첫 번째 parentDiv에 테두리 적용
         if (i === 0 && !(rows === 1 && cols === 1)) {
             parentDiv.classList.add('layout-active');
         }
 
-        // 클릭 이벤트 추가 (클릭된 요소에 테두리 적용)
         if (!(rows === 1 && cols === 1)) {
-            imageScrollLoopButton.disabled = true; // 스크롤 루프 버튼 비활성화
+            imageScrollLoopButton.disabled = true;
             playClipButton.disabled = true;
             imageScrollLoopButton.classList.add('disabled');
             playClipButton.classList.add('disabled');
-            
-            
             
             parentDiv.addEventListener('click', function () {
                 isLayout = true;
@@ -704,10 +708,10 @@ function updateWadoBoxLayout(rows, cols) {
                 currentImageName = currentFileNames[i];
             });
         } else {
-            isLayout = false;            
-            imageScrollLoopButton.disabled = false; // 스크롤 루프 버튼 활성화
+            isLayout = false;
+            imageScrollLoopButton.disabled = false;
             playClipButton.disabled = false;
-            imageScrollLoopButton.classList.remove('disabled'); // 비활성화 상태 시각적 표시 해제
+            imageScrollLoopButton.classList.remove('disabled');
             playClipButton.classList.remove('disabled');
         }
 
@@ -716,29 +720,29 @@ function updateWadoBoxLayout(rows, cols) {
         const dicomImageDiv = document.createElement('div');
         dicomImageDiv.classList.add('image-placeholder');
         parentDiv.appendChild(dicomImageDiv);
-
         wadoBox.appendChild(parentDiv);
 
-        // Cornerstone 요소 활성화
         cornerstone.enable(dicomImageDiv);
 
-        // 이미지 로드 및 표시
         if (i < imageIds.length) {
-        	cornerstone.loadImage(imageIds[i]).then(function(image) {
-        	    cornerstone.displayImage(dicomImageDiv, image);
+            cornerstone.loadImage(imageIds[i]).then(function(image) {
+                cornerstone.displayImage(dicomImageDiv, image);
 
-        	    // 이미지 활성화가 제대로 되었는지 확인한 후 이벤트 추가
-        	    if (cornerstone.getEnabledElement(dicomImageDiv)) {
-        	        dicomImageDiv.addEventListener('mousedown', windowLevelMouseDownHandler);
-        	    }
+                // 이미지 로드 후 도구 초기화
+                initializeAllToolsForElement(dicomImageDiv);
+                disableAllTools();
 
-        	}).catch(function(err) {
-        	    console.error('Error loading image for index ' + i, err);
-        	});
+                // 레이아웃이 1x1이면 뷰포트 초기화
+                if (isSingleLayout) {
+                    resetViewportToDefault(dicomImageDiv, image);
+                }
+
+            }).catch(function(err) {
+                console.error('Error loading image for index ' + i, err);
+            });
         }
 
         if (isSingleLayout) {
-            cornerstoneTools.removeTool('StackScrollMouseWheel');
             cornerstoneTools.addTool(cornerstoneTools.StackScrollMouseWheelTool);
             cornerstoneTools.setToolActive('StackScrollMouseWheel', {});
         } else {
@@ -747,6 +751,12 @@ function updateWadoBoxLayout(rows, cols) {
     }
 }
 
+
+
+function resetViewportToDefault(activeElement, image) {
+    const defaultViewport = cornerstone.getDefaultViewportForImage(activeElement, image);
+    cornerstone.setViewport(activeElement, defaultViewport);
+}
 
 
 
@@ -810,6 +820,7 @@ function getFontSizeClass(rows, cols) {
 //layout 요소 생성 함수
 function createLayout(parentDiv, index) {
 	
+	
     // 필요한 경우 추가 정보 표시용 요소들 추가
     const topLeft = document.createElement('div');
     const bottomRight = document.createElement('div');
@@ -823,7 +834,7 @@ function createLayout(parentDiv, index) {
 
     const pidElement = document.createElement('span');
     pidElement.classList.add('block');
-    pidElement.textContent = 'PID: ' + fileDataListGlobal[index]["pid"];
+    pidElement.textContent = '환자 코드: ' + fileDataListGlobal[index]["pid"];
 
     const birthDateElement = document.createElement('span');
     birthDateElement.classList.add('block');
@@ -848,8 +859,8 @@ function createLayout(parentDiv, index) {
     
     // 요소 추가
     topLeft.appendChild(imageNumberElement);
-    topLeft.appendChild(pnameElement);
     topLeft.appendChild(pidElement);
+    topLeft.appendChild(pnameElement);
     topLeft.appendChild(birthDateElement);
     topLeft.appendChild(studyDateElement);
     topLeft.appendChild(studyTimeElement);
@@ -962,7 +973,21 @@ refreshModal.addEventListener('mouseleave', function (e) {
 document.querySelectorAll('.tool-button').forEach(button => {
     button.addEventListener('click', (event) => {
         const tool = event.currentTarget.getAttribute('data-tool');
-        const viewport = cornerstone.getViewport(element);
+
+        // 레이아웃이 분할된 경우와 분할되지 않은 경우를 구분
+        const activeElement = isSingleLayout 
+            ? element  // 1x1 상태일 때는 기본 element 사용
+            : document.querySelector('.parentDiv.layout-active .image-placeholder');  // 기존 코드에서의 `element` 사용
+
+        if (!activeElement) {
+            console.error("No active element found.");
+            return;
+        }
+
+        // 뷰포트 가져오기
+        let viewport = cornerstone.getViewport(activeElement);
+
+        
         switch(tool) {
             case 'defaultTool':
                 setActiveButton(event.currentTarget);
@@ -974,22 +999,22 @@ document.querySelectorAll('.tool-button').forEach(button => {
                 setActiveButton(event.currentTarget);
                 disableAllTools();
 
+                isWindowLevelActive = !isWindowLevelActive;
+                
                 document.querySelectorAll('.image-placeholder').forEach(imageDiv => {
                     imageDiv.addEventListener('mousedown', function(e) {
-                        if (activeImageElement) {
-                            activeImageElement.removeEventListener('mousedown', windowLevelMouseDownHandler);
-                        }
-                        activeImageElement = imageDiv;
-                        windowLevelMouseDownHandler(e);
+                        if (isWindowLevelActive) {
+                        	windowLevelMouseDownHandler(e);
+                        	activeImageElement = imageDiv;
+                        }                                          
                     });
                 });
-                
                 break;
 
 
             case 'invert':
                 viewport.invert = !viewport.invert;
-                cornerstone.setViewport(element, viewport);
+                cornerstone.setViewport(activeElement, viewport); // activeElement 사용
                 break;
 
 			case 'imageMove':
@@ -997,7 +1022,7 @@ document.querySelectorAll('.tool-button').forEach(button => {
 
 				// 이미지가 렌더링된 후 도구가 올바르게 활성화되었는지 확인
 				element.addEventListener('cornerstoneimagerendered', () => {
-				    currentViewport = cornerstone.getViewport(element);
+				    currentViewport = cornerstone.getViewport(activeElement);
 				});
 			    break;
 
@@ -1048,30 +1073,29 @@ document.querySelectorAll('.tool-button').forEach(button => {
             case 'rotate':
             	activateNomalToolMenu('Rotate', event.currentTarget);
             	break;
-            	
             case 'left_rotate':
                 viewport.rotation-=90;
-                cornerstone.setViewport(element, viewport);
+                cornerstone.setViewport(activeElement, viewport);
                 hideToolMenu();
             	break;
             case 'right_rotate':
                 viewport.rotation+=90;
-                cornerstone.setViewport(element, viewport);
+                cornerstone.setViewport(activeElement, viewport);
                 hideToolMenu();
             	break;
             case 'h_flip':
             	viewport.hflip = !viewport.hflip;
-                cornerstone.setViewport(element, viewport);
+                cornerstone.setViewport(activeElement, viewport);
                 hideToolMenu();
             	break;
             case 'v_flip':
                 viewport.vflip = !viewport.vflip;
-                cornerstone.setViewport(element, viewport);
+                cornerstone.setViewport(activeElement, viewport);
                 hideToolMenu();
             	break;
             case 'interpolation':
                 viewport.pixelReplication = !viewport.pixelReplication;
-                cornerstone.setViewport(element, viewport);
+                cornerstone.setViewport(activeElement, viewport);
                 hideToolMenu();
             	break;
             case 'reference_line':
@@ -1116,38 +1140,49 @@ document.querySelectorAll('.tool-button').forEach(button => {
             	activateAnnotationTool('Eraser', event.currentTarget);
             	break;
             case 'canvasReset':
-            	resetCanvas();
+            	resetCanvas(activeElement,viewport);
+            	cornerstone.updateImage(activeElement);
                 hideRefreshMenu();
                 break;
 
             case 'toolClear':
                 // 툴 재설정 기능 구현
                 const toolStateManager = cornerstoneTools.globalImageIdSpecificToolStateManager;
-                toolStateManager.clear(element); // 주석 도구 상태 초기화
-                cornerstone.setViewport(element, viewport); // 도구로 이미지 변형 유지
+                toolStateManager.clear(activeElement); // 주석 도구 상태 초기화
+                
+                cornerstone.setViewport(activeElement, viewport); // 도구로 이미지 변형 유지                
+                cornerstone.updateImage(activeElement);
+                
                 hideRefreshMenu();
                 break;
 
             case 'allClear':
                 // 전부 삭제 기능 구현
-                cornerstone.reset(element); // 캔버스 재설정과 모든 변경 사항 초기화
+                cornerstone.reset(activeElement); // 캔버스 재설정과 모든 변경 사항 초기화
                 const fullToolStateManager = cornerstoneTools.globalImageIdSpecificToolStateManager;
                 
-                fullToolStateManager.clear(element); // 주석 도구 상태 초기화
+                fullToolStateManager.clear(activeElement); // 주석 도구 상태 초기화
                 
                 if (originalImageSize && initialWindowWidth !== null && initialWindowCenter !== null) {
                     const containerWidth = element.clientWidth;
                     const containerHeight = element.clientHeight;
                     const scale = Math.min(containerWidth / originalImageSize.width, containerHeight / originalImageSize.height);
 
-                    let viewport = cornerstone.getViewport(element);
+                    let viewport = cornerstone.getViewport(activeElement);
                     viewport.voi.windowWidth = initialWindowWidth;
                     viewport.voi.windowCenter = initialWindowCenter;
-                    cornerstone.setViewport(element, viewport);
-                    document.querySelector('.wwwc').innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
-
+                    cornerstone.setViewport(activeElement, viewport);
+                    cornerstone.updateImage(activeElement); // UI 업데이트 강제 적용
+                    
+                    
+                    // activeElement의 부모 요소에서 .bottomRight .wwwc 요소 찾기
+                    const parentElement = activeElement.parentElement;
+                    const bottomRightElement = parentElement.querySelector('.bottomRight .wwwc');
+                    
+                    if (bottomRightElement) {
+                        bottomRightElement.innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
+                    }    
                 }
-                
                 hideRefreshMenu();
                 break;
         }
@@ -1230,12 +1265,10 @@ fetch(fileUrl)
                 cornerstoneTools.addStackStateManager(element, ['stack']);
                 cornerstoneTools.addToolState(element, 'stack', stack);
 
-                
-                // 도구 활성화
-                cornerstoneTools.addTool(cornerstoneTools.ProbeTool);
-                cornerstoneTools.addTool(cornerstoneTools.AngleTool);                
-                
-                
+                // 도구 초기화 호출
+                initializeAllTools();
+                disableAllTools();             
+
                 // 주석 복원 로직을 SOPInstanceUID 기반으로 이미지가 로드된 후에 호출
                 const sopInstanceUID = sopInstanceUIDs[index]; // 현재 이미지의 SOPInstanceUID 가져오기
                 const annotationData = fileDataList.find(fileData => fileData.sop_instance_uid === sopInstanceUID)?.annotations;
@@ -1246,13 +1279,6 @@ fetch(fileUrl)
 
                     // 주석 복원
                     cornerstoneTools.globalImageIdSpecificToolStateManager.restoreToolState(toolState);
-                    
-                 // 복원된 toolState를 확인하기 위한 디버그 로그
-                    console.log('Restored toolState:', cornerstoneTools.globalImageIdSpecificToolStateManager.saveToolState());
-                    
-
-                    // 이미지 업데이트를 트리거하여 주석이 화면에 표시되도록 함
-                    cornerstone.updateImage(element);                    
                 }
 
                 // 이미지 렌더링 시마다 호출되는 이벤트 리스너 추가
@@ -1262,72 +1288,71 @@ fetch(fileUrl)
                         const stackData = stackState.data[0];
                         currentImageIndex = stackData.currentImageIdIndex; // 현재 이미지 인덱스를 가져옴
                         
-                        
                         if(!isLayout){
-                        // 이미지 정보가 들어갈 부모 요소 선택
-                        const topLeftElement = document.querySelector('.topLeft');
+                            // 이미지 정보가 들어갈 부모 요소 선택
+                            const topLeftElement = document.querySelector('.topLeft');
+                            
+                            // imageNumber 요소가 이미 존재하는지 확인
+                            let imageNumberElement = document.querySelector('.imageNumber');
+                            if (!imageNumberElement) {
+                                // 존재하지 않으면 생성해서 추가
+                                imageNumberElement = document.createElement('span');
+                                imageNumberElement.className = 'block imageNumber';
+                                topLeftElement.appendChild(imageNumberElement);
+                            }
 
-                        // imagePid 요소가 이미 존재하는지 확인
-                        let imagePidElement = document.querySelector('.imagePid');
-                        if(!imagePidElement){
-                        	imagePidElement = document.createElement('span');
-                        	imagePidElement.className = 'block imagePid';
-                            topLeftElement.appendChild(imagePidElement);
-                        }
+                            // imagePid 요소가 이미 존재하는지 확인
+                            let imagePidElement = document.querySelector('.imagePid');
+                            if(!imagePidElement){
+                                imagePidElement = document.createElement('span');
+                                imagePidElement.className = 'block imagePid';
+                                topLeftElement.appendChild(imagePidElement);
+                            }
 
-                        // imagePname 요소가 이미 존재하는지 확인
-                        let imagePnameElement = document.querySelector('.imagePname');
-                        if (!imagePnameElement) {
-                            // 존재하지 않으면 생성해서 추가
-                            imagePnameElement = document.createElement('span');
-                            imagePnameElement.className = 'block imagePname';
-                            topLeftElement.appendChild(imagePnameElement);
-                        }
-                        
-                        // imagePbirthdatetime 요소가 이미 존재하는지 확인
-                        let imagePbirthdatetime = document.querySelector('.imagePbirthdatetime');
-                        if(!imagePbirthdatetime){
-                        	// 존재하지 않으면 생성해서 추가
-                        	imagePbirthdatetime = document.createElement('span');
-                        	imagePbirthdatetime.className = 'block imagePbirthdatetime';
-                            topLeftElement.appendChild(imagePbirthdatetime);
-                        }
-                        
-                        // imageNumber 요소가 이미 존재하는지 확인
-                        let imageNumberElement = document.querySelector('.imageNumber');
-                        if (!imageNumberElement) {
-                            // 존재하지 않으면 생성해서 추가
-                            imageNumberElement = document.createElement('span');
-                            imageNumberElement.className = 'block imageNumber';
-                            topLeftElement.appendChild(imageNumberElement);
-                        }
-                        
-                        // imageDate 요소가 이미 존재하는지 확인
-                        let imageDateElement = document.querySelector('.imageDate');
-                        if (!imageDateElement) {
-                            // 존재하지 않으면 생성해서 추가
-                            imageDateElement = document.createElement('span');
-                            imageDateElement.className = 'block imageDate';
-                            topLeftElement.appendChild(imageDateElement);
-                        }
-                        
-                        // imageTime 요소가 이미 존재하는지 확인
-                        let imageTimeElement = document.querySelector('.imageTime');
-                        if (!imageTimeElement) {
-                            // 존재하지 않으면 생성해서 추가
-                            imageTimeElement = document.createElement('span');
-                            imageTimeElement.className = 'block imageTime';
-                            topLeftElement.appendChild(imageTimeElement);
-                        }
+                            // imagePname 요소가 이미 존재하는지 확인
+                            let imagePnameElement = document.querySelector('.imagePname');
+                            if (!imagePnameElement) {
+                                // 존재하지 않으면 생성해서 추가
+                                imagePnameElement = document.createElement('span');
+                                imagePnameElement.className = 'block imagePname';
+                                topLeftElement.appendChild(imagePnameElement);
+                            }
+                            
+                            // imagePbirthdatetime 요소가 이미 존재하는지 확인
+                            let imagePbirthdatetime = document.querySelector('.imagePbirthdatetime');
+                            if(!imagePbirthdatetime){
+                                // 존재하지 않으면 생성해서 추가
+                                imagePbirthdatetime = document.createElement('span');
+                                imagePbirthdatetime.className = 'block imagePbirthdatetime';
+                                topLeftElement.appendChild(imagePbirthdatetime);
+                            }
+                            
+                            // imageDate 요소가 이미 존재하는지 확인
+                            let imageDateElement = document.querySelector('.imageDate');
+                            if (!imageDateElement) {
+                                // 존재하지 않으면 생성해서 추가
+                                imageDateElement = document.createElement('span');
+                                imageDateElement.className = 'block imageDate';
+                                topLeftElement.appendChild(imageDateElement);
+                            }
+                            
+                            // imageTime 요소가 이미 존재하는지 확인
+                            let imageTimeElement = document.querySelector('.imageTime');
+                            if (!imageTimeElement) {
+                                // 존재하지 않으면 생성해서 추가
+                                imageTimeElement = document.createElement('span');
+                                imageTimeElement.className = 'block imageTime';
+                                topLeftElement.appendChild(imageTimeElement);
+                            }
 
-                        // 요소에 값을 설정
-                        imageNumberElement.textContent = (currentImageIndex + 1) + '/' + fileDataListGlobal.length;
-                        imagePnameElement.textContent = fileDataListGlobal[0]["pname"];
-                        imagePidElement.textContent = fileDataListGlobal[0]["pid"];
-                        imagePbirthdatetime.textContent = fileDataListGlobal[0]["pbirthdatetime"];
-                        imageDateElement.textContent = fileDataListGlobal[0]["studydate"];
-                        imageTimeElement.textContent = fileDataListGlobal[0]["studytime"];
-                      }
+                            // 요소에 값을 설정
+                            imageNumberElement.textContent = "Images : "+(currentImageIndex + 1) + '/' + fileDataListGlobal.length;
+                            imagePnameElement.textContent = "환자 이름 : "+fileDataListGlobal[0]["pname"];
+                            imagePidElement.textContent = "환자 코드 : "+fileDataListGlobal[0]["pid"];
+                            imagePbirthdatetime.textContent = "생년월일 : "+fileDataListGlobal[0]["pbirthdatetime"];
+                            imageDateElement.textContent = "검사일 : "+fileDataListGlobal[0]["studydate"];
+                            imageTimeElement.textContent = "시간 : "+fileDataListGlobal[0]["studytime"];
+                        }
                         // 현재 이미지 파일 이름 업데이트
                         currentImageName = currentFileNames[currentImageIndex];
                     }
@@ -1346,7 +1371,6 @@ fetch(fileUrl)
         window.addEventListener('resize', resizeImage);
         
         function updateImageNumber() {
-            console.log("pid:", pid);
 			topLeftContent();
         }
 
@@ -1354,106 +1378,106 @@ fetch(fileUrl)
             console.log("Resizing image");
 
             // 현재 뷰포트가 있으면 복사하고, 없으면 새로운 뷰포트를 생성
-            let updatedViewport = currentViewport ? {...currentViewport} : cornerstone.getDefaultViewportForImage(element, image);
-
-            // 현재 뷰포트의 스케일을 조정 (원본 이미지 크기를 기준으로)
-            if (originalImageSize) {
-                const containerWidth = element.clientWidth;
-                const containerHeight = element.clientHeight;
-                const scale = Math.min(containerWidth / originalImageSize.width, containerHeight / originalImageSize.height, 1);
-
-                // 기존의 뷰포트 값을 유지하면서 scale만 업데이트
-                updatedViewport.scale = scale;
-
-                // 뷰포트 설정 적용
-                cornerstone.setViewport(element, updatedViewport);
-                cornerstone.resize(element, true);
-
-                // 이미지를 다시 렌더링하여 뷰포트 업데이트
-                cornerstone.updateImage(element);
-            } else {
-                console.error("Original image size is not set.");
-            }
-        }
-        loadAndDisplayImage(currentImageIndex);
+              let updatedViewport = currentViewport ? {...currentViewport} : cornerstone.getDefaultViewportForImage(element, image);
 
 
-        // Cornerstone MouseWheelTools 설정
-        const StackScrollMouseWheelTool = cornerstoneTools.StackScrollMouseWheelTool;
+              // 현재 뷰포트의 스케일을 조정 (원본 이미지 크기를 기준으로)
+              if (originalImageSize) {
+                  const containerWidth = element.clientWidth;
+                  const containerHeight = element.clientHeight;
+                  const scale = Math.min(containerWidth / originalImageSize.width, containerHeight / originalImageSize.height, 1);
 
-        cornerstoneTools.addTool(StackScrollMouseWheelTool, stackScrollOptions);
-        cornerstoneTools.setToolActive('StackScrollMouseWheel', {});
+                  // 기존의 뷰포트 값을 유지하면서 scale만 업데이트
+                  updatedViewport.scale = scale;
 
-        // 클립 재생 함수
-        function startClipPlayback() {
-            if (isPlaying) clearInterval(playInterval); // 기존 인터벌을 삭제하여 FPS 변경을 반영
-            isPlaying = true;
+                  // 뷰포트 설정 적용
+                  cornerstone.setViewport(element, updatedViewport);
+                  cornerstone.resize(element, true);
 
-            const stackState = cornerstoneTools.getToolState(element, 'stack');
-            const stackData = stackState.data[0];
+                  // 이미지를 다시 렌더링하여 뷰포트 업데이트
+                  cornerstone.updateImage(element);
+              } else {
+                  console.error("Original image size is not set.");
+              }
+          }
+          loadAndDisplayImage(currentImageIndex);
 
-            playInterval = setInterval(() => {
-                currentImageIndex = (currentImageIndex + 1) % stackData.imageIds.length; // 스택에서 다음 이미지로 이동
-                stackData.currentImageIdIndex = currentImageIndex; // 스택 상태 업데이트
+          // Cornerstone MouseWheelTools 설정
+          const StackScrollMouseWheelTool = cornerstoneTools.StackScrollMouseWheelTool;
 
-                cornerstone.loadAndCacheImage(stackData.imageIds[currentImageIndex]).then(function(image) {
-                    cornerstone.displayImage(element, image);
-                    cornerstone.setViewport(element, currentViewport);
-                });
-            }, 1000 / fps);
-        }
+          cornerstoneTools.addTool(StackScrollMouseWheelTool, stackScrollOptions);
+          cornerstoneTools.setToolActive('StackScrollMouseWheel', {});
 
-        // 클립 정지 함수
-        function stopClipPlayback() {
-            clearInterval(playInterval);
-            isPlaying = false;
-        }
+          // 클립 재생 함수
+          function startClipPlayback() {
+              if (isPlaying) clearInterval(playInterval); // 기존 인터벌을 삭제하여 FPS 변경을 반영
+              isPlaying = true;
 
-        // 전역 변수에 할당하여 외부에서 접근 가능하게 설정
-        stopClipPlaybackGlobal = stopClipPlayback;
+              const stackState = cornerstoneTools.getToolState(element, 'stack');
+              const stackData = stackState.data[0];
 
-        // FPS 조정 버튼 클릭 이벤트
-        document.querySelector('.fpsbutton').addEventListener('click', (event) => {
-            if (event.target.closest('.speedbutton')) {
-                const button = event.target.closest('.speedbutton');
-                const direction = button.querySelector('i').classList.contains('fa-angle-left') ? 'decrease' : 'increase';
+              playInterval = setInterval(() => {
+                  currentImageIndex = (currentImageIndex + 1) % stackData.imageIds.length; // 스택에서 다음 이미지로 이동
+                  stackData.currentImageIdIndex = currentImageIndex; // 스택 상태 업데이트
 
-                if (direction === 'decrease' && fps > 1) {
-                    fps--;
-                } else if (direction === 'increase' && fps < 100) {
-                    fps++;
-                }
+                  cornerstone.loadAndCacheImage(stackData.imageIds[currentImageIndex]).then(function(image) {
+                      cornerstone.displayImage(element, image);
+                      cornerstone.setViewport(element, currentViewport);
+                  });
+              }, 1000 / fps);
+          }
 
-                document.querySelector('.fpswords').textContent = 'FPS :'+ fps;
+          // 클립 정지 함수
+          function stopClipPlayback() {
+              clearInterval(playInterval);
+              isPlaying = false;
+          }
 
-                if (isPlaying) {
-                    startClipPlayback(); // FPS 변경에 따라 클립 재생을 업데이트
-                }
-            }
-        });
+          // 전역 변수에 할당하여 외부에서 접근 가능하게 설정
+          stopClipPlaybackGlobal = stopClipPlayback;
 
-        // 버튼 이벤트 설정
-        playButton.addEventListener('click', function() {
-            if (!playButton.classList.contains('active')) {
-                startClipPlayback();
-                playButton.classList.add('active');
-                stopButton.classList.remove('active');
-            }
-        });
+          // FPS 조정 버튼 클릭 이벤트
+          document.querySelector('.fpsbutton').addEventListener('click', (event) => {
+              if (event.target.closest('.speedbutton')) {
+                  const button = event.target.closest('.speedbutton');
+                  const direction = button.querySelector('i').classList.contains('fa-angle-left') ? 'decrease' : 'increase';
 
-        // stop 버튼 클릭 이벤트
-        stopButton.addEventListener('click', function() {
-            if (!stopButton.classList.contains('active')) {
-                stopClipPlayback();
-                stopButton.classList.add('active');
-                playButton.classList.remove('active');
-            }
-        });
+                  if (direction === 'decrease' && fps > 1) {
+                      fps--;
+                  } else if (direction === 'increase' && fps < 100) {
+                      fps++;
+                  }
 
-    })
-    .catch(error => {
-        console.error('Error fetching DICOM data:', error);
-    });
+                  document.querySelector('.fpswords').textContent = 'FPS :' + fps;
+
+                  if (isPlaying) {
+                      startClipPlayback(); // FPS 변경에 따라 클립 재생을 업데이트
+                  }
+              }
+          });
+
+          // 버튼 이벤트 설정
+          playButton.addEventListener('click', function() {
+              if (!playButton.classList.contains('active')) {
+                  startClipPlayback();
+                  playButton.classList.add('active');
+                  stopButton.classList.remove('active');
+              }
+          });
+
+          // stop 버튼 클릭 이벤트
+          stopButton.addEventListener('click', function() {
+              if (!stopButton.classList.contains('active')) {
+                  stopClipPlayback();
+                  stopButton.classList.add('active');
+                  playButton.classList.remove('active');
+              }
+          });
+
+      })
+      .catch(error => {
+          console.error('Error fetching DICOM data:', error);
+      });
 
 
 
@@ -1499,9 +1523,69 @@ function hideRefreshMenu(){
 
 
 
+//도구 초기화 함수
+function initializeAllTools() {
+    const tools = [
+        'Pan',
+        'Magnify',
+        'Rotate',
+        'Angle',
+        'ArrowAnnotate',
+        'Probe',
+        'Length',
+        'RectangleRoi',
+        'EllipticalRoi',
+        'FreehandRoi',
+        'Bidirectional',
+        'CobbAngle',
+        'TextMarker',
+        'Eraser',
+        'Wwwc'
+    ];
+
+    document.querySelectorAll('.image-placeholder').forEach(imageDiv => {
+        tools.forEach(tool => {
+            // 각 도구를 이미지 요소에 대해 활성화
+            cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool']);
+            cornerstoneTools.setToolActive(tool, { element: imageDiv });
+        });
+    });
+}
 
 
-// 모든 도구 비활성화 함수
+//특정 요소에 대해 모든 도구를 초기화하는 함수
+function initializeAllToolsForElement(element) {
+    const tools = [
+        'Pan',
+        'Magnify',
+        'Rotate',
+        'Angle',
+        'ArrowAnnotate',
+        'Probe',
+        'Length',
+        'RectangleRoi',
+        'EllipticalRoi',
+        'FreehandRoi',
+        'Bidirectional',
+        'CobbAngle',
+        'TextMarker',
+        'Eraser',
+        'Wwwc'
+    ];
+
+    tools.forEach(tool => {
+        // 해당 도구가 이미 추가되었는지 확인
+        if (!cornerstoneTools.getToolForElement(element, tool)) {
+            // 도구가 추가되지 않은 경우에만 추가
+            cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool'], { element: element });
+            cornerstoneTools.setToolActive(tool, { mouseButtonMask: 1 });
+        }
+    });
+}
+
+
+
+//모든 도구 비활성화 함수
 function disableAllTools() {    
     // 도구 상태를 제거하지 않습니다.
     const tools = [
@@ -1522,10 +1606,18 @@ function disableAllTools() {
         'Wwwc'
     ];
 
-    tools.forEach(tool => {
-        cornerstoneTools.setToolDisabled(tool); // 도구만 비활성화하고 상태는 유지
+    // 모든 .image-placeholder 요소에서 도구 비활성화 및 이벤트 리스너 제거
+    document.querySelectorAll('.image-placeholder').forEach(imageDiv => {
+        tools.forEach(tool => {
+            cornerstoneTools.setToolDisabled(tool, { element: imageDiv });
+        });
+        if(isWindowLevelActive){
+        	isWindowLevelActive = false;
+        	imageDiv.removeEventListener('mousedown', windowLevelMouseDownHandler);
+        }
     });
     
+
     // 주석 도구 상태 유지
     const annotationTools = [
         'Angle',
@@ -1572,25 +1664,21 @@ function setActiveToolsButton(button) {
     removeWindowLevelMouseListener();
 }
 
-// 윈도우 레벨 마우스 리스너 추가 함수 (기존 코드)
-function addWindowLevelMouseListener() {
-    element.addEventListener('mousedown', windowLevelMouseDownHandler);
-}
-
 // 윈도우 레벨 마우스 리스너 제거 함수 (기존 코드)
 function removeWindowLevelMouseListener() {
-    if (activeImageElement) {
-        activeImageElement.removeEventListener('mousedown', windowLevelMouseDownHandler);
-        activeImageElement = null; // 리스너 제거 후 활성화된 요소 초기화
-    }
+    document.querySelectorAll('.image-placeholder').forEach(imageDiv => {
+        imageDiv.removeEventListener('mousedown', windowLevelMouseDownHandler);
+    });
 }
-
 // 윈도우 레벨 마우스 핸들러 (기존 코드)
 function windowLevelMouseDownHandler(e) {
     let lastX = e.pageX;
     let lastY = e.pageY;
 
     const targetElement = e.currentTarget; // 이벤트가 발생한 현재 타겟 요소
+    
+ 	// 부모 요소를 가져옵니다.
+    const parentElement = targetElement.parentElement;
 
     try {
         let viewport = cornerstone.getViewport(targetElement); // 뷰포트 가져오기 시도
@@ -1610,8 +1698,9 @@ function windowLevelMouseDownHandler(e) {
         viewport.voi.windowCenter += (deltaY / viewport.scale);
         cornerstone.setViewport(targetElement, viewport);
 
-        // 해당 요소의 bottomRight 부분 업데이트
-        const bottomRightElement = targetElement.querySelector('.bottomRight .wwwc');
+     // 부모 요소에서 .bottomRight .wwwc 클래스를 가진 요소를 찾습니다.
+        const bottomRightElement = parentElement.querySelector('.bottomRight .wwwc');
+     
         if (bottomRightElement) {
             bottomRightElement.innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
         }
@@ -1696,9 +1785,7 @@ function activateNomalToolMenu(toolName, buttonElement){
 	setActiveToolsButton(buttonElement);
 	disableAllTools();
 	
-	cornerstoneTools.addTool(cornerstoneTools[toolName + 'Tool']);
 	cornerstoneTools.setToolActive(toolName, { mouseButtonMask: 1 });
-	
 	hideToolMenu();
 }
 
@@ -1720,15 +1807,17 @@ function saveAnnotation() {
 
             // 각 imageId에 대응하는 SOPInstanceUID로 주석 데이터를 재구성
             let annotationData = {};
+            let sopInstanceUID = "";  // 현재 보고 있는 이미지의 SOPInstanceUID를 저장할 변수
+
             for (let imageId in toolState) {
-                const sopInstanceUID = getSOPInstanceUIDFromImageId(imageId);
+                sopInstanceUID = getSOPInstanceUIDFromImageId(imageId);  // 현재 이미지의 SOPInstanceUID 가져오기
                 if (sopInstanceUID) {
                     annotationData[sopInstanceUID] = toolState[imageId];
                 }
             }
 
             // 주석 데이터를 JSON 문자열로 변환합니다.
-            const annotations = JSON.stringify(annotationData);
+            const annotations = JSON.stringify(annotationData[sopInstanceUID]);  // 현재 보고 있는 파일의 주석만 저장
 
             // 서버로 주석 데이터를 전송합니다.
             fetch('/saveAnnotations', {
@@ -1736,7 +1825,7 @@ function saveAnnotation() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ pid: pid, annotations: annotations })
+                body: JSON.stringify({ sopInstanceUID: sopInstanceUID, annotations: annotations })
             }).then(response => {
                 if (response.ok) {
                     Swal.fire(
@@ -1762,6 +1851,8 @@ function saveAnnotation() {
         }
     });
 }
+
+
 
 
 function getSOPInstanceUIDFromImageId(imageId) {
@@ -1810,27 +1901,30 @@ function playClip(){
 
 
 // 캔버스 재설정 함수
-function resetCanvas() {
+function resetCanvas(activeElement,viewport) {
     if (originalImageSize && initialWindowWidth !== null && initialWindowCenter !== null) {
-        const containerWidth = element.clientWidth;
-        const containerHeight = element.clientHeight;
+        const containerWidth = activeElement.clientWidth;
+        const containerHeight = activeElement.clientHeight;
         const scale = Math.min(containerWidth / originalImageSize.width, containerHeight / originalImageSize.height);
 
-        let viewport = cornerstone.getViewport(element);
-        viewport.scale = scale; // 원본 비율에 맞게 scale을 조정
-        viewport.rotation = 0; // 회전 상태 초기화
-        viewport.hflip = false; // 수평 뒤집기 초기화
-        viewport.vflip = false; // 수직 뒤집기 초기화
-        viewport.invert = false; // 흑백 반전 초기화
-        viewport.voi.windowWidth = initialWindowWidth; // 윈도우 레벨 초기화
+        viewport.scale = scale;
+        viewport.rotation = 0;
+        viewport.hflip = false;
+        viewport.vflip = false;
+        viewport.invert = false;
+        viewport.voi.windowWidth = initialWindowWidth;
         viewport.voi.windowCenter = initialWindowCenter;
-        viewport.translation = { x: 0, y: 0 }; // 이미지 이동 초기화
+        viewport.translation = { x: 0, y: 0 };
 
-        // 초기화된 viewport를 설정
-        cornerstone.setViewport(element, viewport);
-
-        // 윈도우 레벨 UI 값도 초기화
-        document.querySelector('.wwwc').innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
+        cornerstone.setViewport(activeElement, viewport);
+		console.log("viewport : ",viewport);
+        // activeElement의 부모 요소에서 .bottomRight .wwwc 요소 찾기
+        const parentElement = activeElement.parentElement;
+        const bottomRightElement = parentElement.querySelector('.bottomRight .wwwc');
+        
+        if (bottomRightElement) {
+            bottomRightElement.innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
+        }        
     } else {
         console.error("Original image size or initial window level is not set. Unable to reset canvas properly.");
     }
