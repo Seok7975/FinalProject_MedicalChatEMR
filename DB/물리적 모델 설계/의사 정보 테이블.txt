@@ -1,0 +1,11 @@
+-- 의사 테이블 생성
+CREATE TABLE Doctor (
+    doctor_id INT PRIMARY KEY,
+    doctor_pwd VARCHAR(255) NOT NULL,
+    doctor_email VARCHAR(100) UNIQUE,
+    doctor_name VARCHAR(255) NOT NULL,
+    doctor_img VARCHAR(255) NOT NULL,
+    specialization VARCHAR(255) NOT NULL,
+    department_id VARCHAR(10) NOT NULL,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
