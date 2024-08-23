@@ -1,0 +1,489 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	overflow-x: hidden;
+	font-family: Arial, sans-serif;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+}
+
+header {
+	width: 100%;
+	background-color: #b8edb5;
+	padding: 10px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin-bottom: 8px;
+}
+
+.header {
+	background-color: #f0f0f0;
+	padding: 10px;
+	margin-bottom: 20px;
+}
+
+.logo {
+	display: flex;
+	justify-content: flex-start;
+	flex: 1;
+}
+
+.logo img {
+	width: 15vw;
+	height: auto;
+}
+
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 1;
+}
+
+.nav-btn {
+	margin: 0 5px;
+	padding: 5px 10px;
+	background-color: white;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.3s, border 0.3s;
+}
+
+.nav-btn:hover {
+	border: 1px solid #ccc;
+}
+
+.logout-btn {
+	margin-bottom: -50px;
+	font-size: 12px;
+	cursor: pointer;
+	background-color: white;
+	border: 1px solid transparent;
+	border-radius: 3px;
+}
+
+.logout-btn:hover {
+	background-color: #e2deded8;
+}
+
+.profile-info {
+	position: relative;
+	display: flex;
+	align-items: center;
+	margin-right: 30px;
+}
+
+.status-indicator {
+	position: absolute;
+	bottom: 0;
+	right: 75px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background-color: #808080;
+}
+
+.profile-info img {
+	width: 60px;
+	height: 60px;
+	margin: 0 15px;
+	margin-left: 15px;
+	margin-right: 10px;
+	border-radius: 50%;
+	object-fit: cover;
+	cursor: pointer;
+}
+
+.dropdown-menu {
+	display: none;
+	width: 130px;
+	position: absolute;
+	background-color: white;
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+	z-index: 100;
+	top: 65px;
+	right: 35px;
+}
+
+.dropdown-menu a {
+	display: block;
+	padding: 8px 16px;
+	text-decoration: none;
+	color: black;
+	border-bottom: 1px solid #ddd;
+}
+
+.dropdown-menu a:last-child {
+	border-bottom: none;
+}
+
+.dropdown-menu a:hover {
+	background-color: #f4f4f4;
+}
+
+.color-indicator {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-right: 8px;
+}
+
+.container {
+	display: flex;
+	flex: 1;
+}
+
+.sidebar {
+	width: 20%;
+	background-color: #f0f0f0;
+	padding: 20px;
+	border-right: 1px solid #ddd;
+	box-sizing: border-box;
+	margin-right: 8px;
+}
+
+.content {
+	flex: 1;
+	padding: 0px;
+	background-color: white;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	display: grid;
+	grid-template-areas: "patient-info symptoms view" "history status view"
+		"diagnosis diagnosis diagnosis" "search prescriptions medicine"
+		"search prescriptions drug";
+	grid-gap: 8px;
+	grid-template-columns: 1fr 1fr 2fr;
+	grid-template-rows: auto auto auto 1fr;
+}
+
+.sidebar {
+	grid-area: sidebar;
+}
+
+.section {
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background-color: #fafafa;
+	overflow-y: auto;
+}
+
+/* 기본 상태 - 두 개씩 나란히 배치 */
+.responsive-view {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.responsive-view .dicomImage {
+    flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+    height: 200px; /* 고정된 높이 설정 */
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 1024px 이하에서 한 열로 배치 */
+@media (max-width: 1024px) {
+    .responsive-view {
+        display: grid;
+        grid-template-columns: 1fr; /* 한 열로 배치 */
+        gap: 10px;
+    }
+    .responsive-view .dicomImage {
+        flex: 1 1 100%; /* 한 줄씩 배치 */
+        height: 200px; /* 고정된 높이 유지 */
+    }
+}
+
+/* 768px 이하에서 가로 스크롤 생기도록 설정 */
+@media (max-width: 768px) {
+    .responsive-view {
+        display: block;
+        white-space: nowrap; /* div들이 한 줄로 나열되도록 설정 */
+        overflow-x: auto; /* 좌우 스크롤 활성화 */
+    }
+
+    .responsive-view .dicomImage {
+        display: inline-block; /* 한 줄로 나열 */
+        width: 300px; /* 고정된 너비 */
+        height: 300px; /* 고정된 높이 */
+    }
+}
+
+/* 1024px 이상으로 돌아왔을 때 기본 2열 그리드로 복귀 */
+@media (min-width: 1025px) {
+    .responsive-view {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        overflow-x: hidden;
+    }
+    .responsive-view .dicomImage {
+        flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+        height: 200px; /* 고정된 높이 설정 */
+    }
+}
+.section h2 {
+	margin-top: 0;
+	margin-bottom: -3px;
+}
+
+.patient-info {
+	grid-area: patient-info;
+}
+
+.history {
+	grid-area: history;
+}
+
+.symptoms {
+	grid-area: symptoms;
+}
+
+.section.view {
+    grid-area: view;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    height: 100%;
+    overflow-y: auto; /* 세로 스크롤 추가 */
+    overflow-x: hidden; /* 가로 스크롤은 숨김 */
+}
+
+.view div {
+    flex: 1 1 calc(50% - 10px); /* 각 div가 2열로 배치되도록 설정 */
+    height: calc(100% / 2 - 10px); /* 높이를 2열로 배치된 요소들에 맞게 조정 */
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.responsive-view .dicomImage {
+    flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+    height: 200px; /* 고정된 높이 설정 */
+    cursor: pointer;
+}
+
+/* 900px 이하에서 한 열로 배치 */
+@media (max-width: 900px) {
+    .responsive-view .dicomImage {
+        flex: 1 1 100%; /* 한 줄씩 배치 */
+        height: 200px; /* 고정된 높이 유지 */
+    }
+}
+
+/* 600px 이하에서 가로 스크롤 생기도록 설정 */
+@media (max-width: 600px) {
+    .responsive-view {
+        overflow-x: auto; /* 좌우 스크롤 활성화 */
+        white-space: nowrap; /* div들이 한 줄로 나열되도록 설정 */
+    }
+
+    .responsive-view .dicomImage {
+        display: inline-block; /* 한 줄로 나열 */
+        width: 300px; /* 고정된 너비 */
+        height: 300px; /* 고정된 높이 */
+    }
+}
+
+/* 901px 이상에서 2열 그리드로 복귀 */
+@media (min-width: 901px) {
+    .responsive-view {
+        overflow-x: hidden; /* 다시 기본 설정으로 복귀 */
+        white-space: normal; /* 기본 줄바꿈 상태로 복귀 */
+    }
+
+    .responsive-view .dicomImage {
+        display: flex; /* 다시 flexbox 레이아웃 적용 */
+        flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+        height: 200px; /* 고정된 높이 유지 */
+    }
+}
+
+
+.status {
+	grid-area: status;
+}
+
+.diagnosis {
+	grid-area: diagnosis;
+	grid-column: span 3;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.table th, .table td {
+	border: 1px solid #ddd;
+	padding: 4px;
+	text-align: center;
+}
+
+.appointment-list ul, .patient-list ul, .patient-management ul {
+	list-style: none;
+	padding: 0;
+}
+
+.tab-buttons {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+.tab-buttons .tab {
+	flex: 1;
+	padding: 10px;
+	text-align: center;
+	cursor: pointer;
+	background-color: #f0f0f0;
+	border: 1px solid #ddd;
+	transition: background-color 0.3s, border 0.3s;
+}
+
+.tab-buttons .tab.active {
+	background-color: #ffffff;
+	border-bottom: none;
+}
+
+footer {
+	display: flex;
+	padding: 20px;
+	border-top: 1px solid #ddd;
+	background-color: #f8f8f8;
+}
+
+footer p {
+	text-align: center;
+}
+
+#calendar {
+	max-width: 3000px;
+	height: 400px;
+	text-align: center;
+	font-size: 0.6em;
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-top: 30px;
+}
+
+.fc-header-toolbar {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.fc-toolbar-chunk {
+	margin: 2px 0;
+}
+
+.fc-daygrid-day {
+	height: 0.6em;
+}
+
+.fc-scroller-harness {
+	overflow: auto;
+}
+
+.medicine-result, .drug-result {
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+
+.search, .search2 {
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.prescriptions, .prescriptions2 {
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: auto;
+}
+
+.searchBox {
+	align-content: center;
+	margin-bottom: 10px;
+}
+
+.content h2 {
+	padding: 10px
+}
+
+.form-container {
+	width: 100%;
+	max-width: 570px; /* 최대 너비를 설정하여 너무 넓지 않도록 제한 */
+	padding: 10px;
+	background-color: #e2e5e291;
+	border-radius: 8px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+	margin: 3px auto 3px auto;
+}
+
+.symptoms textarea {
+	width: calc(100% - 6px); /* 부모 요소의 너비에서 margin을 뺀 값 */
+	height: 280px;
+	box-sizing: border-box;
+	margin: 0px;
+	padding: 8px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	font-size: 16px;
+	resize: none; /* 사용자가 크기 조정하지 못하도록 설정 */
+	overflow-y: auto; /* 세로 스크롤 */
+	overflow-x: hidden; /* 가로 스크롤 숨김 */
+}
+
+.symptoms textarea::placeholder {
+	color: #aaa;
+}
+
+.history {
+	grid-area: history;
+	font-size: 13px; /* 폰트 크기를 줄였습니다. */
+}
+
+.history .table th {
+	font-size: 12px; /* 표의 제목 부분 폰트 크기도 줄였습니다. */
+}
+/* 처방 표 폰트 크기 조정 */
+.prescriptions .table, .drug .table {
+	font-size: 14px; /* 전체 폰트 크기를 줄였습니다. */
+}
+
+.prescriptions .table th, .drug .table th {
+	font-size: 12px; /* 표의 제목 부분 폰트 크기를 줄였습니다. */
+}
+
+.diagnosis-results, .medicine-results, .drug-results, .searchList {
+	cursor: pointer;
+}
+
+.leftSidebar, .rightSidebar {
+	background-color: #e9e9e9;
+	width: 230px;
+	padding: 10px;
+	box-sizing: border-box;
+	overflow-y: auto;
+}
+
+.scrollable-patient-list {
+	max-height: 250px; /* 원하는 최대 높이 설정 */
+	overflow-y: auto; /* 스크롤 생성 */
+}

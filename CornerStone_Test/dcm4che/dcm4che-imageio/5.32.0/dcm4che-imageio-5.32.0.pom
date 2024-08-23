@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.dcm4che</groupId>
+    <artifactId>dcm4che-parent</artifactId>
+    <version>5.32.0</version>
+  </parent>
+  <artifactId>dcm4che-imageio</artifactId>
+  <packaging>bundle</packaging>
+  <name>dcm4che-imageio</name>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+             <!-- Require-Capability>osgi.extender;filter:="(osgi.extender=osgi.serviceloader.registrar)",osgi.extender;filter:="(osgi.extender=osgi.serviceloader.processor)",osgi.serviceloader;filter:="(osgi.serviceloader=*)";cardinality:=multiple</Require-Capability>
+             <Provide-Capability>osgi.serviceloader;osgi.serviceloader=javax.imageio.spi.ImageReaderSpi</Provide-Capability-->
+            <SPI-Consumer>*</SPI-Consumer>
+            <SPI-Provider>javax.imageio.spi.ImageReaderSpi</SPI-Provider>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.dcm4che</groupId>
+      <artifactId>dcm4che-image</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+</project>

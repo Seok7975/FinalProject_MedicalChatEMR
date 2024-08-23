@@ -1,0 +1,9 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon Aug 12 15:58:08 KST 2024
+https\://repo.maven.apache.org/maven2/.lastUpdated=1723166259754
+@default-dcm4che-repo-https\://artifacts.marc.org/maven2/.lastUpdated=1723166264040
+https\://repo1.maven.org/maven2/.error=
+https\://artifacts.marc.org/maven2/.error=Could not transfer artifact org.dcm4che\:dcm4che-imageio\:pom\:5.23.0 from/to dcm4che-repo (https\://artifacts.marc.org/maven2)\: artifacts.marc.org
+https\://repo.maven.apache.org/maven2/.error=
+https\://www.dcm4che.org/maven2/.lastUpdated=1723445888732
+https\://repo1.maven.org/maven2/.lastUpdated=1723445888171
