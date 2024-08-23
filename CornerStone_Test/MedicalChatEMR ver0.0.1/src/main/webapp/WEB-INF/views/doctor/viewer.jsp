@@ -245,7 +245,8 @@
 			<p class="copyright">Icons by fontawesome</p>
 		</footer>
 	</div>
-	<input type="text" id="pid" value="${pid}" hidden />
+<input type="text" id="pid" value="${pid}" hidden />
+<input type="text" id="studytime" value="${studytime}" hidden />
 	
 <script>
 //cornerstone 관련 설정
@@ -266,7 +267,8 @@ const element = document.getElementById('dicomImage');
 const playButton = document.querySelector('.playClipModal .fa-play').parentElement;
 const stopButton = document.querySelector('.playClipModal .fa-stop').parentElement;
 const pid = document.getElementById('pid').value; 
-const fileUrl = viewerPath  + '/dicom?pid='+ pid;
+const studytime = document.getElementById('studytime').value;
+const fileUrl = viewerPath + '/dicom?pid=' + pid + '&studytime=' + studytime;
 const customCursor = 'url(/img/cross.cur) 8 8, auto'; // 전역 변수로 설정
 
 

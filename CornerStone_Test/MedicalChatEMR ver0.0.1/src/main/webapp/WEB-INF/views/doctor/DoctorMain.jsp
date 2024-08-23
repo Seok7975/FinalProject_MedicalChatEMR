@@ -531,6 +531,10 @@ footer p {
     padding: 10px; /* 내부 여백 추가 */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 약간의 그림자 추가 */
 }
+.scrollable-patient-list ul{
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
 
 /* 환자 목록 스타일링 */
 .scrollable-patient-list li {
@@ -632,6 +636,19 @@ footer p {
 						<c:forEach var="patient" items="${patientList}">
 							<li onclick="showPatientInfo(${patient.no})">${patient.name}</li>
 						</c:forEach>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
+						<li>test</li>
 					</ul>
 				</div>
 			</div>
@@ -830,8 +847,8 @@ footer p {
 			</div>
 		</section>
 	</main>
-	<input type="text" id="pid" value="${patient.no}" hidden />
-
+	<input type="text" id="pid" hidden />
+	<input type="text" id="studytime" hidden />
 	<script>
 		$(document)
 				.ready(
@@ -1273,202 +1290,265 @@ function setStatus(status, color) {
 		
 		
 		
-	    // cornerstone 관련 설정
-	    cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-	    cornerstoneWebImageLoader.external.cornerstone = cornerstone;
-	    cornerstoneTools.external.cornerstone = cornerstone;
-	    cornerstoneTools.external.Hammer = Hammer;
-	    cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
+		// cornerstone 관련 설정
+		cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
+		cornerstoneWebImageLoader.external.cornerstone = cornerstone;
+		cornerstoneTools.external.cornerstone = cornerstone;
+		cornerstoneTools.external.Hammer = Hammer;
+		cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 
-	    // 이미지 로더 등록
-	    cornerstoneWADOImageLoader.configure({});
-	    
-	    let doctorPath = $('#contextPath').text();
-	    let dicomImagesLoaded = false;
-	    const elements = document.querySelectorAll('.dicomImage'); // 모든 dicomImage div 요소 선택
-		
-	    // 모든 dicomImage 요소를 cornerstone에 활성화
-	    elements.forEach(element => {
-	        cornerstone.enable(element);
-	    });
-	    
-	    
-	 // 자세히 보기 버튼 이벤트
-$('.viewer').on('click', function() {
-    const pid = document.getElementById('pid').value;
+		// 이미지 로더 등록
+		cornerstoneWADOImageLoader.configure({});
 
-    if (!pid || !dicomImagesLoaded) {  // pid가 없거나 이미지가 로드되지 않았다면
-        return;  // 요청을 보내지 않고 함수 종료
-    }
+		let doctorPath = $('#contextPath').text();
+		let dicomImagesLoaded = false;
+		const elements = document.querySelectorAll('.dicomImage'); // 모든 dicomImage div 요소 선택
 
-    fetch(doctorPath + '/viewer', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ pid: pid })
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.text();  // HTML을 받는 경우 response.text()로 처리
-        } else {
-            throw new Error('서버 응답 오류');
+		// 모든 dicomImage 요소를 cornerstone에 활성화
+		elements.forEach(element => {
+		    cornerstone.enable(element);
+		});
+
+		// DICOM 파일 로드 전 기존 이미지 삭제 함수
+function clearDicomImages() {
+    const elements = document.querySelectorAll('.dicomImage'); // 동적으로 요소 선택
+    elements.forEach(function(element) {
+        const isEnabled = cornerstone.getEnabledElements().some(enabledElement => enabledElement.element === element);
+        if (isEnabled) {
+            cornerstone.disable(element); // 기존 cornerstone 이미지를 비활성화 및 삭제
         }
-    })
-    .then(html => {
-        document.open();
-        document.write(html);
-        document.close();
-    })
-    .catch(error => {
-        console.error('요청 중 오류 발생', error);
+        element.innerHTML = ''; // 요소 내용을 제거
     });
-});
-
-// 윈도우 이벤트 관련 내용들 	 
-window.onload = function() {
-    setStatus('available', '#008000');
-};
-window.addEventListener('resize', function() {
-    adjustLayout();
-    resizeDicomImages();
-});
-
-
-function adjustLayout() {
-    const screenWidth = window.innerWidth;
-    
-    // 900px 이상일 경우 2x2 레이아웃으로 설정
-    if (screenWidth >= 901) {
-        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
-            element.style.flex = "1 1 calc(50% - 10px)";
-            element.style.height = "200px";
-            element.style.display = "flex";
-        });
-    } 
-    // 900px 이하일 경우 1열 레이아웃으로 설정
-    else if (screenWidth < 900 && screenWidth > 600) {
-        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
-            element.style.flex = "1 1 100%";
-            element.style.height = "200px";
-            element.style.display = "flex";
-        });
-    }
-    // 600px 이하일 경우 inline-block 레이아웃 설정
-    else if (screenWidth <= 600) {
-        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
-            element.style.display = "inline-block";
-            element.style.width = "300px";
-            element.style.height = "300px";
-        });
-    }
 }
 
-// 페이지 로드 시 레이아웃 조정
-adjustLayout();
-resizeDicomImages();
+//개별 DICOM 파일 데이터를 로드하는 함수 (병렬 처리)
+function loadDicomFile(fileData, element) {
+    return new Promise((resolve, reject) => {
+        if (!element) {
+            console.error('Invalid element. Skipping this DICOM file.');
+            return reject('Invalid element');
+        }
 
+        $.ajax({
+            url: '/getDicomFile',
+            method: 'GET',
+            data: { file_name: fileData.file_name },  // file_name 또는 sop_instance_uid 전달
+            success: function(data) {
+                const byteCharacters = atob(data.file_data); // Base64 디코딩
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
+                const imageId = 'wadouri:' + fileBlobUrl;
 
-//주민등록번호를 이용해 생년월일 변환
-function formatBirthdate(securityNum) {
-    if (!securityNum || securityNum.length < 7) {
-        return '유효하지 않은 정보';
-    }
-    
-    const birthPart = securityNum.substring(0, 6); // 생년월일 부분
-    const genderCode = securityNum.charAt(7); // 성별 코드
+                // 요소가 활성화되지 않았으면 활성화
+                if (!cornerstone.getEnabledElements().some(enabledElement => enabledElement.element === element)) {
+                    cornerstone.enable(element); // 요소 활성화
+                }
 
-    let yearPrefix = '';
-    
-    // 성별 코드에 따라 출생 연도를 결정 (1, 2: 1900년대 출생 / 3, 4: 2000년대 출생)
-    if (genderCode === '1' || genderCode === '2') {
-        yearPrefix = '19';
-    } else if (genderCode === '3' || genderCode === '4') {
-        yearPrefix = '20';
-    }
-    console.log("genderCode : ",genderCode);
-	console.log("yearPrefix : ",yearPrefix);
-    const year = yearPrefix + birthPart.substring(0, 2); // '19' + '90' => '1990'
-    const month = birthPart.substring(2, 4).padStart(2, '0'); // 월
-    const day = birthPart.substring(4, 6).padStart(2, '0'); // 일
-
-    return year + "년 " + month + "월 " + day + "일";// "1990년 01월 01일" 형식
-}
-
-// dicom 이미지 출력
-function loadDicomImages(dicomFiles) {
-    if (dicomFiles && dicomFiles.length > 0) {
-        dicomFiles.forEach((fileData, index) => {
-            const byteCharacters = atob(fileData.file_data); // Base64 디코딩
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
-            const imageId = 'wadouri:' + fileBlobUrl;
-
-            // DICOM 이미지를 해당 요소에 로드
-            if (index < $('.dicomImage').length) {
-                const element = $('.dicomImage')[index];
                 cornerstone.loadImage(imageId).then(function(image) {
-                    cornerstone.displayImage(element, image);
-                    dicomImagesLoaded = true; // 이미지가 로드되면 이 값을 true로 설정
+                    resolve({ element, image }); // 이미지를 로드 후 resolve로 반환
                 }).catch(function(err) {
                     console.error('Error loading image:', err);
+                    reject(err); // 에러 발생
                 });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching DICOM file:', xhr.responseText);
+                reject(error);
             }
         });
+    });
+}
+
+
+//DICOM 파일 목록을 받아와 개별적으로 로드하는 함수 (병렬 처리 후 한 번에 표시)
+function loadDicomImageList(dicomFiles, patientNo) {
+    clearDicomImages(); // 이전 이미지를 제거
+
+    const elements = document.querySelectorAll('.dicomImage'); // 동적으로 요소 선택
+    if (dicomFiles && dicomFiles.length > 0) {
+        const loadPromises = dicomFiles.map((fileData, index) => {
+            if (index < elements.length) {
+                const element = elements[index];
+                return loadDicomFile(fileData, element); // fileData를 함께 전달하여 고유한 이미지를 로드
+            }
+            return Promise.resolve(null); // 요소가 없을 경우 null 반환
+        });
+
+        // 모든 이미지가 로드될 때까지 기다렸다가 한 번에 화면에 표시
+        Promise.all(loadPromises)
+            .then(results => {
+                results
+                    .filter(result => result !== null) // null이 아닌 결과만 처리
+                    .forEach(({ element, image }) => {
+                        if (element && image) {
+                            cornerstone.displayImage(element, image); // 이미지 표시
+                        }
+                    });
+                dicomImagesLoaded = true; // 모든 이미지가 로드되면 true로 설정
+                console.log('All DICOM images loaded and displayed at once');
+            })
+            .catch((error) => {
+                console.error('Error loading some DICOM images:', error);
+            });
     } else {
         console.log('No DICOM files found for this patient.');
     }
 }
-// dicom이미지 재출력
-function resizeDicomImages() {
-    // 각 DICOM 이미지를 다시 렌더링
-    $('.dicomImage').each(function(index, element) {
-        const enabledElement = cornerstone.getEnabledElement(element);
-        if (enabledElement && enabledElement.image) {
-            cornerstone.resize(element, true); // 이미지 리사이즈
-        }
-    });
-}
+		// 환자 정보 출력
+		function showPatientInfo(patientNo) {
+		    $.ajax({
+		        url: '/getPatientInfo',
+		        method: 'GET',
+		        data: { no: patientNo }, // 환자 ID를 전달
+		        success: function(data) {
+		            // 서버로부터 받은 환자 정보를 HTML에 표시
+		            const patient = data;
+		            $('#patient-name').text(patient.name);
 
-// 환자 정보 출력
-function showPatientInfo(patientNo) {
-    $.ajax({
-        url: '/getPatientInfo',
-        method: 'GET',
-        data: { no: patientNo }, // 환자 ID를 전달
-        success: function(data) {
-            // 서버로부터 받은 환자 정보를 HTML에 표시
-            const patient = data;
-            $('#patient-name').text(patient.name);
+		            // 생년월일 및 기타 정보 표시
+		            const formattedBirthdate = formatBirthdate(patient.securityNum);
+		            $('#patient-birthdate').text(formattedBirthdate);
 
-            // 생년월일 및 기타 정보 표시
-            const formattedBirthdate = formatBirthdate(patient.securityNum);
-            $('#patient-birthdate').text(formattedBirthdate);
+		            $('#patient-weight').text(patient.weight + 'kg');
+		            $('#patient-height').text(patient.height + 'cm');
+		            $('#patient-address').text(patient.address);
+		            $('#patient-phone').text(patient.phone);
+		            $('#patient-email').text(patient.email);
+		            $('#patient-bloodType').text(patient.bloodType);
+		            $('#patient-bloodPressure').text(patient.bloodPressure);
+		            $('#patient-temperature').text(patient.temperature + '°C');
+		            $('#patient-allergies').text(patient.allergies);
+		            $('#patient-smoking-status').text(patient.smokingStatus === 'Y' ? '흡연' : '비흡연');
+		            $('#pid').val(patient.no);
 
-            $('#patient-weight').text(patient.weight + 'kg');
-            $('#patient-height').text(patient.height + 'cm');
-            $('#patient-address').text(patient.address);
-            $('#patient-phone').text(patient.phone);
-            $('#patient-email').text(patient.email);
-            $('#patient-bloodType').text(patient.bloodType);
-            $('#patient-bloodPressure').text(patient.bloodPressure);
-            $('#patient-temperature').text(patient.temperature + '°C');
-            $('#patient-allergies').text(patient.allergies);
-            $('#patient-smoking-status').text(patient.smokingStatus === 'Y' ? '흡연' : '비흡연');
-            $('#pid').val(patient.no);
+		            // studytime 값 설정 (첫 번째 DICOM 파일의 studytime 값으로 설정)
+		            if (patient.dicomFiles && patient.dicomFiles.length > 0) {
+		                $('#studytime').val(patient.dicomFiles[0].studytime);
+		                loadDicomImageList(patient.dicomFiles, patient.no); // 파일 목록과 환자 ID 전달
+		            } else {
+		                clearDicomImages(); // DICOM 파일이 없는 경우 이미지 제거
+		            }
+		        },
+		        error: function(xhr, status, error) {
+		            console.error("Error fetching patient info:", xhr.responseText);
+		        }
+		    });
+		}
 
-            // DICOM 파일 로드 및 표시
-            loadDicomImages(patient.dicomFiles);
-        },
-        error: function(xhr, status, error) {
-            console.error("Error fetching patient info:", xhr.responseText);
-        }
-    });
-}
+		// 자세히 보기 버튼 이벤트
+		$('.viewer').on('click', function() {
+		    const pid = document.getElementById('pid').value;
+		    const studytime = document.getElementById('studytime').value;
+
+		    if (!pid || !dicomImagesLoaded) {  // pid가 없거나 이미지가 로드되지 않았다면
+		        return;  // 요청을 보내지 않고 함수 종료
+		    }
+
+		    fetch('doctor/viewer', {
+		        method: 'POST',
+		        headers: {
+		            'Content-Type': 'application/json'
+		        },
+		        body: JSON.stringify({ pid: pid, studytime: studytime })
+		    })
+		    .then(response => {
+		        if (response.ok) {
+		            return response.text();  // HTML을 받는 경우 response.text()로 처리
+		        } else {
+		            throw new Error('서버 응답 오류');
+		        }
+		    })
+		    .then(html => {
+		        document.open();
+		        document.write(html);
+		        document.close();
+		    })
+		    .catch(error => {
+		        console.error('요청 중 오류 발생', error);
+		    });
+		});
+
+		// 페이지 로드 시 레이아웃 조정
+		adjustLayout();
+		resizeDicomImages();
+
+		// 윈도우 이벤트 관련 내용들
+		window.onload = function() {
+		    setStatus('available', '#008000');
+		};
+		window.addEventListener('resize', function() {
+		    adjustLayout();
+		    resizeDicomImages();
+		});
+
+		// 주민등록번호를 이용해 생년월일 변환
+		function formatBirthdate(securityNum) {
+		    if (!securityNum || securityNum.length < 7) {
+		        return '유효하지 않은 정보';
+		    }
+		    
+		    const birthPart = securityNum.substring(0, 6); // 생년월일 부분
+		    const genderCode = securityNum.charAt(7); // 성별 코드
+
+		    let yearPrefix = '';
+		    
+		    // 성별 코드에 따라 출생 연도를 결정 (1, 2: 1900년대 출생 / 3, 4: 2000년대 출생)
+		    if (genderCode === '1' || genderCode === '2') {
+		        yearPrefix = '19';
+		    } else if (genderCode === '3' || genderCode === '4') {
+		        yearPrefix = '20';
+		    }
+		    const year = yearPrefix + birthPart.substring(0, 2); // '19' + '90' => '1990'
+		    const month = birthPart.substring(2, 4).padStart(2, '0'); // 월
+		    const day = birthPart.substring(4, 6).padStart(2, '0'); // 일
+
+		    return year + "년 " + month + "월 " + day + "일"; // "1990년 01월 01일" 형식
+		}
+
+		// DICOM 이미지 재출력
+		function resizeDicomImages() {
+		    // 각 DICOM 이미지를 다시 렌더링
+		    $('.dicomImage').each(function(index, element) {
+		        const enabledElement = cornerstone.getEnabledElement(element);
+		        if (enabledElement && enabledElement.image) {
+		            cornerstone.resize(element, true); // 이미지 리사이즈
+		        }
+		    });
+		}
+
+		function adjustLayout() {
+		    const screenWidth = window.innerWidth;
+
+		    // 900px 이상일 경우 2x2 레이아웃으로 설정
+		    if (screenWidth >= 901) {
+		        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
+		            element.style.flex = "1 1 calc(50% - 10px)";
+		            element.style.height = "200px";
+		            element.style.display = "flex";
+		        });
+		    } 
+		    // 900px 이하일 경우 1열 레이아웃으로 설정
+		    else if (screenWidth < 900 && screenWidth > 600) {
+		        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
+		            element.style.flex = "1 1 100%";
+		            element.style.height = "200px";
+		            element.style.display = "flex";
+		        });
+		    }
+		    // 600px 이하일 경우 inline-block 레이아웃 설정
+		    else if (screenWidth <= 600) {
+		        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
+		            element.style.display = "inline-block";
+		            element.style.width = "300px";
+		            element.style.height = "300px";
+		        });
+		    }
+		}
+
 		
 	</script>
 </body>
