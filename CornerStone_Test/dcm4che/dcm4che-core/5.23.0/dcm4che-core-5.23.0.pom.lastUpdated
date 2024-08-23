@@ -1,9 +1,0 @@
-#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
-#Mon Aug 12 15:58:06 KST 2024
-https\://repo.maven.apache.org/maven2/.lastUpdated=1723166263701
-@default-dcm4che-repo-https\://artifacts.marc.org/maven2/.lastUpdated=1723166264013
-https\://repo1.maven.org/maven2/.error=
-https\://artifacts.marc.org/maven2/.error=Could not transfer artifact org.dcm4che\:dcm4che-core\:pom\:5.23.0 from/to dcm4che-repo (https\://artifacts.marc.org/maven2)\: \uC54C\uB824\uC9C4 \uD638\uC2A4\uD2B8\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4 (artifacts.marc.org)
-https\://repo.maven.apache.org/maven2/.error=
-https\://www.dcm4che.org/maven2/.lastUpdated=1723445886353
-https\://repo1.maven.org/maven2/.lastUpdated=1723445884586

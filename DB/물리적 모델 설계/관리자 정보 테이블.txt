@@ -1,5 +1,0 @@
-CREATE TABLE Administrator (
-    admin_id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    role VARCHAR(100) NOT NULL
-);
