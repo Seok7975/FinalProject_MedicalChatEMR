@@ -79,8 +79,8 @@ CREATE TABLE MedicalRecord (
     surgeryStatus CHAR(1), -- 수술 여부 ('Y' 또는 'N')
     progress TEXT, -- 경과
     visitDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 진료 일자
-    FOREIGN KEY (patientId) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
-    FOREIGN KEY (docId) REFERENCES Doctor(no) ON DELETE CASCADE
+    FOREIGN KEY (patientNo) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (docNo) REFERENCES Doctor(no) ON DELETE CASCADE
 );
 
 
@@ -116,7 +116,6 @@ CREATE TABLE Drugs (
     dayMaxDosgQy VARCHAR(20), -- 1일 최대 투여량
     FOREIGN KEY (chartNum) REFERENCES MedicalRecord(chartNum) ON DELETE CASCADE
 );
-
 <!-- 아래 쿼리문은 사용 안함
 
 -- 환자 의사 간호사 배정 테이블
