@@ -157,14 +157,14 @@ public class FileController {
 
 	
 	@PostMapping("/viewer")
-	public String handleViewerRequest(@RequestBody Map<String, Integer> data, Model model, RedirectAttributes redirectAttributes) {
+	public String handleViewerRequest(@RequestBody Map<String, Integer> data, Model model) {
 	    try {
 	        int pid = data.get("pid");
-	        redirectAttributes.addAttribute("pid", pid); // pid를 GET 요청으로 전달
-	        return "redirect:/viewer"; // GET 요청으로 리다이렉트
+	        model.addAttribute("pid", pid);  // pid 값을 모델에 추가
+	        return "doctor/viewer";  // JSP 페이지로 바로 전달
 	    } catch (Exception e) {
 	        e.printStackTrace();
-	        return "errorPage"; // 오류 페이지로 리다이렉트
+	        return "errorPage";  // 오류 페이지로 리다이렉트
 	    }
 	}
 	

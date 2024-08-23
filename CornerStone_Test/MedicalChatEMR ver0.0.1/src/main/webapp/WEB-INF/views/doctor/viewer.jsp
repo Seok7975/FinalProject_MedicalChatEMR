@@ -260,13 +260,13 @@ cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 console.log("Configuring image loader");
 cornerstoneWADOImageLoader.configure({});
 
-let contextPath = $('#contextPath').text();
+let viewerPath = $('#contextPath').text();
 
 const element = document.getElementById('dicomImage');
 const playButton = document.querySelector('.playClipModal .fa-play').parentElement;
 const stopButton = document.querySelector('.playClipModal .fa-stop').parentElement;
 const pid = document.getElementById('pid').value; 
-const fileUrl = contextPath + '/dicom?pid='+ pid;
+const fileUrl = viewerPath  + '/dicom?pid='+ pid;
 const customCursor = 'url(/img/cross.cur) 8 8, auto'; // 전역 변수로 설정
 
 
@@ -1538,7 +1538,6 @@ function initializeAllTools() {
         'FreehandRoi',
         'Bidirectional',
         'CobbAngle',
-        'TextMarker',
         'Eraser',
         'Wwwc'
     ];
@@ -1568,7 +1567,6 @@ function initializeAllToolsForElement(element) {
         'FreehandRoi',
         'Bidirectional',
         'CobbAngle',
-        'TextMarker',
         'Eraser',
         'Wwwc'
     ];

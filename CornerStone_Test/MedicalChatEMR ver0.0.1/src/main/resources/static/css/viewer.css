@@ -163,26 +163,29 @@ body {
 	transform: translateY(-2px);
 }
 
-.dashboard{
-	height: 50px;
-	margin-bottom: 10px;
+.dashboard {
+    height: 50px;
+    margin-bottom: 10px;
 }
 
 .dashboard .dashboard-Button {
     background: linear-gradient(135deg, #28a745, #218838); /* 그라데이션 배경 */
     color: white;
-    font-size: 1em; /* 폰트 크기를 조금 더 키움 */
+    font-size: 1em; /* 폰트 크기 그대로 유지 */
     font-weight: bold; /* 글씨를 굵게 설정 */
-    min-width: 180px; /* 버튼 너비를 조금 더 넓힘 */
-    padding: 15px 20px; /* 패딩을 조정하여 버튼을 더 크게 보이게 함 */
+    min-width: 150px; /* 버튼 너비를 action-button과 동일하게 설정 */
+    height: 50px; /* 높이를 이전처럼 50px로 설정 */
+    line-height: 50px; /* 텍스트를 가운데 정렬 */
+    padding: 0 15px; /* 좌우 패딩 조정 */
+    text-align: center; /* 텍스트 가운데 정렬 */
     border-radius: 8px; /* 둥근 모서리 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* 그림자 효과 추가 */
     transition: all 0.3s ease; /* 부드러운 트랜지션 효과 */
 }
-
 .dashboard .dashboard-Button i {
-    margin-right: 8px; /* 아이콘과 텍스트 사이의 간격 조정 */
-    font-size: 1.2em; /* 아이콘 크기 확대 */
+    margin-right: 3px; /* 아이콘과 텍스트 사이의 간격 조정 */
+    font-size: 1.2em; /* 아이콘 크기 그대로 유지 */
+    vertical-align: middle; /* 아이콘을 텍스트 가운데에 맞춤 */
 }
 
 .dashboard .dashboard-Button:hover {
