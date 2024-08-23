@@ -91,8 +91,8 @@ public class FileController {
 	    // 환자 정보를 가져오는 SQL 쿼리
 	    String patientSql = "SELECT * FROM PatientRegistrations WHERE no = ?";
 	    
-	    // DICOM 파일 정보를 가져오는 SQL 쿼리
-	    String dicomSql = "SELECT * FROM dicom_files WHERE pid = ?";
+	    // DICOM 파일 목록만 가져오는 SQL 쿼리 (file_data 제외)
+	    String dicomSql = "SELECT pid, pbirthdatetime, studydate, studytime, file_name, pname, modality, sop_instance_uid, annotations FROM dicom_files WHERE pid = ?";
 
 	    try (Connection conn = dataSource.getConnection()) {
 	        // 환자 정보 가져오기
@@ -101,8 +101,8 @@ public class FileController {
 	            ResultSet rs = pstmt.executeQuery();
 
 	            if (rs.next()) {
-	            	patientInfo.put("no", rs.getInt("no"));
-	            	patientInfo.put("name", rs.getString("name"));
+	                patientInfo.put("no", rs.getInt("no"));
+	                patientInfo.put("name", rs.getString("name"));
 	                patientInfo.put("securityNum", rs.getString("securityNum"));
 	                patientInfo.put("gender", rs.getString("gender"));
 	                patientInfo.put("address", rs.getString("address"));
@@ -118,7 +118,7 @@ public class FileController {
 	            }
 	        }
 
-	        // DICOM 파일 정보 가져오기
+	        // DICOM 파일 목록 가져오기 (file_data 제외)
 	        List<Map<String, Object>> dicomFiles = new ArrayList<>();
 	        try (PreparedStatement pstmt = conn.prepareStatement(dicomSql)) {
 	            pstmt.setInt(1, no);  // 환자의 no 값을 pid로 사용
@@ -131,7 +131,6 @@ public class FileController {
 	                dicomFile.put("studydate", rs.getString("studydate"));
 	                dicomFile.put("studytime", rs.getString("studytime"));
 	                dicomFile.put("file_name", rs.getString("file_name"));
-	                dicomFile.put("file_data", Base64.getEncoder().encodeToString(rs.getBytes("file_data"))); // Base64로 인코딩
 	                dicomFile.put("pname", rs.getString("pname"));
 	                dicomFile.put("modality", rs.getString("modality"));
 	                dicomFile.put("sop_instance_uid", rs.getString("sop_instance_uid"));
@@ -140,7 +139,7 @@ public class FileController {
 	            }
 	        }
 
-	        // 환자 정보와 DICOM 파일 데이터를 함께 반환
+	        // 환자 정보와 DICOM 파일 목록 데이터를 함께 반환
 	        patientInfo.put("dicomFiles", dicomFiles);
 	        
 	    } catch (SQLException e) {
@@ -152,15 +151,54 @@ public class FileController {
 	    return ResponseEntity.ok(patientInfo);
 	}
 
+	@GetMapping("/getDicomFile")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> getDicomFile(@RequestParam("file_name") String fileName) {
+	    Map<String, Object> dicomFile = new HashMap<>();
 
+	    // DICOM 파일 데이터 가져오기 쿼리
+	    String dicomSql = "SELECT file_data FROM dicom_files WHERE file_name = ? LIMIT 1";  // file_name 기반 조회
+
+	    try (Connection conn = dataSource.getConnection();
+	         PreparedStatement pstmt = conn.prepareStatement(dicomSql)) {
+
+	        // file_name을 사용해 DICOM 파일을 조회
+	        pstmt.setString(1, fileName);
+	        ResultSet rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+	            byte[] fileData = rs.getBytes("file_data");
+	            if (fileData != null && fileData.length > 0) {
+	                dicomFile.put("file_data", Base64.getEncoder().encodeToString(fileData)); // Base64 인코딩된 file_data 반환
+	            } else {
+	                // 데이터가 없는 경우 404 Not Found 반환
+	                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                                     .body(Map.of("message", "DICOM file data not found"));
+	            }
+	        } else {
+	            // 결과가 없는 경우 404 Not Found 반환
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                                 .body(Map.of("message", "DICOM file not found"));
+	        }
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                             .body(Map.of("message", "An error occurred while fetching DICOM file data"));
+	    }
+
+	    return ResponseEntity.ok(dicomFile);
+	}
 
 
 	
 	@PostMapping("/viewer")
-	public String handleViewerRequest(@RequestBody Map<String, Integer> data, Model model) {
+	public String handleViewerRequest(@RequestBody Map<String, Object> data, Model model) {
 	    try {
-	        int pid = data.get("pid");
+	        int pid = (Integer) data.get("pid");
+	        String studytime = (String) data.get("studytime");
 	        model.addAttribute("pid", pid);  // pid 값을 모델에 추가
+	        model.addAttribute("studytime", studytime);  // studytime 값을 모델에 추가
 	        return "doctor/viewer";  // JSP 페이지로 바로 전달
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -169,13 +207,16 @@ public class FileController {
 	}
 	
 	@GetMapping("/viewer")
-	public String showViewerPage(@RequestParam(name = "pid", required = false, defaultValue = "0") int pid, Model model) {
+	public String showViewerPage(@RequestParam(name = "pid", required = false, defaultValue = "0") int pid,
+	                             @RequestParam(name = "studytime", required = false) String studytime,
+	                             Model model) {
 	    if (pid == 0) {
 	        // pid 값이 없을 때의 처리 로직
 	        model.addAttribute("errorMessage", "PID 값이 없습니다.");
 	        return "errorPage";
 	    }
 	    model.addAttribute("pid", pid);
+	    model.addAttribute("studytime", studytime);  // studytime 값을 모델에 추가
 	    return "doctor/viewer";  // viewer 페이지로 이동
 	}
 	
@@ -356,39 +397,38 @@ public class FileController {
 
 
 	@GetMapping("/dicom")
-	public ResponseEntity<List<Map<String, Object>>> getFile(@RequestParam("pid") int pid) {
-		try {
-			String fileSql = "SELECT * FROM dicom_files WHERE pid = ?";
-			List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{pid}, (rs, rowNum) -> {
-				Map<String, Object> map = new HashMap<>();
-				map.put("pid", rs.getInt("pid"));
-				map.put("pbirthdatetime", rs.getString("pbirthdatetime"));
-				map.put("studydate", rs.getString("studydate"));
-				map.put("studytime", rs.getString("studytime"));
-				map.put("file_name", rs.getString("file_name"));
-				map.put("file_data", Base64.getEncoder().encodeToString(rs.getBytes("file_data"))); // Base64로 인코딩
-				map.put("pname", rs.getString("pname"));
-				map.put("modality", rs.getString("modality"));
-				map.put("sop_instance_uid", rs.getString("sop_instance_uid"));
-				map.put("annotations", rs.getString("annotations")); // 주석 데이터를 추가
-				return map;
-			});
-			System.out.println("File data list size: " + fileDataList.size());
+	public ResponseEntity<List<Map<String, Object>>> getFile(@RequestParam("pid") int pid, @RequestParam("studytime") String studytime) {
+	    try {
+	        // studytime을 사용하여 필터링된 DICOM 파일 가져오기
+	        String fileSql = "SELECT * FROM dicom_files WHERE pid = ? AND studytime = ?";
+	        List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{pid, studytime}, (rs, rowNum) -> {
+	            Map<String, Object> map = new HashMap<>();
+	            map.put("pid", rs.getInt("pid"));
+	            map.put("pbirthdatetime", rs.getString("pbirthdatetime"));
+	            map.put("studydate", rs.getString("studydate"));
+	            map.put("studytime", rs.getString("studytime"));
+	            map.put("file_name", rs.getString("file_name"));
+	            map.put("file_data", Base64.getEncoder().encodeToString(rs.getBytes("file_data"))); // Base64로 인코딩
+	            map.put("pname", rs.getString("pname"));
+	            map.put("modality", rs.getString("modality"));
+	            map.put("sop_instance_uid", rs.getString("sop_instance_uid"));
+	            map.put("annotations", rs.getString("annotations")); // 주석 데이터를 추가
+	            return map;
+	        });
 
-			// 1. 파일 데이터가 없을 경우 404를 반환합니다.
-			if (fileDataList.isEmpty()) {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
+	        // 1. 파일 데이터가 없을 경우 404를 반환합니다.
+	        if (fileDataList.isEmpty()) {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
 
-			// 2. 파일 데이터 리스트를 JSON으로 반환합니다.
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+	        // 2. 파일 데이터 리스트를 JSON으로 반환합니다.
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setContentType(MediaType.APPLICATION_JSON);
 
-			return new ResponseEntity<>(fileDataList, headers, HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();  // 콘솔에 예외를 출력하여 어떤 오류가 발생했는지 확인
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+	        return new ResponseEntity<>(fileDataList, headers, HttpStatus.OK);
+	    } catch (Exception e) {
+	        e.printStackTrace();  // 콘솔에 예외를 출력하여 어떤 오류가 발생했는지 확인
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
 	}
-
 }
