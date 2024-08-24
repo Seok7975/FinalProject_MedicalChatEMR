@@ -1,8 +1,5 @@
 package com.emr.www.viewer.filecontroller;
 
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
-import org.dcm4che3.io.DicomInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -13,8 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.sql.DataSource;
 
@@ -44,7 +39,7 @@ public class FileController {
 
 	@GetMapping("/")
 	public String index() {
-		return "index";
+		return "doctorMain";
 	}
 
 
@@ -193,135 +188,30 @@ public class FileController {
 
 	
 	@PostMapping("/viewer")
-	public String handleViewerRequest(@RequestBody Map<String, Object> data, Model model) {
+	public String handleViewerRequest(@RequestParam("pid") int pid,
+	                                  @RequestParam("studydate") String studydate,
+	                                  Model model) {
+	    System.out.println("viewer 요청 테스트");
 	    try {
-	        int pid = (Integer) data.get("pid");
-	        String studytime = (String) data.get("studytime");
 	        model.addAttribute("pid", pid);  // pid 값을 모델에 추가
-	        model.addAttribute("studytime", studytime);  // studytime 값을 모델에 추가
+	        model.addAttribute("studydate", studydate);  // studytime 값을 모델에 추가
 	        return "doctor/viewer";  // JSP 페이지로 바로 전달
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        return "errorPage";  // 오류 페이지로 리다이렉트
 	    }
 	}
-	
-	@GetMapping("/viewer")
-	public String showViewerPage(@RequestParam(name = "pid", required = false, defaultValue = "0") int pid,
-	                             @RequestParam(name = "studytime", required = false) String studytime,
-	                             Model model) {
-	    if (pid == 0) {
-	        // pid 값이 없을 때의 처리 로직
-	        model.addAttribute("errorMessage", "PID 값이 없습니다.");
-	        return "errorPage";
-	    }
-	    model.addAttribute("pid", pid);
-	    model.addAttribute("studytime", studytime);  // studytime 값을 모델에 추가
-	    return "doctor/viewer";  // viewer 페이지로 이동
-	}
-	
 
-	private int saveFileToDatabase(MultipartFile file) throws IOException, SQLException {
-		String sql = "INSERT INTO dicom_files (" +
-				"file_name, file_data, STUDYINSUID, PATKEY, ACCESSNUM, " +
-				"STUDYDATE, STUDYTIME, STUDYID, EXAMCODE, STUDYDESC, MODALITY, " +
-				"BODYPART, PATIENTKEY, PID, PNAME, PSEX, PBIRTHDATETIME, PATAGE, " +
-				"EXAMSTATUS, REPORTSTATUS, SERIESCNT, IMAGECNT, VERIFYFLAG, VERIFYDATETIME, DEPT, sop_instance_uid) " +  // 추가된 sop_instance_uid 컬럼
-				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-		String checkSql = "SELECT * FROM dicom_files WHERE file_name = ?";
-		Attributes attr;
-
-		try (DicomInputStream dis = new DicomInputStream(file.getInputStream())) {
-			attr = dis.readDataset(-1, -1);
-		}
-
-		Map<String, Object> params = new HashMap<>();
-		params.put("file_name", file.getOriginalFilename());
-		params.put("file_data", file.getBytes());
-		params.put("STUDYINSUID", attr.getString(Tag.StudyInstanceUID));
-		params.put("PATKEY", attr.getString(Tag.PatientID));
-		params.put("ACCESSNUM", attr.getString(Tag.AccessionNumber));
-		params.put("STUDYDATE", attr.getString(Tag.StudyDate));
-		params.put("STUDYTIME", attr.getString(Tag.StudyTime));
-		params.put("STUDYID", attr.getString(Tag.StudyID));
-		params.put("EXAMCODE", attr.getString(Tag.ProcedureCodeSequence));
-		params.put("STUDYDESC", attr.getString(Tag.StudyDescription));
-		params.put("MODALITY", attr.getString(Tag.Modality));
-		params.put("BODYPART", attr.getString(Tag.BodyPartExamined));
-		params.put("PATIENTKEY", attr.getString(Tag.PatientID));
-		params.put("PID", attr.getString(Tag.PatientID));
-		params.put("PNAME", attr.getString(Tag.PatientName));
-		params.put("PSEX", attr.getString(Tag.PatientSex));
-		params.put("PBIRTHDATETIME", attr.getString(Tag.PatientBirthDate));
-		params.put("PATAGE", attr.getString(Tag.PatientAge));
-		params.put("EXAMSTATUS", attr.getInt(Tag.ImageIndex, 0));
-		params.put("REPORTSTATUS", attr.getString(Tag.CompletionFlag));
-		params.put("SERIESCNT", attr.getInt(Tag.NumberOfSeriesRelatedInstances, 0));
-		params.put("IMAGECNT", attr.getInt(Tag.NumberOfStudyRelatedInstances, 0));
-		params.put("VERIFYFLAG", attr.getString(Tag.VerificationFlag));
-		params.put("VERIFYDATETIME", attr.getString(Tag.InstanceCreationDate));
-		params.put("DEPT", attr.getString(Tag.InstitutionName));
-		params.put("sop_instance_uid", attr.getString(Tag.SOPInstanceUID)); // 추가된 sop_instance_uid 저장
-
-		try (Connection conn = dataSource.getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-				PreparedStatement check = conn.prepareStatement(checkSql)) { 
-
-			check.setString(1, (String) params.get("file_name"));
-			ResultSet rs = check.executeQuery();
-
-			if(rs.next()) {
-				// 동일한 파일 이름이 이미 존재할 경우, 해당 파일의 ID를 반환
-				return rs.getInt("id");
-			} else {
-				ps.setString(1, (String) params.get("file_name"));
-				ps.setBytes(2, (byte[]) params.get("file_data"));            
-				ps.setString(3, (String) params.get("STUDYINSUID"));
-				ps.setString(4, (String) params.get("PATKEY"));
-				ps.setString(5, (String) params.get("ACCESSNUM"));
-				ps.setString(6, (String) params.get("STUDYDATE"));
-				ps.setString(7, (String) params.get("STUDYTIME"));
-				ps.setString(8, (String) params.get("STUDYID"));
-				ps.setString(9, (String) params.get("EXAMCODE"));
-				ps.setString(10, (String) params.get("STUDYDESC"));
-				ps.setString(11, (String) params.get("MODALITY"));
-				ps.setString(12, (String) params.get("BODYPART"));
-				ps.setString(13, (String) params.get("PATIENTKEY"));
-				ps.setString(14, (String) params.get("PID"));
-				ps.setString(15, (String) params.get("PNAME"));
-				ps.setString(16, (String) params.get("PSEX"));
-				ps.setString(17, (String) params.get("PBIRTHDATETIME"));
-				ps.setString(18, (String) params.get("PATAGE"));
-				ps.setInt(19, (Integer) params.get("EXAMSTATUS"));
-				ps.setString(20, (String) params.get("REPORTSTATUS"));
-				ps.setInt(21, (Integer) params.get("SERIESCNT"));
-				ps.setInt(22, (Integer) params.get("IMAGECNT"));
-				ps.setString(23, (String) params.get("VERIFYFLAG"));
-				ps.setString(24, (String) params.get("VERIFYDATETIME"));
-				ps.setString(25, (String) params.get("DEPT"));
-				ps.setString(26, (String) params.get("sop_instance_uid")); // 새로운 컬럼에 sop_instance_uid 삽입
-
-				ps.executeUpdate();
-
-				try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-					if (generatedKeys.next()) {
-						return generatedKeys.getInt(1);
-					} else {
-						throw new SQLException("Creating file failed, no ID obtained.");
-					}
-				}
-			}
-		}
-	}
 
 
 	@PostMapping("/saveAnnotations")
 	public ResponseEntity<String> saveAnnotations(@RequestBody Map<String, Object> payload) {
 	    try {
-	        // SOPInstanceUID를 사용하여 각 파일별로 주석을 저장
-	        String sopInstanceUID = payload.get("sopInstanceUID").toString();
-	        String annotations = payload.get("annotations").toString();
+	        // 디버깅: 받은 데이터 출력
+	        System.out.println("Payload: " + payload);
+
+	        String sopInstanceUID = (String) payload.get("sopInstanceUID");
+	        String annotations = (String) payload.get("annotations");
 
 	        // 디버깅: 받은 데이터 출력
 	        System.out.println("Received sopInstanceUID: " + sopInstanceUID);
@@ -333,10 +223,12 @@ public class FileController {
 
 	        return new ResponseEntity<>("주석이 성공적으로 저장되었습니다.", HttpStatus.OK);
 	    } catch (Exception e) {
+	        // 에러 로그 추가
 	        e.printStackTrace();
 	        return new ResponseEntity<>("주석 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
+
 
 
 
@@ -397,11 +289,13 @@ public class FileController {
 
 
 	@GetMapping("/dicom")
-	public ResponseEntity<List<Map<String, Object>>> getFile(@RequestParam("pid") int pid, @RequestParam("studytime") String studytime) {
+	public ResponseEntity<List<Map<String, Object>>> getFile(@RequestParam("pid") int pid, @RequestParam("studydate") String studydate) {
 	    try {
-	        // studytime을 사용하여 필터링된 DICOM 파일 가져오기
-	        String fileSql = "SELECT * FROM dicom_files WHERE pid = ? AND studytime = ?";
-	        List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{pid, studytime}, (rs, rowNum) -> {
+	        // 필요한 필드만 선택하여 쿼리 수행
+	        String fileSql = "SELECT pid, pbirthdatetime, studydate, studytime, file_name, file_data, pname, modality, sop_instance_uid, annotations " +
+	                         "FROM dicom_files WHERE pid = ? AND studydate = ?";
+	        
+	        List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{pid, studydate}, (rs, rowNum) -> {
 	            Map<String, Object> map = new HashMap<>();
 	            map.put("pid", rs.getInt("pid"));
 	            map.put("pbirthdatetime", rs.getString("pbirthdatetime"));
@@ -416,19 +310,18 @@ public class FileController {
 	            return map;
 	        });
 
-	        // 1. 파일 데이터가 없을 경우 404를 반환합니다.
+	        // 파일 데이터가 없을 경우 404를 반환합니다.
 	        if (fileDataList.isEmpty()) {
-	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 	        }
 
-	        // 2. 파일 데이터 리스트를 JSON으로 반환합니다.
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.setContentType(MediaType.APPLICATION_JSON);
+	        // 파일 데이터 리스트를 JSON으로 반환합니다.
+	        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(fileDataList);
 
-	        return new ResponseEntity<>(fileDataList, headers, HttpStatus.OK);
 	    } catch (Exception e) {
 	        e.printStackTrace();  // 콘솔에 예외를 출력하여 어떤 오류가 발생했는지 확인
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
+
 }
