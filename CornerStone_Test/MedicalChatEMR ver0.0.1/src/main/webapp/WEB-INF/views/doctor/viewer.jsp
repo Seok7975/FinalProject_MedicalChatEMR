@@ -246,7 +246,7 @@
 		</footer>
 	</div>
 <input type="text" id="pid" value="${pid}" hidden />
-<input type="text" id="studytime" value="${studytime}" hidden />
+<input type="text" id="studydate" value="${studydate}" hidden />
 	
 <script>
 //cornerstone 관련 설정
@@ -267,8 +267,8 @@ const element = document.getElementById('dicomImage');
 const playButton = document.querySelector('.playClipModal .fa-play').parentElement;
 const stopButton = document.querySelector('.playClipModal .fa-stop').parentElement;
 const pid = document.getElementById('pid').value; 
-const studytime = document.getElementById('studytime').value;
-const fileUrl = viewerPath + '/dicom?pid=' + pid + '&studytime=' + studytime;
+const studydate = document.getElementById('studydate').value;
+const fileUrl = viewerPath + '/dicom?pid=' + pid + '&studydate=' + studydate;
 const customCursor = 'url(/img/cross.cur) 8 8, auto'; // 전역 변수로 설정
 
 
@@ -675,11 +675,12 @@ function removeHighlightGridItems() {
     });
 }
 
-//레이아웃 업데이트 함수
 function updateWadoBoxLayout(rows, cols) {
     isSingleLayout = (rows === 1 && cols === 1);
     const wadoBox = document.querySelector('.wadoBox');
     const centerPanel = document.querySelector('.center-panel');
+    const topLeft = document.querySelector('.topLeft');
+    
     centerPanel.style.border = 'none';
     wadoBox.innerHTML = ''; // 기존 그리드 초기화
 
@@ -687,8 +688,14 @@ function updateWadoBoxLayout(rows, cols) {
     wadoBox.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
 
     const fontSizeClass = getFontSizeClass(rows, cols);
+    const totalCells = rows * cols;
+    const totalImages = imageIds.length;
 
-    for (let i = 0; i < rows * cols; i++) {
+    // 각 셀에 대한 스택을 위한 맵
+    const stacks = new Map();
+
+    // 각 셀에 대해 이미지 ID 배열 설정 및 스택 생성
+    for (let i = 0; i < totalCells; i++) {
         const parentDiv = document.createElement('div');
         parentDiv.classList.add('parentDiv', fontSizeClass);
         parentDiv.setAttribute('data-value', i);
@@ -726,32 +733,110 @@ function updateWadoBoxLayout(rows, cols) {
 
         cornerstone.enable(dicomImageDiv);
 
-        if (i < imageIds.length) {
-            cornerstone.loadImage(imageIds[i]).then(function(image) {
-                cornerstone.displayImage(dicomImageDiv, image);
+        // 셀별로 이미지 스택 관리
+        const stack = {
+            currentImageIdIndex: 0,
+            imageIds: []
+        };
+        stacks.set(i, stack);
 
-                // 이미지 로드 후 도구 초기화
-                initializeAllToolsForElement(dicomImageDiv);
-                disableAllTools();
-
-                // 레이아웃이 1x1이면 뷰포트 초기화
-                if (isSingleLayout) {
-                    resetViewportToDefault(dicomImageDiv, image);
-                }
-
-            }).catch(function(err) {
-                console.error('Error loading image for index ' + i, err);
-            });
+        // 이미지 인덱스 계산
+        for (let j = i; j < totalImages; j += totalCells) {
+            stack.imageIds.push(imageIds[j]);
         }
 
-        if (isSingleLayout) {
-            cornerstoneTools.addTool(cornerstoneTools.StackScrollMouseWheelTool);
-            cornerstoneTools.setToolActive('StackScrollMouseWheel', {});
-        } else {
-            activateGridScrollWheel();
+        // 이미지를 로드하고 스택 설정
+        if (stack.imageIds.length > 0) {
+            cornerstone.loadImage(stack.imageIds[0])
+                .then(function(image) {
+                    cornerstone.displayImage(dicomImageDiv, image);
+
+                    // 도구 초기화 및 활성화
+                    initializeAllToolsForElement(dicomImageDiv);
+                    disableAllTools();
+
+                    if (isSingleLayout) {
+                        resetViewportToDefault(dicomImageDiv, image);
+                    }
+
+                    // 스택 설정
+                    cornerstoneTools.addStackStateManager(dicomImageDiv, ['stack']);
+                    cornerstoneTools.addToolState(dicomImageDiv, 'stack', stack);
+                })
+                .catch(function(err) {
+                    console.error('Error loading image for index ' + i, err);
+                });
         }
     }
+
+    // 전체 wadoBox에서 휠 이벤트를 처리
+    let isWheelProcessing = false; // Prevents simultaneous wheel events
+    wadoBox.addEventListener('wheel', function(event) {
+        if (event.deltaY !== 0 && !isWheelProcessing) {
+            isWheelProcessing = true;
+
+            // 타임아웃을 사용하여 연속적인 휠 이벤트 처리 방지
+            setTimeout(() => {
+                const activeDivs = document.querySelectorAll('.parentDiv');
+                let anyImageChanged = false; // Flag to check if any image was changed
+
+                activeDivs.forEach((div) => {
+                    const dicomImageDiv = div.querySelector('.image-placeholder');
+                    if (dicomImageDiv) {
+                        const stackIndex = parseInt(div.getAttribute('data-value'));
+                        const stack = stacks.get(stackIndex);
+                        if (stack) {
+                            let newIndex = stack.currentImageIdIndex + (event.deltaY < 0 ? 1 : -1);
+
+                            // 인덱스가 배열 범위를 넘어가지 않도록 처리
+                            if (newIndex < 0 || newIndex >= stack.imageIds.length) {
+                                // 이미지 인덱스가 범위를 벗어난 경우
+                                stack.currentImageIdIndex = newIndex < 0 ? 0 : stack.imageIds.length - 1;
+                                // 캔버스를 제거하여 화면을 정리
+                                cornerstone.displayImage(dicomImageDiv, null);
+                            } else {
+                                stack.currentImageIdIndex = newIndex;
+                                anyImageChanged = true; // Set flag to true if any image was changed
+                                cornerstone.loadImage(stack.imageIds[newIndex])
+                                    .then(function(image) {
+                                        cornerstone.displayImage(dicomImageDiv, image);
+                                    })
+                                    .catch(function(err) {
+                                        console.error('Error loading image for index ' + newIndex, err);
+                                    });
+                            }
+                        }
+                    }
+                });
+
+                // 더 이상 이미지를 변경할 수 없는 경우
+                if (!anyImageChanged) {
+                    wadoBox.removeEventListener('wheel', this);
+                }
+
+                isWheelProcessing = false; // 이벤트 처리 후 플래그 해제
+            }, 100); // Adjust timeout as necessary
+        }
+    });
+
+    // 이미지 스택의 루프 비활성화
+    cornerstoneTools.setToolOptions('StackScrollMouseWheel', {
+        loop: false
+    });
 }
+
+
+
+
+function resetTools() {
+    // 기존 도구 제거
+    cornerstoneTools.removeTool('StackScrollMouseWheel');
+    
+    // 업데이트된 옵션으로 도구 다시 추가
+    cornerstoneTools.addTool(cornerstoneTools.StackScrollMouseWheelTool, stackScrollOptions);
+    cornerstoneTools.setToolActive('StackScrollMouseWheel', {});
+}
+
 
 
 
@@ -821,8 +906,6 @@ function getFontSizeClass(rows, cols) {
 
 //layout 요소 생성 함수
 function createLayout(parentDiv, index) {
-	
-	
     // 필요한 경우 추가 정보 표시용 요소들 추가
     const topLeft = document.createElement('div');
     const bottomRight = document.createElement('div');
@@ -851,13 +934,12 @@ function createLayout(parentDiv, index) {
     studyTimeElement.textContent = '시간: ' + fileDataListGlobal[index]["studytime"];
 
     const imageNumberElement = document.createElement('span');
-    imageNumberElement.classList.add('block');
+    imageNumberElement.classList.add('block', 'imageNumber'); // class 추가
     imageNumberElement.textContent = 'Image: ' + (index + 1);
 
     const imageWWWCElement = document.createElement('span');
     imageWWWCElement.classList.add('block','wwwc');
     imageWWWCElement.innerHTML = "WW : " + Math.round(initialWindowWidth) + "<br>WC : " + Math.round(initialWindowCenter);
-    
     
     // 요소 추가
     topLeft.appendChild(imageNumberElement);
@@ -873,18 +955,19 @@ function createLayout(parentDiv, index) {
     parentDiv.appendChild(bottomRight);
 }
 
+// 특정 parentDiv의 이미지 번호를 업데이트하는 함수
+function updateImageNumber(parentDiv, index) {
+    const imageNumberElement = parentDiv.querySelector('.topLeft .imageNumber');
+    if (imageNumberElement) {
+        imageNumberElement.textContent = 'Image: ' + (index + 1);
+    }
+}
+
 
 // 리셋
 function resetCenterPanel() {
     const centerPanel = document.querySelector('.center-panel');
     centerPanel.style.border = '4px solid #ff0000'; // 빨간 테두리 복원
-}
-
-
-// top-left content요소
-function topLeftContent(){
-
-
 }
 
 // 레이아웃 메뉴 숨기기 함수
@@ -896,10 +979,6 @@ function hideLayoutMenu() {
         imageLayoutButton.classList.remove('custom-active');
     }
 }
-
-
-
-
 
 
 //재설정 버튼 클릭 시 드롭다운 메뉴 표시/숨기기
@@ -1541,13 +1620,17 @@ function initializeAllTools() {
         'Bidirectional',
         'CobbAngle',
         'Eraser',
-        'Wwwc'
+        'Wwwc',
+        'TextMarker'
     ];
 
     document.querySelectorAll('.image-placeholder').forEach(imageDiv => {
         tools.forEach(tool => {
             // 각 도구를 이미지 요소에 대해 활성화
-            cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool']);
+            if(tool === 'TextMarker')
+            	cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool'], { configuration });
+            else
+            	cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool']);
             cornerstoneTools.setToolActive(tool, { element: imageDiv });
         });
     });
@@ -1570,14 +1653,18 @@ function initializeAllToolsForElement(element) {
         'Bidirectional',
         'CobbAngle',
         'Eraser',
-        'Wwwc'
+        'Wwwc',
+        'TextMarker'
     ];
 
     tools.forEach(tool => {
         // 해당 도구가 이미 추가되었는지 확인
         if (!cornerstoneTools.getToolForElement(element, tool)) {
             // 도구가 추가되지 않은 경우에만 추가
-            cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool'], { element: element });
+            if(tool === 'TextMarker')
+            	cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool'], { configuration });
+            else
+            	cornerstoneTools.addTool(cornerstoneTools[tool + 'Tool']);
             cornerstoneTools.setToolActive(tool, { mouseButtonMask: 1 });
         }
     });
@@ -1755,14 +1842,6 @@ function activateAnnotationTool(toolName, buttonElement) {
     setActiveToolsButton(buttonElement);
     disableAllTools();
     
-    console.log("toolName : ",toolName);
-    console.log(toolName === 'TextMarker');
-    
-    if(toolName === 'TextMarker')
-    	cornerstoneTools.addTool(cornerstoneTools[toolName + 'Tool'], { configuration });
-    else
-    	cornerstoneTools.addTool(cornerstoneTools[toolName + 'Tool']);
-    
     cornerstoneTools.setToolActive(toolName, { mouseButtonMask: 1 });
     
     cornerstoneTools.toolColors.setToolColor('#00FFFF');
@@ -1775,7 +1854,6 @@ function activateNomalTool(toolName, buttonElement){
 	setActiveButton(buttonElement);
 	disableAllTools();
 	
-	cornerstoneTools.addTool(cornerstoneTools[toolName + 'Tool']);
 	cornerstoneTools.setToolActive(toolName, { mouseButtonMask: 1 });
 }
 
@@ -1793,7 +1871,7 @@ function activateNomalToolMenu(toolName, buttonElement){
 // 주석 저장 함수
 function saveAnnotation() {
     Swal.fire({
-        title: '저장 하시겠습니까?',
+        title: '주석을 저장하시겠습니까?',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -1804,54 +1882,48 @@ function saveAnnotation() {
         if (result.isConfirmed) {
             // 주석 데이터 가져오기
             let toolState = cornerstoneTools.globalImageIdSpecificToolStateManager.saveToolState();
-
-            // 각 imageId에 대응하는 SOPInstanceUID로 주석 데이터를 재구성
-            let annotationData = {};
-            let sopInstanceUID = "";  // 현재 보고 있는 이미지의 SOPInstanceUID를 저장할 변수
-
-            for (let imageId in toolState) {
-                sopInstanceUID = getSOPInstanceUIDFromImageId(imageId);  // 현재 이미지의 SOPInstanceUID 가져오기
-                if (sopInstanceUID) {
-                    annotationData[sopInstanceUID] = toolState[imageId];
-                }
+            
+            // 현재 활성화된 이미지 요소에서 이미지 ID 가져오기
+            let imageId = cornerstone.getImage(element).imageId;
+            
+            // 이미지에 연결된 주석 데이터 찾기
+            let imageAnnotations = toolState[imageId];
+            
+            // 주석이 없을 때
+            if (!imageAnnotations || Object.keys(imageAnnotations).length === 0) {
+                Swal.fire('주석이 없습니다!', '주석을 작성한 후 저장해 주세요.', 'warning');
+                return;
             }
 
-            // 주석 데이터를 JSON 문자열로 변환합니다.
-            const annotations = JSON.stringify(annotationData[sopInstanceUID]);  // 현재 보고 있는 파일의 주석만 저장
+            // 주석 데이터를 JSON 형식으로 변환
+            let annotationData = JSON.stringify(imageAnnotations);
 
-            // 서버로 주석 데이터를 전송합니다.
-            fetch('/saveAnnotations', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+            let index = currentImageIndex;
+            let sopInstanceUID = sopInstanceUIDs[index]; // 현재 이미지의 SOPInstanceUID 가져오기
+            let studytime = fileDataListGlobal[0].studytime; // 현재 이미지의 studytime 가져오기
+            
+            console.log("Saving annotations for SOPInstanceUID:", sopInstanceUID);
+
+            // AJAX 요청으로 주석 데이터 저장
+            $.ajax({
+                type: "POST",
+                url: "/saveAnnotations",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    sopInstanceUID: sopInstanceUID, // SOPInstanceUID 전송
+                    annotations: annotationData, // 주석 데이터 전송
+                    studytime: studytime // 현재 studytime 전송
+                }),
+                success: function(response) {
+                    Swal.fire('저장이 완료되었습니다!', '', 'success');
                 },
-                body: JSON.stringify({ sopInstanceUID: sopInstanceUID, annotations: annotations })
-            }).then(response => {
-                if (response.ok) {
-                    Swal.fire(
-                        '저장이 완료되었습니다!',
-                        '',
-                        'success'
-                    );
-                } else {
-                    Swal.fire(
-                        '저장에 실패했습니다.',
-                        '',
-                        'error'
-                    );
+                error: function(xhr, status, error) {
+                    Swal.fire('저장 실패!', '오류가 발생했습니다: ' + xhr.responseText, 'error');
                 }
-            }).catch(error => {
-                console.error('Error:', error);
-                Swal.fire(
-                    '저장 중 오류가 발생했습니다.',
-                    '',
-                    'error'
-                );
             });
         }
     });
 }
-
 
 
 

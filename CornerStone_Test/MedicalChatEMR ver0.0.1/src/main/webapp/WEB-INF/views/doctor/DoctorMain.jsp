@@ -687,6 +687,9 @@ footer p {
 					이름: <span id="patient-name"></span>
 				</p>
 				<p>
+					혈액형: <span id="patient-bloodType"></span>
+				</p>
+				<p>
 					생년월일: <span id="patient-birthdate"></span>
 				</p>
 				<p>
@@ -848,7 +851,7 @@ footer p {
 		</section>
 	</main>
 	<input type="text" id="pid" hidden />
-	<input type="text" id="studytime" hidden />
+	<input type="text" id="studydate" hidden />
 	<script>
 		$(document)
 				.ready(
@@ -1310,94 +1313,95 @@ function setStatus(status, color) {
 		});
 
 		// DICOM 파일 로드 전 기존 이미지 삭제 함수
-function clearDicomImages() {
-    const elements = document.querySelectorAll('.dicomImage'); // 동적으로 요소 선택
-    elements.forEach(function(element) {
-        const isEnabled = cornerstone.getEnabledElements().some(enabledElement => enabledElement.element === element);
-        if (isEnabled) {
-            cornerstone.disable(element); // 기존 cornerstone 이미지를 비활성화 및 삭제
-        }
-        element.innerHTML = ''; // 요소 내용을 제거
-    });
-}
+		function clearDicomImages() {
+		    const elements = document.querySelectorAll('.dicomImage'); // 동적으로 요소 선택
+		    elements.forEach(function(element) {
+		        const isEnabled = cornerstone.getEnabledElements().some(enabledElement => enabledElement.element === element);
+		        if (isEnabled) {
+		            cornerstone.disable(element); // 기존 cornerstone 이미지를 비활성화 및 삭제
+		        }
+		        element.innerHTML = ''; // 요소 내용을 제거
+		    });
+		}
 
-//개별 DICOM 파일 데이터를 로드하는 함수 (병렬 처리)
-function loadDicomFile(fileData, element) {
-    return new Promise((resolve, reject) => {
-        if (!element) {
-            console.error('Invalid element. Skipping this DICOM file.');
-            return reject('Invalid element');
-        }
+		//개별 DICOM 파일 데이터를 로드하는 함수 (병렬 처리)
+		function loadDicomFile(fileData, element) {
+		    return new Promise((resolve, reject) => {
+		        if (!element) {
+		            console.error('Invalid element. Skipping this DICOM file.');
+		            return reject('Invalid element');
+		        }
 
-        $.ajax({
-            url: '/getDicomFile',
-            method: 'GET',
-            data: { file_name: fileData.file_name },  // file_name 또는 sop_instance_uid 전달
-            success: function(data) {
-                const byteCharacters = atob(data.file_data); // Base64 디코딩
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
-                const imageId = 'wadouri:' + fileBlobUrl;
+		        $.ajax({
+		            url: '/getDicomFile',
+		            method: 'GET',
+		            data: { file_name: fileData.file_name },  // file_name 또는 sop_instance_uid 전달
+		            success: function(data) {
+		                const byteCharacters = atob(data.file_data); // Base64 디코딩
+		                const byteNumbers = new Array(byteCharacters.length);
+		                for (let i = 0; i < byteCharacters.length; i++) {
+		                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+		                }
+		                const byteArray = new Uint8Array(byteNumbers);
+		                const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
+		                const imageId = 'wadouri:' + fileBlobUrl;
 
-                // 요소가 활성화되지 않았으면 활성화
-                if (!cornerstone.getEnabledElements().some(enabledElement => enabledElement.element === element)) {
-                    cornerstone.enable(element); // 요소 활성화
-                }
+		                // 요소가 활성화되지 않았으면 활성화
+		                if (!cornerstone.getEnabledElements().some(enabledElement => enabledElement.element === element)) {
+		                    cornerstone.enable(element); // 요소 활성화
+		                }
 
-                cornerstone.loadImage(imageId).then(function(image) {
-                    resolve({ element, image }); // 이미지를 로드 후 resolve로 반환
-                }).catch(function(err) {
-                    console.error('Error loading image:', err);
-                    reject(err); // 에러 발생
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching DICOM file:', xhr.responseText);
-                reject(error);
-            }
-        });
-    });
-}
+		                cornerstone.loadImage(imageId).then(function(image) {
+		                    resolve({ element, image }); // 이미지를 로드 후 resolve로 반환
+		                }).catch(function(err) {
+		                    console.error('Error loading image:', err);
+		                    reject(err); // 에러 발생
+		                });
+		            },
+		            error: function(xhr, status, error) {
+		                console.error('Error fetching DICOM file:', xhr.responseText);
+		                reject(error);
+		            }
+		        });
+		    });
+		}
 
 
-//DICOM 파일 목록을 받아와 개별적으로 로드하는 함수 (병렬 처리 후 한 번에 표시)
-function loadDicomImageList(dicomFiles, patientNo) {
-    clearDicomImages(); // 이전 이미지를 제거
+		//DICOM 파일 목록을 받아와 개별적으로 로드하는 함수 (병렬 처리 후 한 번에 표시)
+		function loadDicomImageList(dicomFiles, patientNo) {
+		    clearDicomImages(); // 이전 이미지를 제거
 
-    const elements = document.querySelectorAll('.dicomImage'); // 동적으로 요소 선택
-    if (dicomFiles && dicomFiles.length > 0) {
-        const loadPromises = dicomFiles.map((fileData, index) => {
-            if (index < elements.length) {
-                const element = elements[index];
-                return loadDicomFile(fileData, element); // fileData를 함께 전달하여 고유한 이미지를 로드
-            }
-            return Promise.resolve(null); // 요소가 없을 경우 null 반환
-        });
+		    const elements = document.querySelectorAll('.dicomImage'); // 동적으로 요소 선택
+		    if (dicomFiles && dicomFiles.length > 0) {
+		        const loadPromises = dicomFiles.map((fileData, index) => {
+		            if (index < elements.length) {
+		                const element = elements[index];
+		                return loadDicomFile(fileData, element); // fileData를 함께 전달하여 고유한 이미지를 로드
+		            }
+		            return Promise.resolve(null); // 요소가 없을 경우 null 반환
+		        });
 
-        // 모든 이미지가 로드될 때까지 기다렸다가 한 번에 화면에 표시
-        Promise.all(loadPromises)
-            .then(results => {
-                results
-                    .filter(result => result !== null) // null이 아닌 결과만 처리
-                    .forEach(({ element, image }) => {
-                        if (element && image) {
-                            cornerstone.displayImage(element, image); // 이미지 표시
-                        }
-                    });
-                dicomImagesLoaded = true; // 모든 이미지가 로드되면 true로 설정
-                console.log('All DICOM images loaded and displayed at once');
-            })
-            .catch((error) => {
-                console.error('Error loading some DICOM images:', error);
-            });
-    } else {
-        console.log('No DICOM files found for this patient.');
-    }
-}
+		        // 모든 이미지가 로드될 때까지 기다렸다가 한 번에 화면에 표시
+		        Promise.all(loadPromises)
+		            .then(results => {
+		                results
+		                    .filter(result => result !== null) // null이 아닌 결과만 처리
+		                    .forEach(({ element, image }) => {
+		                        if (element && image) {
+		                            cornerstone.displayImage(element, image); // 이미지 표시
+		                        }
+		                    });
+		                dicomImagesLoaded = true; // 모든 이미지가 로드되면 true로 설정
+		                console.log('All DICOM images loaded and displayed at once');
+		            })
+		            .catch((error) => {
+		                console.error('Error loading some DICOM images:', error);
+		            });
+		    } else {
+		        console.log('No DICOM files found for this patient.');
+		    }
+		}
+
 		// 환자 정보 출력
 		function showPatientInfo(patientNo) {
 		    $.ajax({
@@ -1408,7 +1412,7 @@ function loadDicomImageList(dicomFiles, patientNo) {
 		            // 서버로부터 받은 환자 정보를 HTML에 표시
 		            const patient = data;
 		            $('#patient-name').text(patient.name);
-
+					$('#patient-bloodType').text(patient.bloodType);
 		            // 생년월일 및 기타 정보 표시
 		            const formattedBirthdate = formatBirthdate(patient.securityNum);
 		            $('#patient-birthdate').text(formattedBirthdate);
@@ -1425,9 +1429,9 @@ function loadDicomImageList(dicomFiles, patientNo) {
 		            $('#patient-smoking-status').text(patient.smokingStatus === 'Y' ? '흡연' : '비흡연');
 		            $('#pid').val(patient.no);
 
-		            // studytime 값 설정 (첫 번째 DICOM 파일의 studytime 값으로 설정)
+		            // studydate 값 설정 (첫 번째 DICOM 파일의 studydate 값으로 설정)
 		            if (patient.dicomFiles && patient.dicomFiles.length > 0) {
-		                $('#studytime').val(patient.dicomFiles[0].studytime);
+		                $('#studydate').val(patient.dicomFiles[0].studydate);
 		                loadDicomImageList(patient.dicomFiles, patient.no); // 파일 목록과 환자 ID 전달
 		            } else {
 		                clearDicomImages(); // DICOM 파일이 없는 경우 이미지 제거
@@ -1442,34 +1446,34 @@ function loadDicomImageList(dicomFiles, patientNo) {
 		// 자세히 보기 버튼 이벤트
 		$('.viewer').on('click', function() {
 		    const pid = document.getElementById('pid').value;
-		    const studytime = document.getElementById('studytime').value;
+		    const studydate = document.getElementById('studydate').value;
 
 		    if (!pid || !dicomImagesLoaded) {  // pid가 없거나 이미지가 로드되지 않았다면
 		        return;  // 요청을 보내지 않고 함수 종료
 		    }
 
-		    fetch('doctor/viewer', {
-		        method: 'POST',
-		        headers: {
-		            'Content-Type': 'application/json'
-		        },
-		        body: JSON.stringify({ pid: pid, studytime: studytime })
-		    })
-		    .then(response => {
-		        if (response.ok) {
-		            return response.text();  // HTML을 받는 경우 response.text()로 처리
-		        } else {
-		            throw new Error('서버 응답 오류');
-		        }
-		    })
-		    .then(html => {
-		        document.open();
-		        document.write(html);
-		        document.close();
-		    })
-		    .catch(error => {
-		        console.error('요청 중 오류 발생', error);
-		    });
+		    // form 생성
+		    const form = document.createElement('form');
+		    form.method = 'POST';
+		    form.action = doctorPath + '/viewer';  // viewer.html 페이지로 POST 요청
+
+		    // pid와 studydate을 form 데이터로 추가
+		    const pidInput = document.createElement('input');
+		    pidInput.type = 'hidden';
+		    pidInput.name = 'pid';
+		    pidInput.value = pid;
+
+		    const studydateInput = document.createElement('input');
+		    studydateInput.type = 'hidden';
+		    studydateInput.name = 'studydate';
+		    studydateInput.value = studydate;
+
+		    form.appendChild(pidInput);
+		    form.appendChild(studydateInput);
+
+		    // form을 body에 추가하고 제출
+		    document.body.appendChild(form);
+		    form.submit();
 		});
 
 		// 페이지 로드 시 레이아웃 조정
