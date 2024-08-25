@@ -1,0 +1,296 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: 'Poppins', sans-serif;
+}
+
+body {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background-color: #f0f4f8;
+}
+
+.container {
+	max-width: 700px;
+	width: 100%;
+	background: #fff;
+	padding: 30px;
+	border-radius: 8px;
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+header {
+	font-size: 1.8rem;
+	color: #333;
+	font-weight: 600;
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.form {
+	margin-top: 20px;
+}
+
+.input-box {
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.input-box label {
+	display: block;
+	color: #333;
+	margin-bottom: 8px;
+	font-weight: 500;
+}
+
+.input-box input,
+.select-box select {
+	width: 100%;
+	height: 50px;
+	font-size: 1rem;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 0 15px;
+	outline: none;
+}
+
+.input-box input:focus {
+	border-color: #40bafb;
+	box-shadow: 0 0 5px rgba(64, 186, 251, 0.3);
+}
+
+.column {
+	display: flex;
+	gap: 20px;
+}
+
+.gender-box {
+	margin-bottom: 20px;
+}
+
+.gender-box h3 {
+	color: #333;
+	font-size: 1rem;
+	font-weight: 500;
+	margin-bottom: 10px;
+}
+
+.gender-option {
+	display: flex;
+	gap: 15px;
+}
+
+.gender {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.gender input {
+	accent-color: #40bafb;
+}
+
+.gender label {
+	color: #333;
+}
+
+.form button {
+	height: 55px;
+	width: 100%;
+	color: #fff;
+	font-size: 1rem;
+	font-weight: 500;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	background-color: #40bafb;
+	border-radius: 6px;
+}
+
+.form button:hover {
+	background-color: #058dd7;
+}
+
+.inline-group {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.inline-group .input-box {
+	flex: 1;
+}
+
+.input-box-1,
+.input-box-2,
+.input-box-3 {
+	display: none;
+}
+
+.input-box-1.show,
+.input-box-2.show,
+.input-box-3.show {
+	display: block;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+	.column {
+		flex-direction: column;
+	}
+
+	.gender-option {
+		flex-direction: column;
+	}
+
+	.inline-group {
+		flex-direction: column;
+	}
+}
+
+.address {
+	margin-bottom: 20px;
+}
+
+.postcode-container {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.postcode-container input[type="text"] {
+	flex: 1;
+}
+
+.postcode-container input[type="button"] {
+	background-color: #40bafb;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+	border-radius: 5px;
+	transition: background-color 0.3s ease;
+	height: 50px;
+	flex-shrink: 0;
+}
+
+.postcode-container input[type="button"]:hover {
+	background-color: #058dd7;
+}
+
+.address .address-fields {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.address input[type="text"] {
+	width: 100%;
+	height: 50px;
+	font-size: 1rem;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 0 15px;
+	outline: none;
+	box-sizing: border-box;
+	margin-bottom: 10px;
+}
+
+.address .address-fields input[type="text"] {
+	flex: 1;
+}
+
+.address input[type="text"]:last-child {
+	margin-bottom: 0;
+}
+
+.user-id-card-number {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.user-id-card-number input[type="text"] {
+	height: 50px;
+	font-size: 1rem;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 0 15px;
+	outline: none;
+}
+
+.user-id-card-number #birth-date-Num {
+	width: 40%;
+}
+
+.user-id-card-number #identify-num {
+	width: 55%;
+}
+
+.slash {
+	margin: 0 5px;
+	font-size: 1.5rem;
+	color: #333;
+}
+
+.inline-group {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.inline-group .input-box {
+	flex: 1;
+	position: relative;
+}
+
+.inline-group .input-box input {
+	height: 50px;
+	font-size: 1rem;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 0 15px;
+	outline: none;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.inline-group .input-box input:focus {
+	border-color: #40bafb;
+	box-shadow: 0 0 8px rgba(64, 186, 251, 0.3);
+}
+
+/* 인풋 상자-1의 스타일 */
+.input-box select,
+.input-box-1 select,
+.input-box-2 select,
+.input-box-3 select {
+	width: 100%;
+	height: 50px;
+	font-size: 1rem;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 0 15px;
+	background-color: #f9f9f9;
+	outline: none;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+	transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-box-1 select:focus,
+.input-box-2 select:focus,
+.input-box-3 select:focus {
+	border-color: #40bafb;
+	box-shadow: 0 0 8px rgba(64, 186, 251, 0.3);
+}
+
