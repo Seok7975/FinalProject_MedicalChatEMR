@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 public class FileController {
@@ -233,43 +235,52 @@ public class FileController {
 
 
 	// DICOM 다운로드
-	@GetMapping("/downloadDICOM")
-	public ResponseEntity<InputStreamResource> downloadDICOM(@RequestParam String fileNames, @RequestParam String pname, @RequestParam String modality) throws IOException {
-		String[] fileNameArray = fileNames.split(",");  // ,로 구분된 파일 이름 문자열을 배열로 변환
-		if (fileNameArray.length == 1) {
-			// 파일이 하나인 경우 개별 파일 다운로드
-			String fileSql = "SELECT file_data FROM dicom_files WHERE file_name = ?";
-			byte[] fileData = jdbcTemplate.queryForObject(fileSql, new Object[]{fileNameArray[0]}, byte[].class);
+	@PostMapping("/downloadDICOM")
+	public ResponseEntity<InputStreamResource> downloadDICOM(@RequestBody Map<String, Object> requestData) throws IOException {
+	    List<String> fileNameList = (List<String>) requestData.get("fileNames");
+	    String pname = (String) requestData.get("pname");
+	    String modality = (String) requestData.get("modality");
 
-			InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(fileData));
-			return ResponseEntity.ok()
-					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileNameArray[0] + "\"")
-					.contentType(MediaType.APPLICATION_OCTET_STREAM)
-					.body(resource);
-		} else {
-			// 파일이 여러 개인 경우 ZIP 파일로 압축
-			String zipFileName = pname +"_"+ modality + "_dicom.zip";
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ZipOutputStream zos = new ZipOutputStream(baos);
+	    String[] fileNameArray = fileNameList.toArray(new String[0]);
 
-			for (String fileName : fileNameArray) {
-				String fileSql = "SELECT file_data FROM dicom_files WHERE file_name = ?";
-				byte[] fileData = jdbcTemplate.queryForObject(fileSql, new Object[]{fileName}, byte[].class);
+	    if (fileNameArray.length == 1) {
+	        // 단일 파일 다운로드 로직
+	        String fileSql = "SELECT file_data FROM dicom_files WHERE file_name = ?";
+	        byte[] fileData = jdbcTemplate.queryForObject(fileSql, new Object[]{fileNameArray[0]}, byte[].class);
 
-				ZipEntry zipEntry = new ZipEntry(fileName);
-				zos.putNextEntry(zipEntry);
-				zos.write(fileData);
-				zos.closeEntry();
-			}
+	        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(fileData));
+	        return ResponseEntity.ok()
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileNameArray[0] + "\"")
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .body(resource);
+	    } else {
+	        // 여러 파일 ZIP으로 압축하여 다운로드
+	        String zipFileName = pname + "_" + modality + "_dicom.zip";
+	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        ZipOutputStream zos = new ZipOutputStream(baos);
 
-			zos.close();
+	        for (String fileName : fileNameArray) {
+	            String fileSql = "SELECT file_data FROM dicom_files WHERE file_name = ?";
+	            byte[] fileData = jdbcTemplate.queryForObject(fileSql, new Object[]{fileName}, byte[].class);
 
-			InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(baos.toByteArray()));
-			return ResponseEntity.ok()
-					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"")
-					.contentType(MediaType.APPLICATION_OCTET_STREAM)
-					.body(resource);
-		}
+	            ZipEntry zipEntry = new ZipEntry(fileName);
+	            zos.putNextEntry(zipEntry);
+	            zos.write(fileData);
+	            zos.closeEntry();
+	        }
+
+	        zos.close();
+
+	        InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(baos.toByteArray()));
+	       
+	        // UTF-8로 ZIP 파일 이름 인코딩
+	        String encodedZipFileName = URLEncoder.encode(zipFileName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+
+	        return ResponseEntity.ok()
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedZipFileName)
+	                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+	                .body(resource);
+	    }
 	}
 
 	

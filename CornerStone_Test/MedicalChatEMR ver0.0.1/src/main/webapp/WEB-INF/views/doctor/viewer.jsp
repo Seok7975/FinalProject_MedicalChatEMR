@@ -377,10 +377,10 @@ $('.dashboard-Button').click(function() {
 
 // 파일 다운로드 및 삭제 버튼 이벤트
 $(".dcmDownLoad").click(function () {
-	const titleMessage = currentFileNames.length > 1 
-    ? '모든 DICOM 파일을 다운로드하시겠습니까?' 
-    : 'DICOM 파일을 다운로드하시겠습니까?';
-	
+    const titleMessage = currentFileNames.length > 1 
+        ? '모든 DICOM 파일을 다운로드하시겠습니까?' 
+        : 'DICOM 파일을 다운로드하시겠습니까?';
+    
     Swal.fire({
         title: titleMessage,
         icon: 'question',
@@ -393,8 +393,8 @@ $(".dcmDownLoad").click(function () {
         if (result.isConfirmed) {
             // 전역 변수를 직접 사용
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', '/downloadDICOM?fileNames=' + encodeURIComponent(currentFileNames.join(',')) + '&pname=' + encodeURIComponent(currentPname) 
-            		+ '&modality=' + encodeURIComponent(currentModality), true);
+            xhr.open('POST', '/downloadDICOM', true);
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
             xhr.responseType = 'blob';  // Blob 타입의 응답을 받음
             xhr.onload = function () {
                 if (xhr.status === 200) {
@@ -402,7 +402,9 @@ $(".dcmDownLoad").click(function () {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = currentFileNames.length > 1 ? currentPname + '_' + currentModality + '_DICOM.zip' : currentFileNames[0];
+                    a.download = currentFileNames.length > 1 
+                        ? currentPname + '_' + currentModality + '_DICOM.zip' 
+                        : currentFileNames[0];
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
@@ -416,11 +418,14 @@ $(".dcmDownLoad").click(function () {
             xhr.onerror = function () {
                 Swal.fire('다운로드에 실패했습니다!', '오류가 발생했습니다: ' + xhr.statusText, 'error');
             };
-            xhr.send();
+            xhr.send(JSON.stringify({
+                fileNames: currentFileNames,
+                pname: currentPname,
+                modality: currentModality
+            }));
         }
     });
 });
-
 
 
 // canvas를 활용한 jpg 다운로드
