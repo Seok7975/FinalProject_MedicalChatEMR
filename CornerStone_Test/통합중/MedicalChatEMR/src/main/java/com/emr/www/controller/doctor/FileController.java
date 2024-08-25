@@ -39,11 +39,6 @@ public class FileController {
 	@Autowired
 	private DataSource dataSource;
 
-	@GetMapping("/")
-	public String index() {
-		return "doctorMain";
-	}
-
 
 	/*
 	 * @GetMapping("/doctorUI") public String handleFileUpload(Model model) { // 환자
@@ -188,7 +183,7 @@ public class FileController {
 	    try {
 	        model.addAttribute("pid", pid);  // pid 값을 모델에 추가
 	        model.addAttribute("studydate", studydate);  // studytime 값을 모델에 추가
-	        return "doctor/viewer";  // JSP 페이지로 바로 전달
+	        return "dicom/viewer";  // JSP 페이지로 바로 전달
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        return "errorPage";  // 오류 페이지로 리다이렉트

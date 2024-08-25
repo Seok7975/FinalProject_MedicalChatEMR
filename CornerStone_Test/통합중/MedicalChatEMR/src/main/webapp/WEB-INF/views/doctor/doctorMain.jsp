@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -8,11 +7,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medical Dashboard</title>
-<link
-	href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css'
-	rel='stylesheet' />
-<script
-	src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css' rel='stylesheet' />
+<script	src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.js'></script>
 <!-- jQuery CDN -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!--비활동 함수-->
@@ -20,22 +16,17 @@
 <!--CornerStone 기능 및 ContextPath 설정  -->
 <link rel="icon" href="/img/medical.ico" />
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/cornerstone-math@0.1.6/dist/cornerstoneMath.js"></script>
+<script	src="https://cdn.jsdelivr.net/npm/cornerstone-math@0.1.6/dist/cornerstoneMath.js"></script>
 <script src="https://unpkg.com/cornerstone-core"></script>
 <script src="https://unpkg.com/cornerstone-math"></script>
 <script src="https://unpkg.com/cornerstone-wado-image-loader"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/cornerstone-web-image-loader@2.1.0/dist/cornerstoneWebImageLoader.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/cornerstone-wado-image-loader@3.1.0/dist/cornerstoneWADOImageLoader.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/dicom-parser@1.8.4/dist/dicomParser.js"></script>
+<script	src="https://cdn.jsdelivr.net/npm/cornerstone-web-image-loader@2.1.0/dist/cornerstoneWebImageLoader.js"></script>
+<script	src="https://cdn.jsdelivr.net/npm/cornerstone-wado-image-loader@3.1.0/dist/cornerstoneWADOImageLoader.js"></script>
+<script	src="https://cdn.jsdelivr.net/npm/dicom-parser@1.8.4/dist/dicomParser.js"></script>
 <script src="/js/cornerstone/cornerstone.min.js"></script>
 <script src="/js/cornerstone/cornerstoneMath.min.js"></script>
 <script src="/js/cornerstone/dicomParser.min.js"></script>
-<script
-	src="https://unpkg.com/cornerstone-tools@4.22.1/dist/cornerstoneTools.js"></script>
+<script	src="https://unpkg.com/cornerstone-tools@4.22.1/dist/cornerstoneTools.js"></script>
 
 <style>
 html, body {
@@ -239,6 +230,24 @@ nav {
 .symptoms {
 	grid-area: symptoms;
 }
+
+.section.dicom {
+	width: 80%; /* 기존의 크기에서 줄임 */
+	margin: 0 auto; /* 가운데 정렬 */
+}
+
+.section .view {
+	grid-area: view;
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 5px;
+	gap: 8px;
+	height: 100%;
+	overflow-y: auto; /* 세로 스크롤 추가 */
+	overflow-x: hidden; /* 가로 스크롤은 숨김 */
+}
+
+
 
 .view {
 	grid-area: view;
@@ -595,6 +604,11 @@ ul, #patientList {
 	text-decoration: none;
 	cursor: pointer;
 }
+.buttonSection {
+	display: flex;
+	justify-content: flex-start;
+	margin-bottom: 10px;
+}
 
 .viewer {
 	background-color: #28a745; /* 주된 녹색 색상 */
@@ -609,6 +623,32 @@ ul, #patientList {
 	transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
 	color: white; /* 부드러운 전환 효과 */
 }
+
+.viewer:hover {
+	background-color: #218838; /* 호버 시 조금 더 짙은 녹색으로 변경 */
+	transform: translateY(-2px); /* 호버 시 버튼을 약간 위로 이동 */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 호버 시 그림자 추가 */
+}
+
+.viewer:active {
+	background-color: #1e7e34; /* 클릭 시 더 짙은 녹색 */
+	transform: translateY(0); /* 클릭 시 원래 위치로 복원 */
+	box-shadow: none; /* 클릭 시 그림자 제거 */
+}
+.section {
+	diplay: grid;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background-color: #fafafa;
+	overflow-y: auto;
+}
+
+.section .dicom {
+	width: 50px;
+	height: 600px;
+}
+
 /* 기본 상태 - 두 개씩 나란히 배치 */
 .responsive-view {
 	display: flex;
@@ -622,9 +662,11 @@ ul, #patientList {
 .responsive-view .dicomImage {
 	flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
 	height: 200px; /* 고정된 높이 설정 */
+	background-color: #ddd;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	overflow: hidden; /* 이미지가 컨테이너를 넘어가지 않도록 설정 */
 }
 
 /* 1000px 이하에서 한 열로 배치 */
@@ -655,6 +697,41 @@ ul, #patientList {
 		height: 200px; /* 고정된 높이 설정 */
 	}
 }
+
+/* 900px 이하에서 한 열로 배치 */
+@media ( max-width : 900px) {
+	.responsive-view .dicomImage {
+		flex: 1 1 100%; /* 한 줄씩 배치 */
+		height: 200px; /* 고정된 높이 유지 */
+	}
+}
+
+/* 600px 이하에서 가로 스크롤 생기도록 설정 */
+@media ( max-width : 600px) {
+	.responsive-view {
+		overflow-x: auto; /* 좌우 스크롤 활성화 */
+		white-space: nowrap; /* div들이 한 줄로 나열되도록 설정 */
+	}
+	.responsive-view .dicomImage {
+		display: inline-block; /* 한 줄로 나열 */
+		width: 300px; /* 고정된 너비 */
+		height: 300px; /* 고정된 높이 */
+	}
+}
+
+/* 901px 이상에서 2열 그리드로 복귀 */
+@media ( min-width : 901px) {
+	.responsive-view {
+		overflow-x: hidden; /* 다시 기본 설정으로 복귀 */
+		white-space: normal; /* 기본 줄바꿈 상태로 복귀 */
+	}
+	.responsive-view .dicomImage {
+		display: flex; /* 다시 flexbox 레이아웃 적용 */
+		flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
+		height: 200px; /* 고정된 높이 유지 */
+	}
+}
+
 </style>
 </head>
 
@@ -803,7 +880,7 @@ ul, #patientList {
 				<div class="buttonSection">
 					<button class="viewer">자세히 보기</button>
 				</div>
-				<div class="view  responsive-view" style="grid-row: span 2;">
+				<div class="view responsive-view" style="grid-row: span 2;">
 					<div class="dicomImage" data-value="0"></div>
 					<div class="dicomImage" data-value="1"></div>
 					<div class="dicomImage" data-value="2"></div>
