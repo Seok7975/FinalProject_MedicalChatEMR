@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.emr.www.MedicalChatEmrApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.357 s -- in com.emr.www.MedicalChatEmrApplicationTests
