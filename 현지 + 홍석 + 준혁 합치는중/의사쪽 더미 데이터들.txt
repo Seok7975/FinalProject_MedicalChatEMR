@@ -1,0 +1,163 @@
+use test;
+
+-- 관리자 테이블 
+CREATE TABLE Admin (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 관리자의 고유 식별자입니다.
+    password VARCHAR(20) NOT NULL, -- 관리자의 비밀번호입니다.
+    adminEmail VARCHAR(320) UNIQUE -- 관리자의 이메일 주소입니다.
+); 
+
+INSERT INTO admin(password,adminEmail) values('1234','test@naver.com');
+
+INSERT INTO Doctor (name, securityNum, email, phone, licenseId, password, position, departmentId, activeStatus)
+VALUES ('백종의', '850101-1234567', 'johndoe@example.com', '010-1234-5678', 'L123456', '1234', 'Professor', 'D001', 'Active');
+
+INSERT INTO Nurse (name, securityNum, email, phone, licenseId, password, position, departmentId, profileImage, activeStatus)
+VALUES ('Kim Jiyeon', '900101-1234567', 'jiyeon.kim@example.com', '010-9876-5432', 'N1234', '1234', 'N', 'D001', '/images/profile/jiyeon_kim.jpg', 'Active');
+
+select * from doctor;
+
+select * from MedicalRecord;
+
+select * from drugs;
+
+select * from admin;
+-- 의사 테이블
+CREATE TABLE Doctor (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 의사의 고유 식별자입니다.
+    name VARCHAR(100), -- 의사의 이름입니다.
+    securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
+    email VARCHAR(100) UNIQUE, -- 이메일 주소입니다.
+    phone VARCHAR(20), -- 전화번호입니다.
+    licenseId CHAR(8) UNIQUE, -- 고유 식별자로 사용할 8자리 ID
+    password VARCHAR(15), -- (초기에는 NULL)
+    position VARCHAR(20), -- 직급입니다.
+    departmentId VARCHAR(10), -- 소속 진료과입니다.
+    profileImage VARCHAR(255), -- 증명사진 경로입니다.
+    activeStatus VARCHAR(50) NOT NULL -- 현재 활동 상태
+);
+
+
+-- 간호사 테이블
+CREATE TABLE Nurse (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 간호사의 고유 식별자 (Primary Key)
+    name VARCHAR(100), -- 간호사의 이름
+    securityNum CHAR(14) UNIQUE, -- 주민등록번호 (Unique Key)
+    email VARCHAR(320) UNIQUE, -- 이메일 주소 (Unique Key)
+    phone VARCHAR(20), -- 전화번호
+    licenseId CHAR(16) UNIQUE, -- 면허 ID (Unique Key)
+    password VARCHAR(100), -- 비밀번호 (암호화 저장 추천)
+    position VARCHAR(10), -- 직급 - N/H
+    departmentId VARCHAR(10), -- 소속 진료과
+    profileImage VARCHAR(255), -- 프로필 이미지 경로
+    activeStatus VARCHAR(50) -- 활동 상태
+);
+
+drop table PatientVisits;
+
+drop table Diagnosis;
+
+drop table Prescriptions;
+
+drop table drugs;
+
+drop table MedicalRecord;
+
+-- 환자 내원 테이블
+CREATE TABLE PatientVisits (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 내원 기록의 고유 식별자입니다.
+    patientNo INT, -- 환자 등록 테이블 주키
+    patientName VARCHAR(50), -- 환자의 이름입니다.
+    securityNum VARCHAR(14), -- 환자의 주민등록번호입니다.
+    visitReason TEXT, -- 내원 사유입니다.
+    doctorNo INT, -- 담당 의사 (타입을 INT로 변경)
+    nurseNo INT, -- 담당 간호사 (타입을 INT로 변경)
+    FOREIGN KEY (patientNo) REFERENCES PatientRegistrations(no), -- 외래키 관계
+    FOREIGN KEY (doctorNo) REFERENCES Doctor(no), -- 외래키 관계
+    FOREIGN KEY (nurseNo) REFERENCES Nurse(no) -- 외래키 관계
+);
+
+
+
+-- 진료 기록 테이블
+CREATE TABLE MedicalRecord (
+    chartNum INT AUTO_INCREMENT PRIMARY KEY, -- 차트 번호
+    patientNo INT NOT NULL, -- 환자 ID
+    docNo INT NOT NULL, -- 진료 의사 ID
+    symptoms TEXT, -- 증상
+    surgeryStatus CHAR(1), -- 수술 여부 ('Y' 또는 'N')
+    progress TEXT, -- 경과
+    visitDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 진료 일자
+    FOREIGN KEY (patientNo) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (docNo) REFERENCES Doctor(no) ON DELETE CASCADE
+);
+
+
+-- 진단 테이블
+CREATE TABLE Diagnosis (
+    no INT AUTO_INCREMENT PRIMARY KEY,
+    chartNum INT NOT NULL, -- MedicalRecord의 차트 번호 참조
+    diseaseCode VARCHAR(10), -- 질병 코드
+    diseaseName VARCHAR(255), -- 질병 명칭
+    FOREIGN KEY (chartNum) REFERENCES MedicalRecord(chartNum) ON DELETE CASCADE
+);
+
+-- 약품 테이블
+CREATE TABLE Prescriptions (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 고유 번호
+    chartNum INT NOT NULL, -- MedicalRecord의 차트 번호 참조
+    entpName VARCHAR(255), -- 약품 회사
+    itemSeq VARCHAR(100), -- 코드
+    itemName VARCHAR(100), -- 약품명
+    useMethodQesitm TEXT, -- 복용방법
+    FOREIGN KEY (chartNum) REFERENCES MedicalRecord(chartNum) ON DELETE CASCADE
+);
+
+-- 약물 테이블
+CREATE TABLE Drugs (
+    no INT AUTO_INCREMENT PRIMARY KEY,
+    chartNum INT NOT NULL, -- MedicalRecord의 차트 번호 참조
+    cpntCd VARCHAR(100), -- 성분 코드
+    ingdNameKor VARCHAR(200), -- 성분명(한글)
+    fomlNm VARCHAR(30), -- 제형명
+    dosageRouteCode VARCHAR(50), -- 투여경로
+    dayMaxDosgQyUnit VARCHAR(50), -- 투여 단위
+    dayMaxDosgQy VARCHAR(20), -- 1일 최대 투여량
+    FOREIGN KEY (chartNum) REFERENCES MedicalRecord(chartNum) ON DELETE CASCADE
+);
+
+
+-- 환자 의사 간호사 배정 테이블
+CREATE TABLE PatientAssignment (
+    no INT AUTO_INCREMENT PRIMARY KEY,
+    patientId INT NOT NULL,
+    doctorId INT, -- 담당 의사의 식별자입니다.
+    nurseId INT, -- 담당 간호사의 식별자입니다.
+    assignmentDate DATE NOT NULL, -- 담당 지정 날짜입니다.
+    FOREIGN KEY (patientId) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (doctorId) REFERENCES Doctor(no) ON DELETE SET NULL,
+    FOREIGN KEY (nurseId) REFERENCES Nurse(no) ON DELETE SET NULL
+);
+
+-- 의사 환자 관계 테이블
+CREATE TABLE PatientDoctor (
+    no INT AUTO_INCREMENT PRIMARY KEY,
+    patientId INT NOT NULL, -- 환자의 식별자입니다.
+    doctorId INT NOT NULL, -- 담당 의사의 ID입니다.
+    relationshipStartDate DATE, -- 관리 시작 날짜입니다.
+    relationshipEndDate DATE, -- 관리 종료 날짜입니다.
+    FOREIGN KEY (patientId) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (doctorId) REFERENCES Doctor(no) ON DELETE CASCADE
+);
+
+-- 간호사 환자 관계 테이블
+CREATE TABLE PatientNurse (
+    no INT AUTO_INCREMENT PRIMARY KEY,
+    patientId INT NOT NULL, -- 환자의 식별자입니다.
+    nurseId INT NOT NULL, -- 담당 간호사의 ID입니다.
+    relationshipStartDate DATE, -- 관리 시작 날짜입니다.
+    relationshipEndDate DATE, -- 관리 종료 날짜입니다.
+    FOREIGN KEY (patientId) REFERENCES PatientRegistrations(no) ON DELETE CASCADE,
+    FOREIGN KEY (nurseId) REFERENCES Nurse(no) ON DELETE CASCADE
+);
+
