@@ -5,6 +5,10 @@ desc dicom_files;
 
 drop table dicom_files;
 
+drop table PatientRegistrations;
+
+
+
 select * from dicom_files;
 
 select * from PatientRegistrations;
@@ -19,20 +23,21 @@ VALUES
 ('홍길동', '900101-1234567', 'M', '서울특별시 강남구 테헤란로 123', '010-1234-5678', 'hong@example.com', 'A+', 175.5, 70.2, '없음', '120/80', 36.5, 'N'),
 ('강감찬', '851201-2345678', 'M', '부산광역시 해운대구 해운대로 456', '010-8765-4321', 'kang@example.com', 'B-', 180.3, 85.4, '해산물', '130/85', 37.1, 'Y');
 
+SET SQL_SAFE_UPDATES = 0;
+
 UPDATE dicom_files
-SET patkey = 2, 
-    patientkey = 2, 
-    pid = 2    
-WHERE patkey = 17192;
+SET patkey = 2,     
+    pid = 2,
+    pname = '강감찬'
+WHERE pid = 'TEST-0207';
 
 
 UPDATE dicom_files
-SET patkey = 1, 
-    patientkey = 1, 
-    pid = 1,
+SET patkey = 1,     
+    pid = '1',
     pname = '홍길동'
-WHERE patkey = 14162
-AND pname = 'HONG GIL DONG';
+WHERE pid = '14162' OR pid = '17192' OR pid = 'PATIENT_ID';
+
 
 CREATE TABLE dicom_files (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -48,8 +53,7 @@ CREATE TABLE dicom_files (
     EXAMCODE VARCHAR(64),
     STUDYDESC TEXT,
     MODALITY VARCHAR(16),
-    BODYPART TEXT,
-    PATIENTKEY BIGINT,
+    BODYPART TEXT,    
     PID VARCHAR(64),
     PNAME VARCHAR(64),
     PLASTNAME VARCHAR(64),
@@ -91,3 +95,9 @@ CREATE TABLE PatientRegistrations (
     smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N')
 --  입원 기능 추가 예정 + 기본 정보를 제외한 혈압, 체온 등에 관한 정보는 따로 테이블로 분리
 );
+
+CREATE INDEX idx_pid ON dicom_files (pid);
+CREATE INDEX idx_studytime ON dicom_files (studytime);
+CREATE INDEX idx_studydate ON dicom_files (studydate);
+CREATE INDEX idx_modality ON dicom_files (modality);
+CREATE INDEX idx_sop_instance_uid ON dicom_files (sop_instance_uid);
