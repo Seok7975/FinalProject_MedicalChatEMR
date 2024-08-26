@@ -727,7 +727,7 @@ ul, #patientList {
 			<button id="messages-btn" class="nav-btn">Message</button>
 			<button id="chat-ai-btn" class="nav-btn">CHAT AI</button>
 			<div class="profile-info">
-				<img id="profile-image" src="/images/ProfileImage/doctorProfile.jpg" alt="Profile Image">
+				<img id="profile-image" src="" alt="Profile Image">
 				<div class="status-indicator"></div>
 				<form id="logout-form" action="/logout" method="POST">
 					<button id="logout-btn" class="logout-btn">Log Out</button>
@@ -932,6 +932,27 @@ ul, #patientList {
 	</main>
 	
 	<script>
+  	// cornerstone 관련 설정
+	cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
+	cornerstoneWebImageLoader.external.cornerstone = cornerstone;
+	cornerstoneTools.external.cornerstone = cornerstone;
+	cornerstoneTools.external.Hammer = Hammer;
+	cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
+
+	// 이미지 로더 등록
+	cornerstoneWADOImageLoader.configure({});
+	
+	let dicomImagesLoaded = false;
+	// 전역 변수로 선언
+	let globalPid = null;
+	let globalStudydate = null;
+	const elements = document.querySelectorAll('.dicomImage'); // 모든 dicomImage div 요소 선택
+	
+	// 모든 dicomImage 요소를 cornerstone에 활성화
+	elements.forEach(element => {
+	    cornerstone.enable(element);
+	});
+
 	  let diagnosisMode = false;
 	  let previousHighlightChartNum = null; // 이전 하이라이트 기록 번호 저장
 	  let selectedPatientNo = null; // 선택된 환자 번호 저장
@@ -1285,8 +1306,9 @@ ul, #patientList {
 
                 // 최신 기록을 첫 번째로 불러와서 하이라이트 처리
                 if (records.length > 0) {
-                    updateRecordSections(records[0]);
+                    updateRecordSections(records[0]);                    
                     highlightRecord(records[0].chartNum); // 첫 번째 기록 하이라이트
+                    showPatientInfo(patientNo,formatDateForDcm(records[0].visitDate));
                 }
 
             } catch (error) {
@@ -1314,6 +1336,7 @@ ul, #patientList {
                 historySection.appendChild(row);
             });
         }
+   
    	  // 방문 날짜 값 변화
       function formatDateForDcm(visitDate) {
     	    const datePart = visitDate.split('T')[0]; // '2024-08-26' 부분만 추출
@@ -1820,26 +1843,7 @@ ul, #patientList {
             closeDiagnosisMode(); // 진료 작성 모드 종료 > 진료 본거 바로 다 가져올 수 있도록 하기 재호출?
       }
       
-  	// cornerstone 관련 설정
-		cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-		cornerstoneWebImageLoader.external.cornerstone = cornerstone;
-		cornerstoneTools.external.cornerstone = cornerstone;
-		cornerstoneTools.external.Hammer = Hammer;
-		cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 
-		// 이미지 로더 등록
-		cornerstoneWADOImageLoader.configure({});
-
-		let dicomImagesLoaded = false;
-		// 전역 변수로 선언
-		let globalPid = null;
-		let globalStudydate = null;
-		const elements = document.querySelectorAll('.dicomImage'); // 모든 dicomImage div 요소 선택
-
-		// 모든 dicomImage 요소를 cornerstone에 활성화
-		elements.forEach(element => {
-		    cornerstone.enable(element);
-		});
 
 		// DICOM 파일 로드 전 기존 이미지 삭제 함수
 		function clearDicomImages() {
@@ -1931,7 +1935,7 @@ ul, #patientList {
 		    }
 		}
 
-		// 환자 번호를 토대로 study값 가져오는거 테스트 중
+		// 환자 번호를 토대로 study값 가져오기
 		function showPatientInfo(patientNo,visitDate) {
     		$.ajax({
         		url: '/dicom/getPatientInfo',
@@ -1944,7 +1948,9 @@ ul, #patientList {
             		if (patient.dicomFiles && patient.dicomFiles.length > 0) {
                 		$('.viewer').data('studydate', patient.dicomFiles[0].studydate);
                 		loadDicomImageList(patient.dicomFiles, patient.no);
+                		console.log("hi1");
             		} else {
+            			console.log("hi2");
                 		clearDicomImages();
             		}
         		},
