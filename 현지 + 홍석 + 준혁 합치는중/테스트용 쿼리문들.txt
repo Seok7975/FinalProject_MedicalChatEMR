@@ -1,0 +1,133 @@
+use test;
+show tables;
+
+desc dicom_files;
+
+drop table dicom_files;
+
+drop table PatientRegistrations;
+
+select * from dicom_files;
+
+select STUDYDATE,PNAME from dicom_files;
+
+select * from PatientRegistrations;
+
+
+
+desc PatientRegistrations;
+
+select file_name, file_data from dicom_files WHERE modality='CT' order by file_name asc;
+SELECT name, securityNum, gender, address, phone, email, bloodType, height, weight, allergies, bloodPressure, temperature, smokingStatus FROM PatientRegistrations WHERE name = '홍길동';
+
+INSERT INTO PatientRegistrations (name, securityNum, gender, address, phone, email, bloodType, height, weight, allergies, bloodPressure, temperature, smokingStatus) 
+VALUES 
+('홍길동', '900101-1234567', 'M', '서울특별시 강남구 테헤란로 123', '010-1234-5678', 'hong@naver.com', 'A+', 175.5, 70.2, '없음', '120/80', 36.5, 'N'),
+('강감찬', '851201-2345678', 'M', '부산광역시 해운대구 해운대로 456', '010-8765-4321', 'kang@naver.com', 'B-', 180.3, 85.4, '해산물', '130/85', 37.1, 'Y');
+
+SET SQL_SAFE_UPDATES = 0;
+
+
+
+UPDATE dicom_files
+SET 
+    patkey = (SELECT no FROM PatientRegistrations WHERE name = '강감찬' LIMIT 1),
+    pid = (SELECT no FROM PatientRegistrations WHERE name = '강감찬' LIMIT 1),
+    pname = '강감찬'
+WHERE pid IN ('MS0005', '27106', '0041698');
+
+
+
+UPDATE dicom_files
+SET 
+    patkey = (SELECT no FROM PatientRegistrations WHERE name = '홍길동' LIMIT 1),
+    pid = (SELECT no FROM PatientRegistrations WHERE name = '홍길동' LIMIT 1),
+    pname = '홍길동'
+WHERE pid IN ('14162', '17192', 'PATIENT_ID');
+
+
+INSERT INTO MedicalRecord (patientNo, docNo, symptoms, surgeryStatus, progress, visitDate)
+VALUES 
+((SELECT no FROM PatientRegistrations WHERE name = '홍길동'), 1, '기침, 고열', 'N', '약물 치료 중', '2023-04-04 10:00:00'),
+((SELECT no FROM PatientRegistrations WHERE name = '홍길동'), 1, '두통, 인후통', 'N', '안정 중', '2023-03-19 10:00:00'),
+((SELECT no FROM PatientRegistrations WHERE name = '홍길동'), 1, '소화불량', 'N', '정상 회복 중', '2022-11-15 10:00:00');
+
+INSERT INTO MedicalRecord (patientNo, docNo, symptoms, surgeryStatus, progress, visitDate)
+VALUES 
+((SELECT no FROM PatientRegistrations WHERE name = '강감찬'), 1, '복통, 설사', 'Y', '수술 후 회복 중', '2018-12-30 10:00:00');
+
+INSERT INTO MedicalRecord (patientNo, docNo, symptoms, surgeryStatus, progress, visitDate)
+VALUES 
+((SELECT no FROM PatientRegistrations WHERE name = '강감찬'), 1, '두통, 발열', 'N', '안정 중', '2018-09-05 14:23:45');
+
+INSERT INTO MedicalRecord (patientNo, docNo, symptoms, surgeryStatus, progress, visitDate)
+VALUES 
+((SELECT no FROM PatientRegistrations WHERE name = '강감찬'), 1, '근육통, 피로', 'N', '휴식 필요', '2017-02-02 08:37:22');
+
+
+
+
+
+CREATE TABLE dicom_files (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_data LONGBLOB,
+    STUDYKEY BIGINT,
+    STUDYINSUID VARCHAR(64) NOT NULL,
+    PATKEY VARCHAR(64),
+    ACCESSNUM VARCHAR(64),
+    STUDYDATE VARCHAR(16),
+    STUDYTIME VARCHAR(14),
+    STUDYID VARCHAR(64),
+    EXAMCODE VARCHAR(64),
+    STUDYDESC TEXT,
+    MODALITY VARCHAR(16),
+    BODYPART TEXT,    
+    PID VARCHAR(64),
+    PNAME VARCHAR(64),
+    PLASTNAME VARCHAR(64),
+    PFIRSTNAME VARCHAR(64),
+    PKNAME VARCHAR(64),
+    PENAME VARCHAR(64),
+    PSEX VARCHAR(16),
+    PBIRTHDATETIME VARCHAR(16),
+    PATAGE VARCHAR(16),
+    EXAMSTATUS BIGINT,
+    REPORTSTATUS BIGINT,
+    SERIESCNT BIGINT,
+    SERIESMOVIECNT BIGINT,
+    IMAGECNT BIGINT,
+    MOVIECNT BIGINT,
+    NONSERIESCOUNT BIGINT,
+    NONIMAGECOUNT BIGINT,
+    VERIFYFLAG BIGINT,
+    VERIFYDATETIME VARCHAR(14),
+    DEPT VARCHAR(64),
+    sop_instance_uid VARCHAR(128),  -- DICOM SOP Instance UID (고유 이미지 식별자)
+    annotations TEXT  -- 주석 데이터를 저장할 필드    
+);
+
+CREATE TABLE PatientRegistrations (
+    no INT AUTO_INCREMENT PRIMARY KEY, -- 환자의 고유 식별자입니다.
+    name VARCHAR(50), -- 환자의 이름입니다.
+    securityNum CHAR(14) UNIQUE, -- 주민등록번호입니다.
+    gender CHAR(1), -- 성별 ('M' 또는 'F').
+    address VARCHAR(255), -- 주소입니다
+    phone VARCHAR(20), -- 전화번호입니다.
+    email VARCHAR(50), -- 이메일 주소입니다.
+    bloodType CHAR(6), -- 혈액형입니다.
+    height FLOAT, -- 키(센티미터)입니다.
+    weight FLOAT, -- 체중(킬로그램)입니다.
+    allergies TEXT, -- 알레르기 정보입니다.
+    bloodPressure VARCHAR(10), -- 혈압
+    temperature DECIMAL(4, 1), -- 체온
+    smokingStatus CHAR(1) -- 흡연 여부 ('Y' 또는 'N')
+--  입원 기능 추가 예정 + 기본 정보를 제외한 혈압, 체온 등에 관한 정보는 따로 테이블로 분리
+);
+
+CREATE INDEX idx_pid ON dicom_files (pid);
+CREATE INDEX idx_studytime ON dicom_files (studytime);
+CREATE INDEX idx_studydate ON dicom_files (studydate);
+CREATE INDEX idx_modality ON dicom_files (modality);
+CREATE INDEX idx_sop_instance_uid ON dicom_files (sop_instance_uid);
+CREATE INDEX idx_pid_studydate ON dicom_files (pid, studydate);
