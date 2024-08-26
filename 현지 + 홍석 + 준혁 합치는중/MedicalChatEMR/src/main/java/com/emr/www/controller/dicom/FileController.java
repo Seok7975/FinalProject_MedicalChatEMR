@@ -50,7 +50,7 @@ public class FileController {
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> getPatientInfo(@RequestParam("no") int no, @RequestParam("studydate") String studydate) {
 	    Map<String, Object> patientInfo = new HashMap<>();
-	    
+	    System.out.println("변수 no의 타입: " + ((Object) no).getClass().getSimpleName());
 	    // DICOM 파일 목록만 가져오는 SQL 쿼리 (file_data 제외) + studydate 필터링
 	    String dicomSql = "SELECT pid, pbirthdatetime, studydate, studytime, file_name, pname, modality, sop_instance_uid, annotations " +
 	                      "FROM dicom_files WHERE pid = ? AND studydate = ?";
@@ -63,8 +63,9 @@ public class FileController {
 	            pstmt.setInt(1, no);  // 환자의 no 값을 pid로 사용
 	            pstmt.setString(2, studydate);  // studydate 추가로 필터링
 	            ResultSet rs = pstmt.executeQuery();
-
+	            System.out.println("studydate : "+studydate);
 	            while (rs.next()) {
+	            	System.out.println("test2");
 	                Map<String, Object> dicomFile = new HashMap<>();
 	                dicomFile.put("pid", rs.getInt("pid"));
 	                dicomFile.put("studydate", rs.getString("studydate"));
