@@ -48,56 +48,30 @@ public class FileController {
 	
 	@GetMapping("/getPatientInfo")
 	@ResponseBody
-	public ResponseEntity<Map<String, Object>> getPatientInfo(@RequestParam("no") int no) {
+	public ResponseEntity<Map<String, Object>> getPatientInfo(@RequestParam("no") int no, @RequestParam("studydate") String studydate) {
 	    Map<String, Object> patientInfo = new HashMap<>();
 	    
-	    // 환자 정보를 가져오는 SQL 쿼리
-	    String patientSql = "SELECT * FROM PatientRegistrations WHERE no = ?";
-	    
-	    // DICOM 파일 목록만 가져오는 SQL 쿼리 (file_data 제외)
-	    String dicomSql = "SELECT pid, pbirthdatetime, studydate, studytime, file_name, pname, modality, sop_instance_uid, annotations FROM dicom_files WHERE pid = ?";
+	    // DICOM 파일 목록만 가져오는 SQL 쿼리 (file_data 제외) + studydate 필터링
+	    String dicomSql = "SELECT pid, pbirthdatetime, studydate, studytime, file_name, pname, modality, sop_instance_uid, annotations " +
+	                      "FROM dicom_files WHERE pid = ? AND studydate = ?";
 
 	    try (Connection conn = dataSource.getConnection()) {
-	        // 환자 정보 가져오기
-	        try (PreparedStatement pstmt = conn.prepareStatement(patientSql)) {
-	            pstmt.setInt(1, no);
-	            ResultSet rs = pstmt.executeQuery();
-
-	            if (rs.next()) {
-	                patientInfo.put("no", rs.getInt("no"));
-	                patientInfo.put("name", rs.getString("name"));
-	                patientInfo.put("securityNum", rs.getString("securityNum"));
-	                patientInfo.put("gender", rs.getString("gender"));
-	                patientInfo.put("address", rs.getString("address"));
-	                patientInfo.put("phone", rs.getString("phone"));
-	                patientInfo.put("email", rs.getString("email"));
-	                patientInfo.put("bloodType", rs.getString("bloodType"));
-	                patientInfo.put("height", rs.getFloat("height"));
-	                patientInfo.put("weight", rs.getFloat("weight"));
-	                patientInfo.put("allergies", rs.getString("allergies"));
-	                patientInfo.put("bloodPressure", rs.getString("bloodPressure"));
-	                patientInfo.put("temperature", rs.getBigDecimal("temperature"));
-	                patientInfo.put("smokingStatus", rs.getString("smokingStatus"));
-	            }
-	        }
 
 	        // DICOM 파일 목록 가져오기 (file_data 제외)
 	        List<Map<String, Object>> dicomFiles = new ArrayList<>();
 	        try (PreparedStatement pstmt = conn.prepareStatement(dicomSql)) {
 	            pstmt.setInt(1, no);  // 환자의 no 값을 pid로 사용
+	            pstmt.setString(2, studydate);  // studydate 추가로 필터링
 	            ResultSet rs = pstmt.executeQuery();
 
 	            while (rs.next()) {
 	                Map<String, Object> dicomFile = new HashMap<>();
 	                dicomFile.put("pid", rs.getInt("pid"));
-	                dicomFile.put("pbirthdatetime", rs.getString("pbirthdatetime"));
 	                dicomFile.put("studydate", rs.getString("studydate"));
-	                dicomFile.put("studytime", rs.getString("studytime"));
 	                dicomFile.put("file_name", rs.getString("file_name"));
 	                dicomFile.put("pname", rs.getString("pname"));
 	                dicomFile.put("modality", rs.getString("modality"));
 	                dicomFile.put("sop_instance_uid", rs.getString("sop_instance_uid"));
-	                dicomFile.put("annotations", rs.getString("annotations")); // 주석 데이터 추가
 	                dicomFiles.add(dicomFile);
 	            }
 	        }
@@ -113,6 +87,7 @@ public class FileController {
 
 	    return ResponseEntity.ok(patientInfo);
 	}
+
 
 	@GetMapping("/getDicomFile")
 	@ResponseBody

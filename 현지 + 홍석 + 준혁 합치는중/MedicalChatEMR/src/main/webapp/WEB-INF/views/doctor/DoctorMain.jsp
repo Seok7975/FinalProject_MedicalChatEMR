@@ -200,6 +200,11 @@ nav {
 	overflow: hidden; /* 기본적으로 섹션 내에서 스크롤을 감춤 */
 }
 
+.section .dicom {
+	width: 100px;
+	height: 600px;
+}
+
 .section h2 {
 	margin: 0;
 	padding: 10px;
@@ -224,6 +229,8 @@ nav {
 }
 
 .history {
+	height: 200px;
+	overflow-y: auto;
 	grid-area: history;
 }
 
@@ -589,9 +596,10 @@ ul, #patientList {
 	margin-bottom: 5px;
 	gap: 8px;
 	height: 100%;
-	overflow-y: auto; /* 세로 스크롤 추가 */
-	overflow-x: hidden; /* 가로 스크롤은 숨김 */
-}
+	overflow-y: auto; 
+	overflow-x: hidden; 
+} 
+
 
 .responsive-view .dicomImage {
 	flex: 1 1 calc(50% - 10px); /* 두 열로 배치 */
@@ -626,8 +634,10 @@ ul, #patientList {
 .responsive-view {
 	display: flex;
 	flex-wrap: wrap;
+	padding-left: 5px;
+	padding-right: 5px;
 	gap: 10px;
-	height: 100%;
+	height: 90%;
 	overflow-y: auto;
 	overflow-x: hidden;
 }
@@ -1054,24 +1064,26 @@ ul, #patientList {
 				console.error(error);
 			}
 		}
-		
+/* 		
 		// 기록의 히스토리 업데이트 함수
 		function updateRecordHistory(records) {
 			const historySection = document.querySelector('.section.history tbody');
 			historySection.innerHTML = '';
 
-			records.forEach(function(record) {
+			records.forEach(function(record) {				
 				const row = document.createElement('tr');
 				row.setAttribute('data-chart-num', record.chartNum); // chartNum 속성 추가
 				row.innerHTML = '<td>' + record.visitDate + '</td><td>' + record.doctorName + '</td>';
 				row.addEventListener('click', function() {
 					updateRecordSections(record);
 					highlightRecord(record.chartNum); // 선택한 기록을 회색으로 표시
-				});
+					console.log("record.chartNum : ",record.chartNum);
+				});			
+				
 				historySection.appendChild(row);
-			});
+			});			
 		}
-		
+ */		
 		
 		// 환자의 기록 섹션 업데이트 함수
 		function updateRecordSections(record) {
@@ -1088,6 +1100,8 @@ ul, #patientList {
 		    updateDiagnosisTable(record.diagnoses);
 		    updatePrescriptionsTable(record.prescriptions);
 		    updateDrugsTable(record.drugs);
+		    console.log("hi");
+		    console.log("record.chartNum : ",record.chartNum);
 		}
 		
 		// 테이블 갱신 함수들 (진단, 처방, 약물)
@@ -1215,8 +1229,7 @@ ul, #patientList {
                 const data = await response.json();
                 
                 // 환자 정보 및 상태 업데이트
-                updatePatientInfo(data);
-                showPatientInfo(patientNo);
+                updatePatientInfo(data);                
                 
                 // 선택된 환자 번호 저장
                 selectedPatientNo = patientNo;
@@ -1268,7 +1281,7 @@ ul, #patientList {
                 if (!response.ok) throw new Error('진료 기록 불러오기 실패');
 
                 const records = await response.json();
-                updateRecordHistory(records);
+                updateRecordHistory(records,patientNo);
 
                 // 최신 기록을 첫 번째로 불러와서 하이라이트 처리
                 if (records.length > 0) {
@@ -1282,7 +1295,7 @@ ul, #patientList {
       }
 
    // 진료 기록 리스트 갱신 및 하이라이트 적용
-      function updateRecordHistory(records) {
+      function updateRecordHistory(records,patientNo) {
             const historySection = document.querySelector('.section.history tbody');
             historySection.innerHTML = '';
 
@@ -1291,12 +1304,22 @@ ul, #patientList {
                 row.setAttribute('data-chart-num', record.chartNum); // chartNum 속성 추가
                 row.innerHTML = '<td>' + record.visitDate + '</td><td>' + record.doctorName + '</td>';
                 row.addEventListener('click', function () {
+                	// 값 불러오기 테스트
+                	console.log("patientNo : ",patientNo);
+                	console.log("record.visitDate : ",formatDateForDcm(record.visitDate));
+                	showPatientInfo(patientNo,formatDateForDcm(record.visitDate));
                     updateRecordSections(record); // 기록 클릭 시 해당 기록 업데이트
                     highlightRecord(record.chartNum); // 클릭한 기록 하이라이트
                 });
                 historySection.appendChild(row);
             });
         }
+   	  // 방문 날짜 값 변화
+      function formatDateForDcm(visitDate) {
+    	    const datePart = visitDate.split('T')[0]; // '2024-08-26' 부분만 추출
+    	    const formattedDate = datePart.replace(/-/g, ''); // '20240826'으로 변환
+    	    return formattedDate;
+    	}
 
    // 기록의 섹션 업데이트 함수
      function updateRecordSections(record) {
@@ -1909,20 +1932,18 @@ ul, #patientList {
 		}
 
 		// 환자 번호를 토대로 study값 가져오는거 테스트 중
-		function showPatientInfo(patientNo) {
+		function showPatientInfo(patientNo,visitDate) {
     		$.ajax({
         		url: '/dicom/getPatientInfo',
         		method: 'GET',
-        		data: { no: patientNo },
+        		data: { no: patientNo, studydate: visitDate},
         		success: function(data) {
             		const patient = data;
             		// 버튼 요소에 데이터 저장
-            		$('.viewer').data('pid', patient.no);
+            		$('.viewer').data('pid', patientNo);
             		if (patient.dicomFiles && patient.dicomFiles.length > 0) {
                 		$('.viewer').data('studydate', patient.dicomFiles[0].studydate);
                 		loadDicomImageList(patient.dicomFiles, patient.no);
-                		console.log("pid : ", $('.viewer').data('pid'));
-                		console.log("studydate : ", $('.viewer').data('studydate'));
             		} else {
                 		clearDicomImages();
             		}
@@ -1938,7 +1959,8 @@ ul, #patientList {
     		// 버튼 요소에 저장된 데이터 가져오기
     		const pid = $(this).data('pid');
     		const studydate = $(this).data('studydate');
-
+			console.log("pid : ",pid);
+			console.log("studydate : ",studydate);
     		if (!pid || !dicomImagesLoaded) { 
         		return;
     		}
@@ -2000,7 +2022,7 @@ ul, #patientList {
 		    if (screenWidth >= 901) {
 		        document.querySelectorAll('.responsive-view .dicomImage').forEach(element => {
 		            element.style.flex = "1 1 calc(50% - 10px)";
-		            element.style.height = "200px";
+		            element.style.height = "300px";
 		            element.style.display = "flex";
 		        });
 		    } 

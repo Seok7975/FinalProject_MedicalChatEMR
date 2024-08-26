@@ -342,7 +342,7 @@ public class PatientService {
 	//특정 환자의 진료 기록 및 관련 데이터를 가져오는 메서드 (환자 no로 모든 진료 기록 가져오기) - 의사, 간호사, 수간호사
 	public List<MedicalRecordDTO> getPatientMedicalRecords(int patientNo) {
 		// 환자의 진료 기록 리스트 가져오기
-		List<MedicalRecordEntity> medicalRecords = medicalRecordRepository.findByPatientNo(patientNo);
+		List<MedicalRecordEntity> medicalRecords = medicalRecordRepository.findByPatientNoOrderByVisitDateDesc(patientNo);
 
 		if (medicalRecords.isEmpty()) {
 			return Collections.emptyList(); // 진료 기록이 없으면 빈 리스트 반환

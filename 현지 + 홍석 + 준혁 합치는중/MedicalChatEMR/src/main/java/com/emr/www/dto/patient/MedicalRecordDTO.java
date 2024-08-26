@@ -30,6 +30,4 @@ public class MedicalRecordDTO {
 	private List<DiagnosisDTO> diagnoses; // 진단 정보
 	private List<PrescriptionDTO> prescriptions; // 처방 정보
 	private List<DrugDTO> drugs; // 약물 정보
-	
-
 }
