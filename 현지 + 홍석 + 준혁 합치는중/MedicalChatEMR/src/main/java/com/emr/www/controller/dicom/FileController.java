@@ -77,7 +77,7 @@ public class FileController {
 	            }
 	        }
 
-	        // 환자 정보와 DICOM 파일 목록 데이터를 함께 반환
+	        // DICOM 파일 목록 데이터를 함께 반환
 	        patientInfo.put("dicomFiles", dicomFiles);
 	        
 	    } catch (SQLException e) {
@@ -152,15 +152,9 @@ public class FileController {
 	@PostMapping("/saveAnnotations")
 	public ResponseEntity<String> saveAnnotations(@RequestBody Map<String, Object> payload) {
 	    try {
-	        // 디버깅: 받은 데이터 출력
-	        System.out.println("Payload: " + payload);
 
 	        String sopInstanceUID = (String) payload.get("sopInstanceUID");
 	        String annotations = (String) payload.get("annotations");
-
-	        // 디버깅: 받은 데이터 출력
-	        System.out.println("Received sopInstanceUID: " + sopInstanceUID);
-	        System.out.println("Received annotations: " + annotations);
 
 	        // 주석 데이터를 데이터베이스에 저장합니다.
 	        String sql = "UPDATE dicom_files SET annotations = ? WHERE sop_instance_uid = ?";
@@ -242,40 +236,45 @@ public class FileController {
 
 
 
+	// 서버에서 DICOM 데이터를 전송하는 코드
 	@GetMapping("/getDicom")
 	public ResponseEntity<List<Map<String, Object>>> getFile(@RequestParam("pid") int pid, @RequestParam("studydate") String studydate) {
 	    try {
-	        // 필요한 필드만 선택하여 쿼리 수행
+	        // SQL 쿼리를 통해 데이터를 조회
 	        String fileSql = "SELECT pid, pbirthdatetime, studydate, studytime, file_name, file_data, pname, modality, sop_instance_uid, annotations " +
 	                         "FROM dicom_files WHERE pid = ? AND studydate = ?";
 	        
-	        List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, new Object[]{pid, studydate}, (rs, rowNum) -> {
-	            Map<String, Object> map = new HashMap<>();
-	            map.put("pid", rs.getInt("pid"));
-	            map.put("pbirthdatetime", rs.getString("pbirthdatetime"));
-	            map.put("studydate", rs.getString("studydate"));
-	            map.put("studytime", rs.getString("studytime"));
-	            map.put("file_name", rs.getString("file_name"));
-	            map.put("file_data", Base64.getEncoder().encodeToString(rs.getBytes("file_data"))); // Base64로 인코딩
-	            map.put("pname", rs.getString("pname"));
-	            map.put("modality", rs.getString("modality"));
-	            map.put("sop_instance_uid", rs.getString("sop_instance_uid"));
-	            map.put("annotations", rs.getString("annotations")); // 주석 데이터를 추가
-	            return map;
-	        });
+	        List<Map<String, Object>> fileDataList = jdbcTemplate.query(fileSql, 
+	            ps -> {
+	                ps.setObject(1, pid);
+	                ps.setObject(2, studydate);
+	            }, 
+	            (rs, rowNum) -> {
+	                Map<String, Object> map = new HashMap<>();
+	                map.put("pid", rs.getInt("pid"));
+	                map.put("pbirthdatetime", rs.getString("pbirthdatetime"));
+	                map.put("studydate", rs.getString("studydate"));
+	                map.put("studytime", rs.getString("studytime"));
+	                map.put("file_name", rs.getString("file_name"));
+	                map.put("file_data", rs.getBytes("file_data")); // 이진 데이터를 그대로 가져옴
+	                map.put("pname", rs.getString("pname"));
+	                map.put("modality", rs.getString("modality"));
+	                map.put("sop_instance_uid", rs.getString("sop_instance_uid"));
+	                map.put("annotations", rs.getString("annotations")); // 주석 데이터를 추가
+	                return map;
+	            });
 
-	        // 파일 데이터가 없을 경우 404를 반환합니다.
+	        // 데이터가 없는 경우 404 반환
 	        if (fileDataList.isEmpty()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 	        }
 
-	        // 파일 데이터 리스트를 JSON으로 반환합니다.
+	        // 데이터 리스트를 JSON으로 반환
 	        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(fileDataList);
 
 	    } catch (Exception e) {
-	        e.printStackTrace();  // 콘솔에 예외를 출력하여 어떤 오류가 발생했는지 확인
+	        e.printStackTrace();  // 예외 발생 시 콘솔에 출력
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
-
 }

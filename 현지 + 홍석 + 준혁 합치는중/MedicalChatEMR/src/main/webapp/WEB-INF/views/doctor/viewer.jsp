@@ -250,18 +250,14 @@ cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 console.log("Configuring image loader");
 cornerstoneWADOImageLoader.configure({});
 
-let viewerPath = $('#contextPath').text();
-
 const element = document.getElementById('dicomImage');
 const playButton = document.querySelector('.playClipModal .fa-play').parentElement;
 const stopButton = document.querySelector('.playClipModal .fa-stop').parentElement;
 const pid = document.getElementById('pid').value; 
 const studydate = document.getElementById('studydate').value;
-const fileUrl = viewerPath + '/dicom/getDicom?pid=' + pid + '&studydate=' + studydate;
+const fileUrl = '/dicom/getDicom?pid=' + pid + '&studydate=' + studydate;
 const customCursor = 'url(/img/cross.cur) 8 8, auto'; // 전역 변수로 설정
 
-
-console.log("pid: ", pid);  // 이 로그로 pid 값 확인
 
 
 const toolButton = document.querySelector('.interface-button i.fa-toolbox').parentElement;
@@ -1292,19 +1288,33 @@ fetch(fileUrl)
             throw new Error('No DICOM files found');
         }
 
-        // Base64 디코딩 후 Blob 생성 및 SOPInstanceUID 저장
-        sopInstanceUIDs = fileDataList.map(fileData => fileData.sop_instance_uid); // SOPInstanceUID 저장
+        // SOPInstanceUID 저장
+        sopInstanceUIDs = fileDataList.map(fileData => fileData.sop_instance_uid); 
         fileDataListGlobal = fileDataList;
-        imageIds = fileDataList.map((fileData, index) => {
-            const byteCharacters = atob(fileData.file_data); // Base64 디코딩
-            const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
-            const byteArray = new Uint8Array(byteNumbers);
-            const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
-            return 'wadouri:' + fileBlobUrl;
-        });
+
+        // 이진 데이터를 Blob으로 변환하여 이미지 URL 생성
+		imageIds = fileDataList.map((fileData, index) => {
+    	// Base64로 인코딩된 데이터라면 디코딩
+    	if (typeof fileData.file_data === "string") {
+	        console.log("Base64 encoded DICOM data detected. Decoding...");
+        	const decodedData = atob(fileData.file_data);  // Base64 디코딩
+
+        	// 디코딩된 데이터를 Uint8Array로 변환
+        	const byteArray = new Uint8Array(decodedData.length);
+        	for (let i = 0; i < decodedData.length; i++) {
+            	byteArray[i] = decodedData.charCodeAt(i);
+        }
+
+
+        const fileBlobUrl = URL.createObjectURL(new Blob([byteArray]));
+        return 'wadouri:' + fileBlobUrl;
+    } else {
+        console.error(`File data for index ${index} is not a Base64 encoded string.`);
+        return null;
+    }
+});
+
+
 
         currentFileNames = fileDataList.map(fileData => fileData.file_name);
         currentPname = fileDataList[0].pname;  // 첫 번째 파일의 pname을 사용
@@ -1437,6 +1447,8 @@ fetch(fileUrl)
                 const viewport = cornerstone.getViewport(element);
                 // 이미지 불러올떄 쓰는 window 값
                 document.querySelector('.wwwc').innerHTML = "WW : " + Math.round(viewport.voi.windowWidth) + "<br>WC : " + Math.round(viewport.voi.windowCenter);
+                
+                
                 resizeImage();
                 
             }).catch(function(err) {
@@ -1554,6 +1566,7 @@ fetch(fileUrl)
       .catch(error => {
           console.error('Error fetching DICOM data:', error);
       });
+
 
 
 
@@ -1897,7 +1910,6 @@ function saveAnnotation() {
             let sopInstanceUID = sopInstanceUIDs[index]; // 현재 이미지의 SOPInstanceUID 가져오기
             let studytime = fileDataListGlobal[0].studytime; // 현재 이미지의 studytime 가져오기
             
-            console.log("Saving annotations for SOPInstanceUID:", sopInstanceUID);
 
             // AJAX 요청으로 주석 데이터 저장
             $.ajax({
@@ -1984,7 +1996,6 @@ function resetCanvas(activeElement,viewport) {
         viewport.translation = { x: 0, y: 0 };
 
         cornerstone.setViewport(activeElement, viewport);
-		console.log("viewport : ",viewport);
         // activeElement의 부모 요소에서 .bottomRight .wwwc 요소 찾기
         const parentElement = activeElement.parentElement;
         const bottomRightElement = parentElement.querySelector('.bottomRight .wwwc');
