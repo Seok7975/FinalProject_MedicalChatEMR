@@ -1,0 +1,45 @@
+CREATE TABLE dicom_files (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_data LONGBLOB,
+    STUDYKEY BIGINT,
+    STUDYINSUID VARCHAR(64) NOT NULL,
+    PATKEY VARCHAR(64),
+    ACCESSNUM VARCHAR(64),
+    STUDYDATE VARCHAR(16),
+    STUDYTIME VARCHAR(14),
+    STUDYID VARCHAR(64),
+    EXAMCODE VARCHAR(64),
+    STUDYDESC TEXT,
+    MODALITY VARCHAR(16),
+    BODYPART TEXT,    
+    PID VARCHAR(64),
+    PNAME VARCHAR(64),
+    PLASTNAME VARCHAR(64),
+    PFIRSTNAME VARCHAR(64),
+    PKNAME VARCHAR(64),
+    PENAME VARCHAR(64),
+    PSEX VARCHAR(16),
+    PBIRTHDATETIME VARCHAR(16),
+    PATAGE VARCHAR(16),
+    EXAMSTATUS BIGINT,
+    REPORTSTATUS BIGINT,
+    SERIESCNT BIGINT,
+    SERIESMOVIECNT BIGINT,
+    IMAGECNT BIGINT,
+    MOVIECNT BIGINT,
+    NONSERIESCOUNT BIGINT,
+    NONIMAGECOUNT BIGINT,
+    VERIFYFLAG BIGINT,
+    VERIFYDATETIME VARCHAR(14),
+    DEPT VARCHAR(64),
+    sop_instance_uid VARCHAR(128),  -- DICOM SOP Instance UID (고유 이미지 식별자)
+    annotations TEXT  -- 주석 데이터를 저장할 필드    
+);
+
+CREATE INDEX idx_pid ON dicom_files (pid);
+CREATE INDEX idx_studytime ON dicom_files (studytime);
+CREATE INDEX idx_studydate ON dicom_files (studydate);
+CREATE INDEX idx_modality ON dicom_files (modality);
+CREATE INDEX idx_sop_instance_uid ON dicom_files (sop_instance_uid);
+CREATE INDEX idx_pid_studydate ON dicom_files (pid, studydate);
