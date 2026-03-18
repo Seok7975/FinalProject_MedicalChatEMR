@@ -1,0 +1,4 @@
+**/target/
+**/src/main/resources/ssl/localhost-key.pem
+**/src/main/resources/ssl/localhost.pem
+**/src/main/resources/application-local.properties
